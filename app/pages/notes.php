@@ -53,7 +53,9 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <!-- 메모 목록 -->
-    <div id="notesList"></div>
+    <div class="card hidden" id="notesListCard">
+        <div id="notesList"></div>
+    </div>
 
     <!-- FAB -->
     <button class="page-fab" onclick="Notes.showAddForm()" title="메모 작성">

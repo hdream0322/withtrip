@@ -547,3 +547,11 @@ body {
     align-items: center;
 }
 .hidden { display: none !important; }
+
+/* 인라인 링크 (메모·할일 내용에서 URL 자동 변환) */
+.note-link {
+    color: var(--color-primary);
+    text-decoration: underline;
+    word-break: break-all;
+}
+.note-link:hover { opacity: 0.75; }

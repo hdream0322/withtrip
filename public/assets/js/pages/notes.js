@@ -47,15 +47,19 @@ const Notes = {
               })
             : this.notes;
 
-        const isEmpty    = document.getElementById('notesEmpty');
-        const noResult   = document.getElementById('notesNoResult');
-        const list       = document.getElementById('notesList');
+        const isEmpty  = document.getElementById('notesEmpty');
+        const noResult = document.getElementById('notesNoResult');
+        const listCard = document.getElementById('notesListCard');
+        const list     = document.getElementById('notesList');
 
         // 빈 상태
         isEmpty.classList.toggle('hidden', this.notes.length > 0);
 
         // 검색 결과 없음
         noResult.classList.toggle('hidden', !(keyword && filtered.length === 0 && this.notes.length > 0));
+
+        // 목록 카드 표시 여부
+        listCard.classList.toggle('hidden', filtered.length === 0);
 
         // 목록 렌더
         list.innerHTML = filtered.map(function (n) { return Notes.renderCard(n); }).join('');
@@ -65,34 +69,50 @@ const Notes = {
         const isMine     = note.author_id === NCONF.userId;
         const authorName = note.author_name || note.author_id;
         const isEdited   = note.updated_at && note.updated_at !== note.created_at;
+        const dateStr    = Notes.formatDateShort(note.created_at);
 
-        var html = '<div class="note-card' + (isMine ? ' note-mine' : '') + '" data-note-id="' + note.id + '">';
+        var html = '<div class="note-item" data-note-id="' + note.id + '" onclick="Notes.toggleExpand(event, ' + note.id + ')">';
 
-        html += '<div class="note-header">';
-        html += '<div>';
+        // 메인 행
+        html += '<div class="note-item-main">';
+        html += '<div class="note-item-body">';
         if (note.title) {
-            html += '<div class="note-title">' + Notes.esc(note.title) + '</div>';
+            html += '<div class="note-item-title">' + Notes.esc(note.title) + '</div>';
+            html += '<div class="note-item-preview">' + Notes.esc(note.content) + '</div>';
+        } else {
+            html += '<div class="note-item-preview note-item-preview-only">' + Notes.esc(note.content) + '</div>';
         }
-        html += '<div class="note-meta"><span class="note-author">' + Notes.esc(authorName) + '</span></div>';
         html += '</div>';
 
+        html += '<div class="note-item-meta">';
+        html += '<span class="badge">' + Notes.esc(authorName) + '</span>';
+        html += '<span class="note-date-short">' + dateStr + '</span>';
         if (isMine) {
-            html += '<div class="note-actions">';
-            html += '<button class="btn btn-sm btn-secondary" onclick="Notes.openEditModal(' + note.id + ')">수정</button>';
-            html += '<button class="btn btn-sm btn-danger" onclick="Notes.deleteNote(' + note.id + ')">삭제</button>';
-            html += '</div>';
+            html += '<button class="btn-icon" onclick="Notes.openEditModal(' + note.id + '); event.stopPropagation();" title="수정">&#9998;</button>';
+            html += '<button class="btn-icon btn-icon-danger" onclick="Notes.deleteNote(' + note.id + '); event.stopPropagation();" title="삭제">&#10005;</button>';
         }
         html += '</div>';
+        html += '</div>'; // note-item-main
 
-        html += '<div class="note-body">' + Notes.esc(note.content) + '</div>';
-
-        html += '<div class="note-footer">';
-        html += '<span class="note-date">' + Notes.formatDate(note.created_at) + '</span>';
+        // 전체 내용 (펼치면 표시)
+        html += '<div class="note-item-full hidden">';
+        html += '<div class="note-full-content">' + Notes.linkify(note.content) + '</div>';
         if (isEdited) html += '<span class="note-edited">수정됨</span>';
         html += '</div>';
 
-        html += '</div>';
+        html += '</div>'; // note-item
         return html;
+    },
+
+    toggleExpand(event, noteId) {
+        // 링크 클릭 시 토글하지 않음
+        if (event.target.tagName === 'A') return;
+        const item = document.querySelector('.note-item[data-note-id="' + noteId + '"]');
+        if (!item) return;
+        const full = item.querySelector('.note-item-full');
+        if (!full) return;
+        full.classList.toggle('hidden');
+        item.classList.toggle('expanded');
     },
 
     /* ============================================================
@@ -266,11 +286,33 @@ const Notes = {
                String(d.getMinutes()).padStart(2, '0');
     },
 
+    formatDateShort(dateStr) {
+        if (!dateStr) return '';
+        const d   = new Date(dateStr);
+        const now = new Date();
+        // 오늘이면 시:분, 아니면 M/D
+        if (d.toDateString() === now.toDateString()) {
+            return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+        return (d.getMonth() + 1) + '/' + d.getDate();
+    },
+
     esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    },
+
+    linkify(str) {
+        if (!str) return '';
+        return Notes.esc(str).replace(
+            /(https?:\/\/[^\s<>"']+|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s<>"']*)?)/g,
+            function (url) {
+                const href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+                return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">' + url + '</a>';
+            }
+        );
     },
 };
 

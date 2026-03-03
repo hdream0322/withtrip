@@ -153,7 +153,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
 
                 <?php if ($item['detail']): ?>
-                    <p class="todo-detail"><?= nl2br(e($item['detail'])) ?></p>
+                    <p class="todo-detail"><?= nl2br(linkify($item['detail'])) ?></p>
                 <?php endif; ?>
 
                 <div class="todo-meta">

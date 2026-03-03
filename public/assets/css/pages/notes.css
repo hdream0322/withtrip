@@ -23,79 +23,137 @@
     padding-left: 36px !important;
 }
 
-/* 메모 카드 */
-.note-card {
-    background: var(--color-bg-card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    padding: 16px;
-    margin-bottom: 12px;
-    border: 1px solid var(--color-border-light);
-    border-left: 3px solid var(--color-primary);
-}
+/* ── 메모 목록 카드 ── */
 
-.note-card.note-mine {
-    border-left-color: var(--color-accent);
-}
-
-.note-header {
+/* 각 메모 행 */
+.note-item {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    flex-direction: column;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--color-border-light);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
 }
 
-.note-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-text);
-    margin-bottom: 2px;
+.note-item:last-child {
+    border-bottom: none;
 }
 
-.note-meta {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
+.note-item:hover {
+    background: var(--color-border-light);
+}
+
+.note-item.expanded {
+    background: var(--color-border-light);
+    border-bottom: none;
+    margin-bottom: 6px;
+    border-radius: 8px;
+}
+
+/* 메인 행 (제목+미리보기 / 뱃지+버튼) */
+.note-item-main {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
 }
 
-.note-author {
+.note-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.note-item-title {
+    font-size: 0.92rem;
     font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+}
+
+.note-item-preview {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+    line-height: 1.4;
+}
+
+/* 제목 없을 때 미리보기를 조금 더 크게 */
+.note-item-preview-only {
+    font-size: 0.88rem;
     color: var(--color-text-secondary);
 }
 
-.note-body {
-    font-size: 0.9rem;
-    line-height: 1.6;
+/* 오른쪽: 뱃지 + 날짜 + 버튼 */
+.note-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 6px;
+}
+
+.note-date-short {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+/* 펼쳐진 전체 내용 */
+.note-item-full {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+.note-full-content {
+    font-size: 0.88rem;
+    line-height: 1.7;
     color: var(--color-text);
     white-space: pre-wrap;
     word-break: break-word;
 }
 
-.note-actions {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-    margin-left: 8px;
-}
-
-.note-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-border-light);
-}
-
-.note-date {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-}
-
 .note-edited {
+    display: block;
     font-size: 0.7rem;
     color: var(--color-text-muted);
     font-style: italic;
+    margin-top: 6px;
+}
+
+/* 아이콘 버튼 (체크리스트와 동일) */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--color-text-secondary);
+}
+
+.btn-icon-danger:hover,
+.btn-icon-danger:active {
+    background: #fef2f2;
+    color: var(--color-danger);
 }

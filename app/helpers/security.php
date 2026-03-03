@@ -130,3 +130,20 @@ function resetPinAttempts(PDO $db, string $ip, string $tripCode, string $userId)
     );
     $stmt->execute([$ip, $tripCode, $userId]);
 }
+
+/**
+ * 텍스트 내 URL을 클릭 가능한 링크로 변환 (XSS 안전)
+ * http://, https:// 포함 URL과 example.com 형식 모두 지원
+ */
+function linkify(string $text): string
+{
+    $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    $pattern = '/(https?:\/\/[^\s<>"\']+|(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s<>"\']*)?)/u';
+
+    return preg_replace_callback($pattern, function ($matches) {
+        $url  = $matches[1];
+        $href = preg_match('/^https?:\/\//i', $url) ? $url : 'https://' . $url;
+        $safeHref = htmlspecialchars($href, ENT_QUOTES, 'UTF-8');
+        return '<a href="' . $safeHref . '" target="_blank" rel="noopener noreferrer" class="note-link">' . $url . '</a>';
+    }, $escaped);
+}
