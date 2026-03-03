@@ -1,0 +1,235 @@
+/* /my 오너 대시보드 스타일 */
+
+.trip-card {
+    transition: box-shadow 0.2s;
+}
+
+/* ── more_vert 드롭다운 ── */
+.card-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card-menu-btn:hover {
+    background: var(--color-border-light);
+}
+
+.card-menu-btn .material-icons {
+    font-size: 20px;
+}
+
+.card-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 0;
+    min-width: 136px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 50;
+    overflow: hidden;
+    transform-origin: top right;
+    animation: menuFadeIn 0.12s ease;
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.1s;
+}
+
+.menu-item:hover {
+    background: var(--color-border-light);
+}
+
+.menu-item .material-icons {
+    font-size: 17px;
+    color: var(--color-text-muted);
+}
+
+.menu-item-danger {
+    color: var(--color-danger);
+}
+
+.menu-item-danger .material-icons {
+    color: var(--color-danger);
+}
+
+/* ── 모달 공통 ── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: overlayFade 0.18s ease;
+}
+
+@keyframes overlayFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideUp 0.22s ease;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+@media (min-width: 481px) {
+    .modal-overlay {
+        align-items: center;
+        padding: 24px;
+    }
+    .modal {
+        border-radius: 16px;
+        max-height: 90vh;
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--color-border-light);
+    flex-shrink: 0;
+}
+
+.modal-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--color-border-light);
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.modal-close:hover {
+    background: var(--color-border);
+}
+
+.modal-close .material-icons {
+    font-size: 18px;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--color-border-light);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* ── 멤버 목록 ── */
+.member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.member-item:last-child {
+    border-bottom: none;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.member-id {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.member-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.pin-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.pin-badge.set {
+    background: #dcfce7;
+    color: var(--color-success);
+}
+
+.pin-badge.unset {
+    background: #fef3c7;
+    color: var(--color-warning);
+}

@@ -1,0 +1,488 @@
+/* 예산 관리 스타일 */
+
+/* 탭 네비게이션 */
+.budget-tabs {
+    display: flex;
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+}
+
+.budget-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+.budget-tab.active {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+/* 탭 패널 */
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* 환율 카드 */
+.exchange-rate-card {
+    padding: 12px 16px;
+}
+
+.exchange-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.exchange-input {
+    width: 100px;
+    padding: 8px 10px;
+    text-align: right;
+    font-size: 0.9rem;
+    min-height: 36px;
+}
+
+/* 예산 요약 카드 */
+.budget-summary-card {
+    background: linear-gradient(135deg, #f0fdfa, #e0f7fa);
+    border: 1px solid #b2ebf2;
+}
+
+.summary-label {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.summary-amount {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.summary-spent {
+    color: var(--color-primary-dark);
+}
+
+.budget-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.budget-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.budget-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--color-primary);
+    transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.budget-progress-fill.over-budget {
+    background: var(--color-coral);
+}
+
+.budget-progress-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* 카테고리 카드 */
+.category-card {
+    padding: 14px 16px;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.category-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.category-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.category-amounts {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.category-bar-wrap {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.category-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-primary);
+    transition: width 0.4s ease;
+}
+
+.category-bar-fill.over-budget {
+    background: var(--color-coral);
+}
+
+/* 카테고리 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--color-text-muted);
+}
+
+.empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.empty-state-text {
+    font-size: 0.9rem;
+}
+
+/* 지출 목록 */
+.expense-card {
+    padding: 14px 16px;
+}
+
+.expense-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.expense-desc {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.expense-amount {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.expense-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+}
+
+.expense-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.expense-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-dutch {
+    background: #e0f2f1;
+    color: #00897b;
+}
+
+.badge-solo {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.expense-splits {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+.expense-splits-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+}
+
+.split-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    padding: 2px 0;
+}
+
+.expense-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+/* 모달 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal {
+    background: var(--color-bg-card);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-bg-card);
+    z-index: 1;
+}
+
+.modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.modal-close:hover,
+.modal-close:active {
+    background: var(--color-border-light);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-border);
+    position: sticky;
+    bottom: 0;
+    background: var(--color-bg-card);
+}
+
+.modal-footer .btn {
+    flex: 1;
+}
+
+/* 폼 행 (금액 + 통화 나란히) */
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-group-grow {
+    flex: 1;
+}
+
+.form-group-shrink {
+    width: 100px;
+    flex-shrink: 0;
+}
+
+/* 더치페이 영역 */
+.dutch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dutch-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.dutch-members {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.dutch-member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--color-border-light);
+    border-radius: var(--radius-sm);
+}
+
+.dutch-member .form-check {
+    flex: 1;
+    min-width: 0;
+}
+
+.dutch-member .form-check span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dutch-amount {
+    width: 100px;
+    padding: 8px 10px;
+    text-align: right;
+    font-size: 0.9rem;
+    min-height: 36px;
+    flex-shrink: 0;
+}
+
+.dutch-total {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    padding: 8px 0;
+}
+
+.dutch-diff {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dutch-diff.over {
+    background: #fef2f2;
+    color: var(--color-danger);
+}
+
+.dutch-diff.under {
+    background: #fffbeb;
+    color: var(--color-warning);
+}
+
+/* 아이콘 버튼 (편집/삭제) */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+    background: var(--color-border);
+}
+
+.btn-icon.danger {
+    color: var(--color-danger);
+}
+
+.btn-icon.danger:hover,
+.btn-icon.danger:active {
+    background: #fef2f2;
+}

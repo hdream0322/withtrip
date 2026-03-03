@@ -1,0 +1,227 @@
+/* To-Do 스타일 */
+
+.todo-count-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    min-width: 56px;
+    text-align: center;
+}
+
+/* To-Do 항목 */
+.todo-item {
+    transition: opacity 0.3s ease;
+}
+
+.todo-item.done {
+    opacity: 0.45;
+}
+
+.todo-item.overdue {
+    border-left: 3px solid var(--color-danger);
+}
+
+.todo-item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.todo-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+.todo-check input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: 1px;
+}
+
+.todo-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.todo-item.done .todo-title {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+}
+
+.todo-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+/* 상세 내용 */
+.todo-detail {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 8px 0 0 32px;
+    word-break: break-word;
+}
+
+/* 메타 정보 (담당자, 마감일) */
+.todo-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-left: 32px;
+    flex-wrap: wrap;
+}
+
+/* 담당자 뱃지 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* 마감일 */
+.todo-due {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.todo-due.overdue {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.dday-tag {
+    display: inline-flex;
+    padding: 1px 6px;
+    background: var(--color-border-light);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.todo-due.overdue .dday-tag {
+    background: #fef2f2;
+    color: var(--color-danger);
+}
+
+/* 구분선 */
+.todo-divider {
+    display: flex;
+    align-items: center;
+    margin: 16px 0 8px;
+    gap: 12px;
+}
+
+.todo-divider::before,
+.todo-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.todo-divider span {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+/* 아이콘 버튼 */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+}
+
+.btn-icon-danger:hover,
+.btn-icon-danger:active {
+    background: #fef2f2;
+    color: var(--color-danger);
+}
+
+/* 수정 모달 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--color-bg-card);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 24px 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}

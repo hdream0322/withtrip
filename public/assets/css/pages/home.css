@@ -1,0 +1,74 @@
+/* 홈 대시보드 스타일 */
+.dday-label {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    padding: 8px 0;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.summary-grid .card:first-child {
+    grid-column: 1 / -1;
+}
+
+.summary-card {
+    text-align: center;
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--color-border-light);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.menu-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--color-border-light);
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: 0.95rem;
+    transition: background 0.15s;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:active {
+    background: var(--color-border-light);
+}

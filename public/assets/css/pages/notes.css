@@ -1,0 +1,130 @@
+/* 공유 메모 페이지 스타일 */
+
+.back-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.back-link:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 메모 카드 */
+.note-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-border-light);
+    border-left: 3px solid var(--color-primary);
+}
+
+.note-card.note-mine {
+    border-left-color: var(--color-accent);
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.note-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 2px;
+}
+
+.note-meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.note-author {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.note-body {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.note-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+.note-date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.note-edited {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* 모달 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: calc(100% - 32px);
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}

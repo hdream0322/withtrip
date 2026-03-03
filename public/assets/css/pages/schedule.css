@@ -1,0 +1,38 @@
+/* 일정표 스타일 */
+.schedule-day {
+    margin-bottom: 16px;
+}
+
+.schedule-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    background: var(--color-border-light);
+    border-radius: var(--radius-sm);
+}
+
+.item-time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+.item-content {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.item-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}

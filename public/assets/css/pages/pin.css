@@ -1,0 +1,8 @@
+/* PIN 페이지 스타일 */
+.pin-container {
+    background: var(--color-bg);
+}
+
+.pin-title {
+    color: var(--color-primary-dark);
+}

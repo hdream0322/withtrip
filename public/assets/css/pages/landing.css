@@ -1,0 +1,285 @@
+/* 랜딩 페이지 */
+
+/* Hero */
+.hero {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    padding: 60px 28px 48px;
+}
+
+.hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.hero-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 16px;
+}
+
+.hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--color-text);
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.hero-desc {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 36px;
+}
+
+.hero-error {
+    background: #fef2f2;
+    color: var(--color-danger);
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.btn-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: var(--color-text);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    min-height: 48px;
+}
+
+.btn-hero:active {
+    opacity: 0.85;
+}
+
+/* 기능 소개 */
+.features {
+    padding: 0 28px 16px;
+    background: #fff;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 0;
+    border-top: 1px solid var(--color-border-light);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.feature-item.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.feature-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.05em;
+    min-width: 24px;
+    padding-top: 3px;
+}
+
+.feature-body h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 6px;
+}
+
+.feature-body p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+}
+
+/* Footer */
+.landing-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 하단 플로팅 바 높이(약 60px) + 여유 */
+    padding: 20px 28px 80px;
+    border-top: 1px solid var(--color-border-light);
+    background: #fff;
+}
+
+.footer-brand {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+}
+
+.footer-links {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-link {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    color: var(--color-text);
+}
+
+/* ── 하단 플로팅 바 ── */
+.landing-float {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 14px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 481px) {
+    .landing-float {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: 480px;
+        border-radius: 0 0 16px 16px;
+        bottom: 24px;
+    }
+}
+
+/* 인증 버튼 (Google 로그인 / 내 여행 관리) */
+.float-auth {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 13px;
+    height: 38px;
+    background: var(--color-text);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+
+.float-auth:active {
+    opacity: 0.82;
+}
+
+/* 구분선 */
+.float-sep {
+    width: 1px;
+    height: 22px;
+    background: var(--color-border);
+    margin: 0 12px;
+    flex-shrink: 0;
+}
+
+/* 여행 코드 폼 */
+.float-code {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    min-width: 0;
+}
+
+.float-code-input {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    letter-spacing: 0.06em;
+    color: var(--color-text);
+    background: var(--color-bg);
+    transition: border-color 0.15s;
+}
+
+.float-code-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.float-code-btn {
+    height: 38px;
+    padding: 0 13px;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.float-code-btn:active {
+    background: var(--color-primary-dark);
+}
+
+/* 에러 툴팁 (입력 위에 떠오름) */
+.float-code-error {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #1e293b;
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    line-height: 1.4;
+}
+
+.float-code-error::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    border: 5px solid transparent;
+    border-top-color: #1e293b;
+}

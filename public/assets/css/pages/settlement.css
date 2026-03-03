@@ -1,0 +1,185 @@
+/* 정산 페이지 스타일 */
+
+.back-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.back-link:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 멤버별 지출 요약 */
+.member-summary-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.member-summary-item:last-child {
+    border-bottom: none;
+}
+
+.member-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.owner-badge {
+    font-size: 0.7rem;
+    background: var(--color-primary);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.member-balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+.balance-amount {
+    font-weight: 600;
+}
+
+.balance-positive {
+    color: var(--color-primary);
+}
+
+.balance-negative {
+    color: var(--color-coral);
+}
+
+.balance-zero {
+    color: var(--color-text-muted);
+}
+
+.net-balance {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* 통화별 구분 헤더 */
+.currency-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-bg);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    margin-top: 12px;
+}
+
+.currency-header:first-child {
+    margin-top: 0;
+}
+
+/* 정산 이체 내역 */
+.transfer-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border-light);
+    gap: 8px;
+}
+
+.transfer-item:last-child {
+    border-bottom: none;
+}
+
+.transfer-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.transfer-from-to {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.transfer-arrow {
+    color: var(--color-primary);
+    margin: 0 4px;
+    font-weight: 700;
+}
+
+.transfer-amount {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-coral);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.transfer-check {
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.transfer-check input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--color-success);
+    cursor: pointer;
+}
+
+.transfer-item.completed {
+    opacity: 0.5;
+}
+
+.transfer-item.completed .transfer-from-to,
+.transfer-item.completed .transfer-amount {
+    text-decoration: line-through;
+}
+
+/* 정산 없음 메시지 */
+.no-transfers {
+    text-align: center;
+    padding: 20px;
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+/* 정산 합계 */
+.settlement-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+/* 통합 정산 모드 알림 */
+.unified-notice {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}

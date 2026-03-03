@@ -1,0 +1,124 @@
+/* 체크리스트 스타일 */
+
+.checklist-progress-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    min-width: 56px;
+    text-align: center;
+}
+
+/* 카테고리 카드 */
+.checklist-category {
+    margin-bottom: 12px;
+}
+
+.category-count {
+    font-weight: 500;
+}
+
+/* 체크리스트 항목 */
+.checklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--color-border-light);
+    transition: opacity 0.3s ease;
+}
+
+.checklist-item:last-child {
+    border-bottom: none;
+}
+
+.checklist-item.done {
+    opacity: 0.45;
+}
+
+.checklist-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+.checklist-check input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.checklist-item-text {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.checklist-item.done .checklist-item-text {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+}
+
+/* 항목 메타 (담당자 + 액션) */
+.checklist-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* 담당자 뱃지 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* 아이콘 버튼 */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+}
+
+.btn-icon-danger:hover,
+.btn-icon-danger:active {
+    background: #fef2f2;
+    color: var(--color-danger);
+}

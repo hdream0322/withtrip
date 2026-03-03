@@ -1,0 +1,42 @@
+# WithPlan - Apache URL Rewrite & Security Headers
+
+# 보안 헤더
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# URL Rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # vendor/ 접근 차단
+    RewriteRule ^vendor/ - [F,L]
+
+    # .env 접근 차단
+    RewriteRule ^\.env - [F,L]
+
+    # config/ 접근 차단
+    RewriteRule ^config/ - [F,L]
+
+    # app/ 접근 차단
+    RewriteRule ^app/ - [F,L]
+
+    # 실제 파일/디렉토리가 존재하면 그대로 서빙
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # 나머지 요청은 index.php로 라우팅
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# PHP 파일 직접 접근 차단 (index.php, new.php 제외)
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^(index|new)\.php$">
+    Require all granted
+</FilesMatch>

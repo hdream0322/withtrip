@@ -1,0 +1,19 @@
+# 민감 정보
+.env
+
+# Composer 의존성
+vendor/
+
+# 로그 파일
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+*.swo
