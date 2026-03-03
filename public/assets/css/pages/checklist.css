@@ -1,7 +1,207 @@
-/* 체크리스트 스타일 */
+/* 체크리스트 + 할일 통합 스타일 */
+
+/* 탭 네비게이션 */
+.page-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: var(--color-border-light);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.page-tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-tab-btn.active {
+    background: #fff;
+    color: var(--color-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* 탭 콘텐츠 */
+.tab-pane {
+    animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- 할일 항목 ---- */
+.todo-item {
+    transition: opacity 0.3s ease;
+}
+
+.todo-item.done {
+    opacity: 0.45;
+}
+
+.todo-item.overdue {
+    border-left: 3px solid var(--color-danger);
+}
+
+.todo-item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.todo-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+.todo-check input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: 1px;
+}
+
+.todo-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.todo-item.done .todo-title {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+}
+
+.todo-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.todo-detail {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 8px 0 0 32px;
+    word-break: break-word;
+}
+
+.todo-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-left: 32px;
+    flex-wrap: wrap;
+}
+
+.todo-due {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.todo-due.overdue {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.dday-tag {
+    display: inline-flex;
+    padding: 1px 6px;
+    background: var(--color-border-light);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.todo-due.overdue .dday-tag {
+    background: #fef2f2;
+    color: var(--color-danger);
+}
+
+.todo-divider {
+    display: flex;
+    align-items: center;
+    margin: 16px 0 8px;
+    gap: 12px;
+}
+
+.todo-divider::before,
+.todo-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.todo-divider span {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+/* 할일 수정 모달 */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--color-bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 12px 20px 32px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
 
 /* 검색창 */
 .checklist-search-bar {
+    margin-top: 4px;
     margin-bottom: 10px;
 }
 
@@ -153,6 +353,66 @@
     border-radius: 12px;
     white-space: nowrap;
     font-weight: 500;
+}
+
+
+/* 담당자 토글 버튼 그룹 */
+.assignee-toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.assignee-toggle-btn {
+    padding: 6px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.assignee-toggle-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.assignee-toggle-btn.selected {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 담당자 완료 현황 뱃지 */
+.assignee-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.badge-assignee {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: var(--color-border-light);
+    color: var(--color-text-muted);
+    font-size: 0.73rem;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.badge-assignee.done {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
 }
 
 /* 아이콘 버튼 */

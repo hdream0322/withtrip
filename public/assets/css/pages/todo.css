@@ -179,6 +179,65 @@
     white-space: nowrap;
 }
 
+/* 담당자 토글 버튼 그룹 */
+.assignee-toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.assignee-toggle-btn {
+    padding: 6px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.assignee-toggle-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.assignee-toggle-btn.selected {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 담당자 완료 현황 뱃지 */
+.assignee-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.badge-assignee {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: var(--color-border-light);
+    color: var(--color-text-muted);
+    font-size: 0.73rem;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.badge-assignee.done {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
+}
+
 /* 아이콘 버튼 */
 .btn-icon {
     display: inline-flex;

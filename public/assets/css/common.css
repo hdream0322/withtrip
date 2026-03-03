@@ -455,6 +455,81 @@ body {
     color: #fff;
 }
 
+/* 모달 공통 */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 200;
+    transition: background 0.25s ease;
+}
+
+.modal-overlay.visible {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--color-bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 12px 20px 32px;
+    z-index: 201;
+    transition: transform 0.25s ease;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-sheet.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.modal-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+}
+
+/* 페이지 공통 FAB (플로팅 액션 버튼) */
+.page-fab {
+    position: fixed;
+    bottom: calc(var(--nav-height) + 16px);
+    right: max(16px, calc(50% - 240px + 16px));
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.page-fab:hover,
+.page-fab:active {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+.page-fab-icon {
+    font-size: 1.7rem;
+    line-height: 1;
+    font-weight: 300;
+    margin-top: -1px;
+}
+
 /* 유틸리티 */
 .text-center { text-align: center; }
 .text-muted { color: var(--color-text-muted); }

@@ -1,47 +1,66 @@
 /**
- * 체크리스트 + 할일 통합 페이지 JS
+ * 체크리스트 페이지 JS
  */
 const CL = window.CHECKLIST_CONFIG;
 
-// 현재 활성 탭
-var activeTab = 'checklist';
-
 /* ============================================================
-   탭 전환
+   담당자 토글 버튼 (공통)
    ============================================================ */
 
-function switchTab(tab) {
-    if (tab === 'todo') {
-        location.href = '/' + CL.tripCode + '/' + CL.userId + '/todo';
-    }
-    // 'checklist' 탭은 현재 페이지이므로 아무것도 하지 않음
+/**
+ * 담당자 토글 버튼 클릭 처리
+ * @param {HTMLElement} btn
+ * @param {string} groupId
+ */
+function toggleAssigneeBtn(btn, groupId) {
+    btn.classList.toggle('selected');
+}
+
+/**
+ * 특정 그룹의 선택된 담당자 user_id를 comma-separated 문자열로 반환
+ * @param {string} groupId
+ * @returns {string}
+ */
+function getSelectedAssignees(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return '';
+    const selected = group.querySelectorAll('.assignee-toggle-btn.selected');
+    return Array.from(selected).map(function (b) { return b.getAttribute('data-user-id'); }).join(',');
+}
+
+/**
+ * 특정 그룹의 모든 버튼 선택 해제
+ * @param {string} groupId
+ */
+function clearAssigneeGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+        b.classList.remove('selected');
+    });
+}
+
+/**
+ * comma-separated 담당자 문자열로 그룹 버튼 초기화
+ * @param {string} groupId
+ * @param {string} assignedTo
+ */
+function initAssigneeGroup(groupId, assignedTo) {
+    clearAssigneeGroup(groupId);
+    if (!assignedTo) return;
+    const ids = assignedTo.split(',').map(function (s) { return s.trim(); });
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+        if (ids.includes(b.getAttribute('data-user-id'))) {
+            b.classList.add('selected');
+        }
+    });
 }
 
 /* ============================================================
-   FAB / 모달 공통
+   모달 유틸
    ============================================================ */
-
-function showAddForm() {
-    if (activeTab === 'todo') {
-        _showModal('addTodoOverlay', 'addTodoForm');
-        document.getElementById('addTodoTitle').focus();
-    } else {
-        _showModal('addClOverlay', 'addClForm');
-        document.getElementById('addItem').focus();
-    }
-}
-
-function hideAddForm() {
-    _hideModal('addClOverlay', 'addClForm');
-    _hideModal('addTodoOverlay', 'addTodoForm');
-    document.getElementById('addCategory').value    = '';
-    document.getElementById('addItem').value        = '';
-    document.getElementById('addAssignedTo').value  = '';
-    document.getElementById('addTodoTitle').value   = '';
-    document.getElementById('addTodoDetail').value  = '';
-    document.getElementById('addTodoAssignedTo').value = '';
-    document.getElementById('addTodoDueDate').value = '';
-}
 
 function _showModal(overlayId, sheetId) {
     var overlay = document.getElementById(overlayId);
@@ -67,13 +86,29 @@ function _hideModal(overlayId, sheetId) {
 }
 
 /* ============================================================
-   체크리스트 기능
+   추가 모달
+   ============================================================ */
+
+function showAddClForm() {
+    clearAssigneeGroup('addAssigneeGroup');
+    document.getElementById('addCategory').value = '';
+    document.getElementById('addItem').value = '';
+    _showModal('addClOverlay', 'addClForm');
+    document.getElementById('addItem').focus();
+}
+
+function hideAddClForm() {
+    _hideModal('addClOverlay', 'addClForm');
+}
+
+/* ============================================================
+   체크리스트 CRUD
    ============================================================ */
 
 async function addChecklistItem() {
     const category   = document.getElementById('addCategory').value.trim();
     const item       = document.getElementById('addItem').value.trim();
-    const assignedTo = document.getElementById('addAssignedTo').value;
+    const assignedTo = getSelectedAssignees('addAssigneeGroup');
 
     if (!item) {
         WP.toast('항목 이름을 입력해주세요.', 'error');
@@ -107,6 +142,7 @@ async function toggleItem(id, checked) {
             csrf_token: CL.csrfToken,
             id:         id,
             trip_code:  CL.tripCode,
+            user_id:    CL.userId,
             is_done:    checked ? 1 : 0,
         });
 
@@ -115,8 +151,13 @@ async function toggleItem(id, checked) {
             if (el) {
                 el.classList.toggle('done', checked);
                 el.setAttribute('data-done', checked ? '1' : '0');
-                el.querySelector('.checklist-item-text').style.textDecoration = checked ? 'line-through' : 'none';
             }
+
+            // 담당자 완료 현황 뱃지 업데이트
+            if (data.data && data.data.completedUsers) {
+                updateAssigneeStatus(id, data.data.completedUsers);
+            }
+
             updateProgress();
             applyFilters();
         } else {
@@ -131,31 +172,68 @@ async function toggleItem(id, checked) {
     }
 }
 
-async function editChecklistItem(id, currentItem, currentCategory, currentAssignedTo) {
-    const item = prompt('항목 이름:', currentItem);
-    if (item === null) return;
-    if (!item.trim()) { WP.toast('항목 이름을 입력해주세요.', 'error'); return; }
+/**
+ * 담당자 완료 현황 뱃지 업데이트
+ * @param {number} itemId
+ * @param {string[]} completedUsers - 완료한 user_id 배열
+ */
+function updateAssigneeStatus(itemId, completedUsers) {
+    const container = document.querySelector(`.assignee-status[data-item-id="${itemId}"]`);
+    if (!container) return;
 
-    const category = prompt('카테고리:', currentCategory);
-    if (category === null) return;
+    container.querySelectorAll('.badge-assignee').forEach(function (badge) {
+        const uid  = badge.getAttribute('data-uid');
+        const name = badge.getAttribute('data-name') || badge.textContent.replace(' ✓', '').trim();
+        badge.setAttribute('data-name', name);
 
-    let memberList = '없음';
-    CL.members.forEach(function (m) { memberList += ', ' + m.user_id + '(' + m.display_name + ')'; });
-    const assignedTo = prompt('담당자 ID (' + memberList + '):', currentAssignedTo);
-    if (assignedTo === null) return;
+        if (completedUsers.includes(uid)) {
+            badge.classList.add('done');
+            badge.textContent = name + ' ✓';
+        } else {
+            badge.classList.remove('done');
+            badge.textContent = name;
+        }
+    });
+}
+
+function showEditClForm(id, currentItem, currentCategory, currentAssignedTo) {
+    document.getElementById('editClId').value       = id;
+    document.getElementById('editClItem').value     = currentItem;
+    document.getElementById('editClCategory').value = currentCategory;
+    initAssigneeGroup('editAssigneeGroup', currentAssignedTo);
+    _showModal('editClOverlay', 'editClForm');
+    document.getElementById('editClItem').focus();
+}
+
+function hideEditClForm() {
+    _hideModal('editClOverlay', 'editClForm');
+}
+
+async function saveChecklistEdit() {
+    const id         = parseInt(document.getElementById('editClId').value);
+    const item       = document.getElementById('editClItem').value.trim();
+    const category   = document.getElementById('editClCategory').value.trim();
+    const assignedTo = getSelectedAssignees('editAssigneeGroup');
+
+    if (!item) {
+        WP.toast('항목 이름을 입력해주세요.', 'error');
+        document.getElementById('editClItem').focus();
+        return;
+    }
 
     try {
         const data = await WP.put('/api/checklist', {
             csrf_token:  CL.csrfToken,
             id:          id,
             trip_code:   CL.tripCode,
-            category:    category.trim(),
-            item:        item.trim(),
-            assigned_to: assignedTo.trim(),
+            category:    category,
+            item:        item,
+            assigned_to: assignedTo,
         });
 
         if (data.success) {
             WP.toast('항목이 수정되었습니다.');
+            hideEditClForm();
             location.reload();
         } else {
             WP.toast(data.message, 'error');
@@ -197,6 +275,10 @@ async function deleteChecklistItem(id) {
     }
 }
 
+/* ============================================================
+   진행률 업데이트
+   ============================================================ */
+
 function updateProgress() {
     const allItems  = document.querySelectorAll('.checklist-item');
     const doneItems = document.querySelectorAll('.checklist-item.done');
@@ -204,7 +286,7 @@ function updateProgress() {
     const done      = doneItems.length;
     const percent   = total > 0 ? Math.round(done / total * 100) : 0;
 
-    const badge = document.getElementById('headerBadgeCl');
+    const badge = document.querySelector('.checklist-progress-badge');
     if (badge) badge.textContent = percent + '%';
 
     const fill = document.getElementById('clProgressFill');
@@ -248,10 +330,15 @@ function applyFilters() {
             const assigned = itemEl.getAttribute('data-assigned') || '';
             const isDone   = itemEl.getAttribute('data-done') === '1';
 
-            if (statusVal === 'done' && !isDone)    { itemEl.classList.add('hidden'); return; }
-            if (statusVal === 'undone' && isDone)    { itemEl.classList.add('hidden'); return; }
+            if (statusVal === 'done' && !isDone)   { itemEl.classList.add('hidden'); return; }
+            if (statusVal === 'undone' && isDone)   { itemEl.classList.add('hidden'); return; }
+
             if (assigneeVal === '__none__' && assigned !== '') { itemEl.classList.add('hidden'); return; }
-            if (assigneeVal && assigneeVal !== '__none__' && assigned !== assigneeVal) { itemEl.classList.add('hidden'); return; }
+            if (assigneeVal && assigneeVal !== '__none__') {
+                // 공백 구분된 담당자 목록에 해당 user_id가 포함되는지 확인
+                const assignedList = assigned.split(' ').map(function (s) { return s.trim(); });
+                if (!assignedList.includes(assigneeVal)) { itemEl.classList.add('hidden'); return; }
+            }
             if (keyword && !itemText.includes(keyword)) { itemEl.classList.add('hidden'); return; }
 
             itemEl.classList.remove('hidden');
@@ -270,178 +357,10 @@ function applyFilters() {
 }
 
 /* ============================================================
-   할일 기능
-   ============================================================ */
-
-async function addTodoItem() {
-    const title      = document.getElementById('addTodoTitle').value.trim();
-    const detail     = document.getElementById('addTodoDetail').value.trim();
-    const assignedTo = document.getElementById('addTodoAssignedTo').value;
-    const dueDate    = document.getElementById('addTodoDueDate').value;
-
-    if (!title) {
-        WP.toast('제목을 입력해주세요.', 'error');
-        document.getElementById('addTodoTitle').focus();
-        return;
-    }
-
-    try {
-        const data = await WP.post('/api/todo', {
-            csrf_token:  CL.csrfToken,
-            trip_code:   CL.tripCode,
-            title:       title,
-            detail:      detail,
-            assigned_to: assignedTo,
-            due_date:    dueDate,
-        });
-
-        if (data.success) {
-            WP.toast('할 일이 추가되었습니다.');
-            location.reload();
-        } else {
-            WP.toast(data.message, 'error');
-        }
-    } catch (err) {
-        WP.toast(err.message, 'error');
-    }
-}
-
-async function toggleTodo(id, checked) {
-    try {
-        const data = await WP.put('/api/todo', {
-            csrf_token: CL.csrfToken,
-            id:         id,
-            trip_code:  CL.tripCode,
-            is_done:    checked ? 1 : 0,
-        });
-
-        if (data.success) {
-            location.reload();
-        } else {
-            WP.toast(data.message, 'error');
-            const cb = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
-            if (cb) cb.checked = !checked;
-        }
-    } catch (err) {
-        WP.toast(err.message, 'error');
-        const cb = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
-        if (cb) cb.checked = !checked;
-    }
-}
-
-async function editTodoItem(id) {
-    try {
-        const data = await WP.api('/api/todo?trip_code=' + CL.tripCode);
-        if (!data.success) { WP.toast('데이터를 불러올 수 없습니다.', 'error'); return; }
-
-        const item = data.data.items.find(function (i) { return parseInt(i.id) === id; });
-        if (!item) { WP.toast('항목을 찾을 수 없습니다.', 'error'); return; }
-
-        document.getElementById('editTodoId').value           = id;
-        document.getElementById('editTodoTitle').value        = item.title || '';
-        document.getElementById('editTodoDetail').value       = item.detail || '';
-        document.getElementById('editTodoAssignedTo').value   = item.assigned_to || '';
-        document.getElementById('editTodoDueDate').value      = item.due_date || '';
-
-        document.getElementById('editTodoModal').classList.remove('hidden');
-    } catch (err) {
-        WP.toast(err.message, 'error');
-    }
-}
-
-function closeEditTodoModal() {
-    document.getElementById('editTodoModal').classList.add('hidden');
-}
-
-async function saveTodoEdit() {
-    const id         = parseInt(document.getElementById('editTodoId').value);
-    const title      = document.getElementById('editTodoTitle').value.trim();
-    const detail     = document.getElementById('editTodoDetail').value.trim();
-    const assignedTo = document.getElementById('editTodoAssignedTo').value;
-    const dueDate    = document.getElementById('editTodoDueDate').value;
-
-    if (!title) {
-        WP.toast('제목을 입력해주세요.', 'error');
-        document.getElementById('editTodoTitle').focus();
-        return;
-    }
-
-    try {
-        const data = await WP.put('/api/todo', {
-            csrf_token:  CL.csrfToken,
-            id:          id,
-            trip_code:   CL.tripCode,
-            title:       title,
-            detail:      detail,
-            assigned_to: assignedTo,
-            due_date:    dueDate,
-        });
-
-        if (data.success) {
-            WP.toast('수정되었습니다.');
-            closeEditTodoModal();
-            location.reload();
-        } else {
-            WP.toast(data.message, 'error');
-        }
-    } catch (err) {
-        WP.toast(err.message, 'error');
-    }
-}
-
-async function deleteTodoItem(id) {
-    if (!WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
-
-    try {
-        const data = await WP.delete(
-            '/api/todo?csrf_token=' + CL.csrfToken +
-            '&id=' + id + '&trip_code=' + CL.tripCode
-        );
-
-        if (data.success) {
-            WP.toast('삭제되었습니다.');
-            const el = document.querySelector(`.todo-item[data-id="${id}"]`);
-            if (el) {
-                el.remove();
-                updateTodoCount();
-                if (document.querySelectorAll('.todo-item').length === 0) {
-                    document.getElementById('todoContainer').innerHTML =
-                        '<div class="card text-center"><p class="text-muted">아직 할 일이 없습니다.</p>' +
-                        '<p class="text-sm text-muted mt-8">오른쪽 아래 버튼으로 추가해보세요.</p></div>';
-                }
-            }
-        } else {
-            WP.toast(data.message, 'error');
-        }
-    } catch (err) {
-        WP.toast(err.message, 'error');
-    }
-}
-
-function updateTodoCount() {
-    const allItems  = document.querySelectorAll('.todo-item');
-    const doneItems = document.querySelectorAll('.todo-item.done');
-    const badge = document.getElementById('headerBadgeTodo');
-    if (badge) badge.textContent = doneItems.length + '/' + allItems.length;
-}
-
-/* ============================================================
    초기화
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
-    // 탭 초기화 (항상 준비물 탭으로 시작)
-    switchTab('checklist');
-
-    // 네비게이션 체크 버튼: 클릭 시 반대 탭으로 토글
-    var navCl = document.getElementById('nav-checklist');
-    if (navCl) {
-        navCl.addEventListener('click', function (e) {
-            e.preventDefault();
-            switchTab(activeTab === 'checklist' ? 'todo' : 'checklist');
-        });
-    }
-
     // 엔터키: 준비물 추가
     var addItemInput = document.getElementById('addItem');
     if (addItemInput) {
@@ -450,16 +369,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 엔터키: 할일 추가
-    var addTodoTitleInput = document.getElementById('addTodoTitle');
-    if (addTodoTitleInput) {
-        addTodoTitleInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') { e.preventDefault(); addTodoItem(); }
-        });
-    }
-
-    // ESC: 수정 모달 닫기
+    // ESC: 모달 닫기
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeEditTodoModal();
+        if (e.key === 'Escape') hideEditClForm();
     });
 });

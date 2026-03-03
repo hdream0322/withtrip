@@ -1,10 +1,10 @@
 <?php
 /**
  * To-Do API
- * GET    /api/todo?trip_code=xxx       - 목록 조회
- * POST   /api/todo                     - 항목 추가
- * PUT    /api/todo                     - 항목 수정 (토글 포함)
- * DELETE /api/todo?trip_code=xxx&id=xx - 항목 삭제
+ * GET    /api/todo?trip_code=xxx&user_id=xxx  - 목록 조회
+ * POST   /api/todo                            - 항목 추가
+ * PUT    /api/todo                            - 항목 수정 / 완료 토글
+ * DELETE /api/todo?...                        - 항목 삭제
  */
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -12,6 +12,7 @@ $db = getDB();
 
 if ($method === 'GET') {
     $tripCode = $_GET['trip_code'] ?? '';
+    $userId   = $_GET['user_id'] ?? '';
 
     if (empty($tripCode)) {
         jsonResponse(false, null, '여행 코드가 필요합니다.', 400);
@@ -19,24 +20,41 @@ if ($method === 'GET') {
 
     $stmt = $db->prepare(
         'SELECT * FROM todos WHERE trip_code = ?
-         ORDER BY is_done ASC, due_date IS NULL ASC, due_date ASC, sort_order ASC, id ASC'
+         ORDER BY due_date IS NULL ASC, due_date ASC, sort_order ASC, id ASC'
     );
     $stmt->execute([$tripCode]);
     $items = $stmt->fetchAll();
 
-    // 통계
-    $total = count($items);
-    $done = 0;
-    foreach ($items as $item) {
-        if ((int) $item['is_done'] === 1) {
-            $done++;
-        }
+    // 현재 사용자의 완료 항목 ID 목록
+    $myCompletedIds = [];
+    if ($userId) {
+        $stmt = $db->prepare(
+            'SELECT todo_id FROM todo_completions WHERE trip_code = ? AND user_id = ?'
+        );
+        $stmt->execute([$tripCode, $userId]);
+        $myCompletedIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 
+    // 전체 담당자별 완료 현황 (todo_id => [완료한 user_id 목록])
+    $stmt = $db->prepare(
+        'SELECT todo_id, user_id FROM todo_completions WHERE trip_code = ?'
+    );
+    $stmt->execute([$tripCode]);
+    $completionMap = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $tid = (int) $row['todo_id'];
+        $completionMap[$tid][] = $row['user_id'];
+    }
+
+    $total = count($items);
+    $done  = count($myCompletedIds);
+
     jsonResponse(true, [
-        'items' => $items,
-        'total' => $total,
-        'done'  => $done,
+        'items'          => $items,
+        'total'          => $total,
+        'done'           => $done,
+        'myCompletedIds' => $myCompletedIds,
+        'completionMap'  => $completionMap,
     ]);
 }
 
@@ -50,14 +68,13 @@ if ($method === 'POST') {
     $tripCode   = trim($input['trip_code'] ?? '');
     $title      = trim($input['title'] ?? '');
     $detail     = trim($input['detail'] ?? '');
-    $assignedTo = trim($input['assigned_to'] ?? '');
+    $assignedTo = trim($input['assigned_to'] ?? '');  // comma-separated
     $dueDate    = trim($input['due_date'] ?? '');
 
     if (empty($tripCode) || empty($title)) {
         jsonResponse(false, null, '제목을 입력해주세요.', 400);
     }
 
-    // 마지막 sort_order + 1
     $stmt = $db->prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM todos WHERE trip_code = ?');
     $stmt->execute([$tripCode]);
     $nextOrder = (int) $stmt->fetchColumn();
@@ -75,9 +92,7 @@ if ($method === 'POST') {
     ]);
 
     $newId = $db->lastInsertId();
-
-    // 새로 생성된 항목 반환
-    $stmt = $db->prepare('SELECT * FROM todos WHERE id = ?');
+    $stmt  = $db->prepare('SELECT * FROM todos WHERE id = ?');
     $stmt->execute([$newId]);
     $newItem = $stmt->fetch();
 
@@ -98,22 +113,46 @@ if ($method === 'PUT') {
         jsonResponse(false, null, '잘못된 요청입니다.', 400);
     }
 
-    // 토글만 요청 (is_done 필드만 존재)
+    // 완료 토글 요청 (is_done 필드 존재, title 필드 없음)
     if (isset($input['is_done']) && !isset($input['title'])) {
         $isDone = (int) $input['is_done'];
+        $userId = trim($input['user_id'] ?? '');
 
+        if (empty($userId)) {
+            jsonResponse(false, null, '사용자 정보가 필요합니다.', 400);
+        }
+
+        if (!isMemberAuthenticated($tripCode, $userId)) {
+            jsonResponse(false, null, '인증이 필요합니다.', 401);
+        }
+
+        if ($isDone) {
+            $stmt = $db->prepare(
+                'INSERT IGNORE INTO todo_completions (todo_id, trip_code, user_id) VALUES (?, ?, ?)'
+            );
+            $stmt->execute([$id, $tripCode, $userId]);
+        } else {
+            $stmt = $db->prepare(
+                'DELETE FROM todo_completions WHERE todo_id = ? AND trip_code = ? AND user_id = ?'
+            );
+            $stmt->execute([$id, $tripCode, $userId]);
+        }
+
+        // 해당 아이템의 완료자 목록 반환 (UI 즉시 업데이트용)
         $stmt = $db->prepare(
-            'UPDATE todos SET is_done = ? WHERE id = ? AND trip_code = ?'
+            'SELECT user_id FROM todo_completions WHERE todo_id = ? AND trip_code = ?'
         );
-        $stmt->execute([$isDone, $id, $tripCode]);
+        $stmt->execute([$id, $tripCode]);
+        $completedUsers = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        jsonResponse(true, null, $isDone ? '완료 처리되었습니다.' : '미완료로 변경되었습니다.');
+        jsonResponse(true, ['completedUsers' => $completedUsers],
+            $isDone ? '완료 처리되었습니다.' : '미완료로 변경되었습니다.');
     }
 
-    // 전체 수정
+    // 항목 수정
     $title      = trim($input['title'] ?? '');
     $detail     = trim($input['detail'] ?? '');
-    $assignedTo = trim($input['assigned_to'] ?? '');
+    $assignedTo = trim($input['assigned_to'] ?? '');  // comma-separated
     $dueDate    = trim($input['due_date'] ?? '');
 
     if (empty($title)) {
@@ -148,6 +187,10 @@ if ($method === 'DELETE') {
     }
 
     $stmt = $db->prepare('DELETE FROM todos WHERE id = ? AND trip_code = ?');
+    $stmt->execute([$id, $tripCode]);
+
+    // 관련 완료 기록도 삭제
+    $stmt = $db->prepare('DELETE FROM todo_completions WHERE todo_id = ? AND trip_code = ?');
     $stmt->execute([$id, $tripCode]);
 
     jsonResponse(true, null, '할 일이 삭제되었습니다.');

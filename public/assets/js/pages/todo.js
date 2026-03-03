@@ -3,33 +3,83 @@
  */
 const TD = window.TODO_CONFIG;
 
-/**
- * 추가 폼 표시
- */
+/* ============================================================
+   담당자 토글 버튼 (공통)
+   ============================================================ */
+
+function toggleAssigneeBtn(btn, groupId) {
+    btn.classList.toggle('selected');
+}
+
+function getSelectedAssignees(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return '';
+    const selected = group.querySelectorAll('.assignee-toggle-btn.selected');
+    return Array.from(selected).map(function (b) { return b.getAttribute('data-user-id'); }).join(',');
+}
+
+function clearAssigneeGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+        b.classList.remove('selected');
+    });
+}
+
+function initAssigneeGroup(groupId, assignedTo) {
+    clearAssigneeGroup(groupId);
+    if (!assignedTo) return;
+    const ids = assignedTo.split(',').map(function (s) { return s.trim(); });
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+        if (ids.includes(b.getAttribute('data-user-id'))) {
+            b.classList.add('selected');
+        }
+    });
+}
+
+/* ============================================================
+   추가 폼
+   ============================================================ */
+
 function showAddForm() {
-    document.getElementById('addForm').classList.remove('hidden');
+    clearAssigneeGroup('addTodoAssigneeGroup');
+    document.getElementById('addTitle').value   = '';
+    document.getElementById('addDetail').value  = '';
+    document.getElementById('addDueDate').value = '';
+
+    var overlay = document.getElementById('addFormOverlay');
+    var form    = document.getElementById('addForm');
+    overlay.classList.remove('hidden');
+    form.classList.remove('hidden');
+    requestAnimationFrame(function () {
+        overlay.classList.add('visible');
+        form.classList.add('visible');
+    });
     document.getElementById('addTitle').focus();
 }
 
-/**
- * 추가 폼 숨기기
- */
 function hideAddForm() {
-    document.getElementById('addForm').classList.add('hidden');
-    document.getElementById('addTitle').value = '';
-    document.getElementById('addDetail').value = '';
-    document.getElementById('addAssignedTo').value = '';
-    document.getElementById('addDueDate').value = '';
+    var overlay = document.getElementById('addFormOverlay');
+    var form    = document.getElementById('addForm');
+    overlay.classList.remove('visible');
+    form.classList.remove('visible');
+    setTimeout(function () {
+        overlay.classList.add('hidden');
+        form.classList.add('hidden');
+    }, 250);
 }
 
-/**
- * 할 일 추가
- */
+/* ============================================================
+   할일 CRUD
+   ============================================================ */
+
 async function addTodoItem() {
-    const title = document.getElementById('addTitle').value.trim();
-    const detail = document.getElementById('addDetail').value.trim();
-    const assignedTo = document.getElementById('addAssignedTo').value;
-    const dueDate = document.getElementById('addDueDate').value;
+    const title      = document.getElementById('addTitle').value.trim();
+    const detail     = document.getElementById('addDetail').value.trim();
+    const assignedTo = getSelectedAssignees('addTodoAssigneeGroup');
+    const dueDate    = document.getElementById('addDueDate').value;
 
     if (!title) {
         WP.toast('제목을 입력해주세요.', 'error');
@@ -39,12 +89,12 @@ async function addTodoItem() {
 
     try {
         const data = await WP.post('/api/todo', {
-            csrf_token: TD.csrfToken,
-            trip_code: TD.tripCode,
-            title: title,
-            detail: detail,
+            csrf_token:  TD.csrfToken,
+            trip_code:   TD.tripCode,
+            title:       title,
+            detail:      detail,
             assigned_to: assignedTo,
-            due_date: dueDate,
+            due_date:    dueDate,
         });
 
         if (data.success) {
@@ -58,40 +108,65 @@ async function addTodoItem() {
     }
 }
 
-/**
- * 완료 토글
- */
 async function toggleTodo(id, checked) {
     try {
         const data = await WP.put('/api/todo', {
             csrf_token: TD.csrfToken,
-            id: id,
-            trip_code: TD.tripCode,
-            is_done: checked ? 1 : 0,
+            id:         id,
+            trip_code:  TD.tripCode,
+            user_id:    TD.userId,
+            is_done:    checked ? 1 : 0,
         });
 
         if (data.success) {
-            // 토글 후 페이지 리로드 (정렬 순서가 변경되므로)
-            location.reload();
+            const el = document.querySelector(`.todo-item[data-id="${id}"]`);
+            if (el) {
+                el.classList.toggle('done', checked);
+            }
+
+            // 담당자 완료 현황 뱃지 업데이트
+            if (data.data && data.data.completedUsers) {
+                updateAssigneeStatus(id, data.data.completedUsers);
+            }
+
+            updateTodoCount();
         } else {
             WP.toast(data.message, 'error');
-            const checkbox = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
-            if (checkbox) checkbox.checked = !checked;
+            const cb = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
+            if (cb) cb.checked = !checked;
         }
     } catch (err) {
         WP.toast(err.message, 'error');
-        const checkbox = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
-        if (checkbox) checkbox.checked = !checked;
+        const cb = document.querySelector(`.todo-item[data-id="${id}"] input[type="checkbox"]`);
+        if (cb) cb.checked = !checked;
     }
 }
 
 /**
- * 수정 모달 열기
+ * 담당자 완료 현황 뱃지 업데이트
  */
+function updateAssigneeStatus(itemId, completedUsers) {
+    const container = document.querySelector(`.assignee-status[data-item-id="${itemId}"]`);
+    if (!container) return;
+
+    container.querySelectorAll('.badge-assignee').forEach(function (badge) {
+        const uid  = badge.getAttribute('data-uid');
+        const name = badge.getAttribute('data-name') || badge.textContent.replace(' ✓', '').trim();
+        badge.setAttribute('data-name', name);
+
+        if (completedUsers.includes(uid)) {
+            badge.classList.add('done');
+            badge.textContent = name + ' ✓';
+        } else {
+            badge.classList.remove('done');
+            badge.textContent = name;
+        }
+    });
+}
+
 async function editTodoItem(id) {
-    // 서버에서 최신 데이터 가져오기
     try {
-        const data = await WP.api('/api/todo?trip_code=' + TD.tripCode);
+        const data = await WP.api('/api/todo?trip_code=' + TD.tripCode + '&user_id=' + TD.userId);
 
         if (!data.success) {
             WP.toast('데이터를 불러올 수 없습니다.', 'error');
@@ -104,11 +179,11 @@ async function editTodoItem(id) {
             return;
         }
 
-        document.getElementById('editId').value = id;
-        document.getElementById('editTitle').value = item.title || '';
+        document.getElementById('editId').value    = id;
+        document.getElementById('editTitle').value  = item.title || '';
         document.getElementById('editDetail').value = item.detail || '';
-        document.getElementById('editAssignedTo').value = item.assigned_to || '';
         document.getElementById('editDueDate').value = item.due_date || '';
+        initAssigneeGroup('editTodoAssigneeGroup', item.assigned_to || '');
 
         document.getElementById('editModal').classList.remove('hidden');
     } catch (err) {
@@ -116,22 +191,16 @@ async function editTodoItem(id) {
     }
 }
 
-/**
- * 수정 모달 닫기
- */
 function closeEditModal() {
     document.getElementById('editModal').classList.add('hidden');
 }
 
-/**
- * 수정 저장
- */
 async function saveTodoEdit() {
-    const id = parseInt(document.getElementById('editId').value);
-    const title = document.getElementById('editTitle').value.trim();
-    const detail = document.getElementById('editDetail').value.trim();
-    const assignedTo = document.getElementById('editAssignedTo').value;
-    const dueDate = document.getElementById('editDueDate').value;
+    const id         = parseInt(document.getElementById('editId').value);
+    const title      = document.getElementById('editTitle').value.trim();
+    const detail     = document.getElementById('editDetail').value.trim();
+    const assignedTo = getSelectedAssignees('editTodoAssigneeGroup');
+    const dueDate    = document.getElementById('editDueDate').value;
 
     if (!title) {
         WP.toast('제목을 입력해주세요.', 'error');
@@ -141,13 +210,13 @@ async function saveTodoEdit() {
 
     try {
         const data = await WP.put('/api/todo', {
-            csrf_token: TD.csrfToken,
-            id: id,
-            trip_code: TD.tripCode,
-            title: title,
-            detail: detail,
+            csrf_token:  TD.csrfToken,
+            id:          id,
+            trip_code:   TD.tripCode,
+            title:       title,
+            detail:      detail,
             assigned_to: assignedTo,
-            due_date: dueDate,
+            due_date:    dueDate,
         });
 
         if (data.success) {
@@ -162,9 +231,6 @@ async function saveTodoEdit() {
     }
 }
 
-/**
- * 할 일 삭제
- */
 async function deleteTodoItem(id) {
     if (!WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
 
@@ -179,17 +245,13 @@ async function deleteTodoItem(id) {
             const el = document.querySelector(`.todo-item[data-id="${id}"]`);
             if (el) {
                 el.remove();
-
-                // 전체 항목이 없으면 빈 메시지 표시
+                updateTodoCount();
                 if (document.querySelectorAll('.todo-item').length === 0) {
                     const container = document.getElementById('todoContainer');
                     container.innerHTML = '<div class="card text-center" id="emptyMessage">' +
                         '<p class="text-muted">아직 할 일이 없습니다.</p>' +
-                        '<p class="text-sm text-muted mt-8">위의 버튼으로 할 일을 추가해보세요.</p></div>';
+                        '<p class="text-sm text-muted mt-8">오른쪽 아래 버튼으로 추가해보세요.</p></div>';
                 }
-
-                // 헤더 카운트 업데이트
-                updateTodoCount();
             }
         } else {
             WP.toast(data.message, 'error');
@@ -199,19 +261,17 @@ async function deleteTodoItem(id) {
     }
 }
 
-/**
- * 헤더 카운트 업데이트
- */
 function updateTodoCount() {
-    const allItems = document.querySelectorAll('.todo-item');
+    const allItems  = document.querySelectorAll('.todo-item');
     const doneItems = document.querySelectorAll('.todo-item.done');
-    const badge = document.querySelector('.todo-count-badge');
-    if (badge) {
-        badge.textContent = doneItems.length + '/' + allItems.length;
-    }
+    const badge = document.getElementById('todoCountBadge');
+    if (badge) badge.textContent = doneItems.length + '/' + allItems.length;
 }
 
-// 엔터키로 추가
+/* ============================================================
+   초기화
+   ============================================================ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const addTitleInput = document.getElementById('addTitle');
     if (addTitleInput) {
@@ -223,10 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 모달 외부 클릭으로 닫기 (ESC)
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeEditModal();
-        }
+        if (e.key === 'Escape') closeEditModal();
     });
 });

@@ -1,10 +1,10 @@
 <?php
 /**
  * 체크리스트 API
- * GET    /api/checklist?trip_code=xxx       - 목록 조회
- * POST   /api/checklist                     - 항목 추가
- * PUT    /api/checklist                     - 항목 수정 (토글 포함)
- * DELETE /api/checklist?trip_code=xxx&id=xx - 항목 삭제
+ * GET    /api/checklist?trip_code=xxx&user_id=xxx  - 목록 조회
+ * POST   /api/checklist                            - 항목 추가
+ * PUT    /api/checklist                            - 항목 수정 / 완료 토글
+ * DELETE /api/checklist?...                        - 항목 삭제
  */
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -12,41 +12,56 @@ $db = getDB();
 
 if ($method === 'GET') {
     $tripCode = $_GET['trip_code'] ?? '';
+    $userId   = $_GET['user_id'] ?? '';
 
     if (empty($tripCode)) {
         jsonResponse(false, null, '여행 코드가 필요합니다.', 400);
     }
 
     $stmt = $db->prepare(
-        'SELECT * FROM checklists WHERE trip_code = ? ORDER BY is_done ASC, category ASC, sort_order ASC, id ASC'
+        'SELECT * FROM checklists WHERE trip_code = ? ORDER BY category ASC, sort_order ASC, id ASC'
     );
     $stmt->execute([$tripCode]);
     $items = $stmt->fetchAll();
+
+    // 현재 사용자의 완료 항목 ID 목록
+    $myCompletedIds = [];
+    if ($userId) {
+        $stmt = $db->prepare(
+            'SELECT checklist_id FROM checklist_completions WHERE trip_code = ? AND user_id = ?'
+        );
+        $stmt->execute([$tripCode, $userId]);
+        $myCompletedIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    // 전체 담당자별 완료 현황 (checklist_id => [완료한 user_id 목록])
+    $stmt = $db->prepare(
+        'SELECT checklist_id, user_id FROM checklist_completions WHERE trip_code = ?'
+    );
+    $stmt->execute([$tripCode]);
+    $completionMap = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $cid = (int) $row['checklist_id'];
+        $completionMap[$cid][] = $row['user_id'];
+    }
 
     // 카테고리별 그룹핑
     $grouped = [];
     foreach ($items as $item) {
         $cat = $item['category'] ?: '기타';
-        if (!isset($grouped[$cat])) {
-            $grouped[$cat] = [];
-        }
         $grouped[$cat][] = $item;
     }
 
-    // 통계
     $total = count($items);
-    $done = 0;
-    foreach ($items as $item) {
-        if ((int) $item['is_done'] === 1) {
-            $done++;
-        }
-    }
+    $done  = count($myCompletedIds);
 
     jsonResponse(true, [
-        'items'   => $items,
-        'grouped' => $grouped,
-        'total'   => $total,
-        'done'    => $done,
+        'items'          => $items,
+        'grouped'        => $grouped,
+        'total'          => $total,
+        'done'           => $done,
+        'myCompletedIds' => $myCompletedIds,
+        'completionMap'  => $completionMap,
     ]);
 }
 
@@ -60,13 +75,12 @@ if ($method === 'POST') {
     $tripCode   = trim($input['trip_code'] ?? '');
     $category   = trim($input['category'] ?? '');
     $item       = trim($input['item'] ?? '');
-    $assignedTo = trim($input['assigned_to'] ?? '');
+    $assignedTo = trim($input['assigned_to'] ?? '');  // comma-separated user_id 목록
 
     if (empty($tripCode) || empty($item)) {
         jsonResponse(false, null, '항목 이름을 입력해주세요.', 400);
     }
 
-    // 같은 카테고리의 마지막 sort_order + 1
     $stmt = $db->prepare(
         'SELECT COALESCE(MAX(sort_order), 0) + 1 FROM checklists WHERE trip_code = ? AND (category = ? OR (category IS NULL AND ? = ""))'
     );
@@ -85,9 +99,7 @@ if ($method === 'POST') {
     ]);
 
     $newId = $db->lastInsertId();
-
-    // 새로 생성된 항목 반환
-    $stmt = $db->prepare('SELECT * FROM checklists WHERE id = ?');
+    $stmt  = $db->prepare('SELECT * FROM checklists WHERE id = ?');
     $stmt->execute([$newId]);
     $newItem = $stmt->fetch();
 
@@ -108,22 +120,46 @@ if ($method === 'PUT') {
         jsonResponse(false, null, '잘못된 요청입니다.', 400);
     }
 
-    // 토글만 요청 (is_done 필드만 존재)
+    // 완료 토글 요청 (is_done 필드 존재, item 필드 없음)
     if (isset($input['is_done']) && !isset($input['item'])) {
         $isDone = (int) $input['is_done'];
+        $userId = trim($input['user_id'] ?? '');
 
+        if (empty($userId)) {
+            jsonResponse(false, null, '사용자 정보가 필요합니다.', 400);
+        }
+
+        if (!isMemberAuthenticated($tripCode, $userId)) {
+            jsonResponse(false, null, '인증이 필요합니다.', 401);
+        }
+
+        if ($isDone) {
+            $stmt = $db->prepare(
+                'INSERT IGNORE INTO checklist_completions (checklist_id, trip_code, user_id) VALUES (?, ?, ?)'
+            );
+            $stmt->execute([$id, $tripCode, $userId]);
+        } else {
+            $stmt = $db->prepare(
+                'DELETE FROM checklist_completions WHERE checklist_id = ? AND trip_code = ? AND user_id = ?'
+            );
+            $stmt->execute([$id, $tripCode, $userId]);
+        }
+
+        // 해당 아이템의 완료자 목록 반환 (UI 즉시 업데이트용)
         $stmt = $db->prepare(
-            'UPDATE checklists SET is_done = ? WHERE id = ? AND trip_code = ?'
+            'SELECT user_id FROM checklist_completions WHERE checklist_id = ? AND trip_code = ?'
         );
-        $stmt->execute([$isDone, $id, $tripCode]);
+        $stmt->execute([$id, $tripCode]);
+        $completedUsers = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        jsonResponse(true, null, $isDone ? '완료 처리되었습니다.' : '미완료로 변경되었습니다.');
+        jsonResponse(true, ['completedUsers' => $completedUsers],
+            $isDone ? '완료 처리되었습니다.' : '미완료로 변경되었습니다.');
     }
 
-    // 전체 수정
+    // 항목 수정
     $category   = trim($input['category'] ?? '');
     $item       = trim($input['item'] ?? '');
-    $assignedTo = trim($input['assigned_to'] ?? '');
+    $assignedTo = trim($input['assigned_to'] ?? '');  // comma-separated
 
     if (empty($item)) {
         jsonResponse(false, null, '항목 이름을 입력해주세요.', 400);
@@ -156,6 +192,10 @@ if ($method === 'DELETE') {
     }
 
     $stmt = $db->prepare('DELETE FROM checklists WHERE id = ? AND trip_code = ?');
+    $stmt->execute([$id, $tripCode]);
+
+    // 관련 완료 기록도 삭제
+    $stmt = $db->prepare('DELETE FROM checklist_completions WHERE checklist_id = ? AND trip_code = ?');
     $stmt->execute([$id, $tripCode]);
 
     jsonResponse(true, null, '항목이 삭제되었습니다.');

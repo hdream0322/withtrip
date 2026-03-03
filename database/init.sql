@@ -146,3 +146,29 @@ CREATE TABLE IF NOT EXISTS pin_attempts (
   last_attempt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_ip_user (ip, trip_code, user_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 14. checklist_completions - 체크리스트 개인별 완료 기록
+-- assigned_to 다중 담당자 지원: checklists.assigned_to VARCHAR 200으로 확장 필요
+-- ALTER TABLE checklists MODIFY assigned_to VARCHAR(200) DEFAULT NULL;
+CREATE TABLE IF NOT EXISTS checklist_completions (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  checklist_id INT NOT NULL,
+  trip_code    VARCHAR(8) NOT NULL,
+  user_id      VARCHAR(30) NOT NULL,
+  completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_cl_completion (checklist_id, user_id),
+  INDEX idx_trip_code (trip_code)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 15. todo_completions - 할일 개인별 완료 기록
+-- assigned_to 다중 담당자 지원: todos.assigned_to VARCHAR 200으로 확장 필요
+-- ALTER TABLE todos MODIFY assigned_to VARCHAR(200) DEFAULT NULL;
+CREATE TABLE IF NOT EXISTS todo_completions (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  todo_id   INT NOT NULL,
+  trip_code VARCHAR(8) NOT NULL,
+  user_id   VARCHAR(30) NOT NULL,
+  completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_todo_completion (todo_id, user_id),
+  INDEX idx_trip_code (trip_code)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

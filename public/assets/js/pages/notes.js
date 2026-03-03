@@ -5,78 +5,75 @@ const NCONF = window.NOTES_CONFIG;
 
 const Notes = {
     notes: [],
+    searchKeyword: '',
 
-    /**
-     * 초기화
-     */
+    /* ============================================================
+       초기화
+       ============================================================ */
     async init() {
         await this.loadNotes();
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') Notes.closeEditModal();
+        });
     },
 
-    /**
-     * 메모 목록 로드
-     */
+    /* ============================================================
+       데이터 로드 / 렌더링
+       ============================================================ */
     async loadNotes() {
         try {
             const result = await WP.api(
                 '/api/notes?trip_code=' + encodeURIComponent(NCONF.tripCode)
             );
 
-            if (!result.success) {
-                WP.toast(result.message, 'error');
-                return;
-            }
+            if (!result.success) { WP.toast(result.message, 'error'); return; }
 
             this.notes = result.data || [];
             document.getElementById('notesLoading').classList.add('hidden');
-
-            if (this.notes.length === 0) {
-                document.getElementById('notesEmpty').classList.remove('hidden');
-                document.getElementById('notesList').innerHTML = '';
-            } else {
-                document.getElementById('notesEmpty').classList.add('hidden');
-                this.renderNotes();
-            }
+            this.render();
         } catch (err) {
             document.getElementById('notesLoading').classList.add('hidden');
             WP.toast(err.message, 'error');
         }
     },
 
-    /**
-     * 메모 목록 렌더링
-     */
-    renderNotes() {
-        const container = document.getElementById('notesList');
-        let html = '';
+    render() {
+        const keyword  = this.searchKeyword.trim().toLowerCase();
+        const filtered = keyword
+            ? this.notes.filter(function (n) {
+                return (n.title || '').toLowerCase().includes(keyword) ||
+                       (n.content || '').toLowerCase().includes(keyword);
+              })
+            : this.notes;
 
-        for (const note of this.notes) {
-            html += this.renderNoteCard(note);
-        }
+        const isEmpty    = document.getElementById('notesEmpty');
+        const noResult   = document.getElementById('notesNoResult');
+        const list       = document.getElementById('notesList');
 
-        container.innerHTML = html;
+        // 빈 상태
+        isEmpty.classList.toggle('hidden', this.notes.length > 0);
+
+        // 검색 결과 없음
+        noResult.classList.toggle('hidden', !(keyword && filtered.length === 0 && this.notes.length > 0));
+
+        // 목록 렌더
+        list.innerHTML = filtered.map(function (n) { return Notes.renderCard(n); }).join('');
     },
 
-    /**
-     * 메모 카드 렌더
-     */
-    renderNoteCard(note) {
-        const isMine = note.author_id === NCONF.userId;
-        const mineClass = isMine ? ' note-mine' : '';
+    renderCard(note) {
+        const isMine     = note.author_id === NCONF.userId;
         const authorName = note.author_name || note.author_id;
-        const isEdited = note.updated_at && note.updated_at !== note.created_at;
+        const isEdited   = note.updated_at && note.updated_at !== note.created_at;
 
-        let html = '<div class="note-card' + mineClass + '" data-note-id="' + note.id + '">';
+        var html = '<div class="note-card' + (isMine ? ' note-mine' : '') + '" data-note-id="' + note.id + '">';
 
-        // 헤더
         html += '<div class="note-header">';
         html += '<div>';
         if (note.title) {
-            html += '<div class="note-title">' + this.esc(note.title) + '</div>';
+            html += '<div class="note-title">' + Notes.esc(note.title) + '</div>';
         }
-        html += '<div class="note-meta">';
-        html += '<span class="note-author">' + this.esc(authorName) + '</span>';
-        html += '</div>';
+        html += '<div class="note-meta"><span class="note-author">' + Notes.esc(authorName) + '</span></div>';
         html += '</div>';
 
         if (isMine) {
@@ -87,53 +84,66 @@ const Notes = {
         }
         html += '</div>';
 
-        // 본문
-        html += '<div class="note-body">' + this.esc(note.content) + '</div>';
+        html += '<div class="note-body">' + Notes.esc(note.content) + '</div>';
 
-        // 하단
         html += '<div class="note-footer">';
-        html += '<span class="note-date">' + this.formatDate(note.created_at) + '</span>';
-        if (isEdited) {
-            html += '<span class="note-edited">수정됨</span>';
-        }
+        html += '<span class="note-date">' + Notes.formatDate(note.created_at) + '</span>';
+        if (isEdited) html += '<span class="note-edited">수정됨</span>';
         html += '</div>';
 
         html += '</div>';
         return html;
     },
 
-    /**
-     * 메모 추가
-     */
-    async addNote() {
-        const titleEl = document.getElementById('noteTitle');
-        const contentEl = document.getElementById('noteContent');
-        const btn = document.getElementById('btnAddNote');
+    /* ============================================================
+       검색
+       ============================================================ */
+    search(keyword) {
+        this.searchKeyword = keyword;
+        this.render();
+    },
 
-        const title = titleEl.value.trim();
-        const content = contentEl.value.trim();
+    /* ============================================================
+       모달: 메모 작성
+       ============================================================ */
+    showAddForm() {
+        this._showSheet('addNoteOverlay', 'addNoteSheet');
+        document.getElementById('noteContent').focus();
+    },
+
+    hideAddForm() {
+        this._hideSheet('addNoteOverlay', 'addNoteSheet');
+        document.getElementById('noteTitle').value   = '';
+        document.getElementById('noteContent').value = '';
+    },
+
+    /* ============================================================
+       메모 추가
+       ============================================================ */
+    async addNote() {
+        const title   = document.getElementById('noteTitle').value.trim();
+        const content = document.getElementById('noteContent').value.trim();
+        const btn     = document.getElementById('btnAddNote');
 
         if (!content) {
             WP.toast('내용을 입력해주세요.', 'error');
-            contentEl.focus();
+            document.getElementById('noteContent').focus();
             return;
         }
 
         btn.disabled = true;
-
         try {
             const result = await WP.post('/api/notes', {
                 csrf_token: NCONF.csrfToken,
-                trip_code: NCONF.tripCode,
-                author_id: NCONF.userId,
-                title: title,
-                content: content,
+                trip_code:  NCONF.tripCode,
+                author_id:  NCONF.userId,
+                title:      title,
+                content:    content,
             });
 
             if (result.success) {
                 WP.toast('메모가 작성되었습니다.');
-                titleEl.value = '';
-                contentEl.value = '';
+                this.hideAddForm();
                 await this.loadNotes();
             } else {
                 WP.toast(result.message, 'error');
@@ -145,32 +155,28 @@ const Notes = {
         }
     },
 
-    /**
-     * 수정 모달 열기
-     */
+    /* ============================================================
+       모달: 메모 수정
+       ============================================================ */
     openEditModal(noteId) {
-        const note = this.notes.find(n => n.id == noteId);
+        const note = this.notes.find(function (n) { return n.id == noteId; });
         if (!note) return;
 
-        document.getElementById('editNoteId').value = note.id;
-        document.getElementById('editNoteTitle').value = note.title || '';
+        document.getElementById('editNoteId').value      = note.id;
+        document.getElementById('editNoteTitle').value   = note.title || '';
         document.getElementById('editNoteContent').value = note.content || '';
-        document.getElementById('editModal').classList.remove('hidden');
+
+        this._showSheet('editNoteOverlay', 'editNoteSheet');
+        document.getElementById('editNoteContent').focus();
     },
 
-    /**
-     * 수정 모달 닫기
-     */
     closeEditModal() {
-        document.getElementById('editModal').classList.add('hidden');
+        this._hideSheet('editNoteOverlay', 'editNoteSheet');
     },
 
-    /**
-     * 메모 수정 저장
-     */
     async saveEdit() {
-        const noteId = document.getElementById('editNoteId').value;
-        const title = document.getElementById('editNoteTitle').value.trim();
+        const noteId  = document.getElementById('editNoteId').value;
+        const title   = document.getElementById('editNoteTitle').value.trim();
         const content = document.getElementById('editNoteContent').value.trim();
 
         if (!content) {
@@ -181,11 +187,11 @@ const Notes = {
         try {
             const result = await WP.put('/api/notes', {
                 csrf_token: NCONF.csrfToken,
-                id: parseInt(noteId, 10),
-                trip_code: NCONF.tripCode,
-                author_id: NCONF.userId,
-                title: title,
-                content: content,
+                id:         parseInt(noteId, 10),
+                trip_code:  NCONF.tripCode,
+                author_id:  NCONF.userId,
+                title:      title,
+                content:    content,
             });
 
             if (result.success) {
@@ -200,9 +206,9 @@ const Notes = {
         }
     },
 
-    /**
-     * 메모 삭제
-     */
+    /* ============================================================
+       메모 삭제
+       ============================================================ */
     async deleteNote(noteId) {
         if (!WP.confirm('이 메모를 삭제하시겠습니까?')) return;
 
@@ -225,23 +231,41 @@ const Notes = {
         }
     },
 
-    /**
-     * 날짜 포맷
-     */
+    /* ============================================================
+       내부 유틸
+       ============================================================ */
+    _showSheet(overlayId, sheetId) {
+        var overlay = document.getElementById(overlayId);
+        var sheet   = document.getElementById(sheetId);
+        overlay.classList.remove('hidden');
+        sheet.classList.remove('hidden');
+        requestAnimationFrame(function () {
+            overlay.classList.add('visible');
+            sheet.classList.add('visible');
+        });
+    },
+
+    _hideSheet(overlayId, sheetId) {
+        var overlay = document.getElementById(overlayId);
+        var sheet   = document.getElementById(sheetId);
+        overlay.classList.remove('visible');
+        sheet.classList.remove('visible');
+        setTimeout(function () {
+            overlay.classList.add('hidden');
+            sheet.classList.add('hidden');
+        }, 250);
+    },
+
     formatDate(dateStr) {
         if (!dateStr) return '';
         const d = new Date(dateStr);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return year + '.' + month + '.' + day + ' ' + hours + ':' + minutes;
+        return d.getFullYear() + '.' +
+               String(d.getMonth() + 1).padStart(2, '0') + '.' +
+               String(d.getDate()).padStart(2, '0') + ' ' +
+               String(d.getHours()).padStart(2, '0') + ':' +
+               String(d.getMinutes()).padStart(2, '0');
     },
 
-    /**
-     * XSS 방지
-     */
     esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
@@ -250,5 +274,4 @@ const Notes = {
     },
 };
 
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => Notes.init());
+document.addEventListener('DOMContentLoaded', function () { Notes.init(); });
