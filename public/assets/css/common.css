@@ -23,6 +23,7 @@
     --radius: 12px;
     --radius-sm: 8px;
     --nav-height: 64px;
+    --header-height: 62px;
 }
 
 * {
@@ -61,7 +62,7 @@ body {
     .app-container {
         border-radius: 16px;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        overflow: hidden;
+        overflow: clip; /* hidden → clip: sticky 동작 유지하면서 시각적 클리핑 */
         min-height: calc(100vh - 48px);
     }
 }
@@ -76,22 +77,42 @@ body {
     padding-bottom: 24px;
 }
 
-/* 페이지 헤더 */
+/* 페이지 헤더 - 플로팅 스타일 */
 .page-header {
-    padding: 20px 16px 16px;
-    background: linear-gradient(135deg, #e0f7fa 0%, #f0fdff 100%);
-    border-bottom: 1px solid rgba(8, 145, 178, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 14px 20px 13px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 24px rgba(8, 145, 178, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2.5px;
+    background: linear-gradient(
+        90deg,
+        var(--color-primary) 0%,
+        var(--color-primary-light) 50%,
+        var(--color-accent) 100%
+    );
 }
 
 .page-header h1 {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--color-text);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .page-header .subtitle {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--color-text-secondary);
 }
 
