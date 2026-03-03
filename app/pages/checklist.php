@@ -70,6 +70,47 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
+    <!-- 검색 및 필터 -->
+    <div class="checklist-search-bar">
+        <div class="search-input-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" id="searchInput" class="form-input search-input" placeholder="항목 검색..." oninput="applyFilters()">
+        </div>
+    </div>
+    <div class="checklist-filters">
+        <div class="filter-group">
+            <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all">상태 전체</option>
+                <option value="undone">미완료</option>
+                <option value="done">완료</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select id="categoryFilter" class="filter-select" onchange="applyFilters()">
+                <option value="">카테고리 전체</option>
+                <?php foreach (array_keys($grouped) as $cat): ?>
+                    <option value="<?= e($cat) ?>"><?= e($cat) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php if (!empty($members)): ?>
+        <div class="filter-group">
+            <select id="assigneeFilter" class="filter-select" onchange="applyFilters()">
+                <option value="">담당자 전체</option>
+                <option value="__none__">담당자 없음</option>
+                <?php foreach ($members as $member): ?>
+                    <option value="<?= e($member['user_id']) ?>"><?= e($member['display_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 필터 결과 없음 -->
+    <div id="noFilterResult" class="card text-center hidden">
+        <p class="text-muted">검색 결과가 없습니다.</p>
+    </div>
+
     <!-- 항목 추가 버튼 -->
     <button class="btn btn-primary btn-full mb-16" onclick="showAddForm()">+ 항목 추가</button>
 
@@ -135,7 +176,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
                 <div class="checklist-items">
                     <?php foreach ($catItems as $item): ?>
-                        <div class="checklist-item <?= (int) $item['is_done'] ? 'done' : '' ?>" data-id="<?= $item['id'] ?>">
+                        <div class="checklist-item <?= (int) $item['is_done'] ? 'done' : '' ?>" data-id="<?= $item['id'] ?>" data-item-text="<?= e(mb_strtolower($item['item'])) ?>" data-assigned="<?= e($item['assigned_to'] ?? '') ?>" data-done="<?= (int) $item['is_done'] ?>">
                             <label class="checklist-check">
                                 <input type="checkbox"
                                        <?= (int) $item['is_done'] ? 'checked' : '' ?>

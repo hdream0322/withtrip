@@ -4,6 +4,91 @@
 const CL = window.CHECKLIST_CONFIG;
 
 /**
+ * 검색 + 필터 적용
+ */
+function applyFilters() {
+    const keyword = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+    const statusVal = document.getElementById('statusFilter')?.value || 'all';
+    const categoryVal = document.getElementById('categoryFilter')?.value || '';
+    const assigneeVal = document.getElementById('assigneeFilter')?.value || '';
+
+    const filters = {
+        status: statusVal,
+        category: categoryVal,
+        assignee: assigneeVal,
+    };
+
+    let totalVisible = 0;
+
+    document.querySelectorAll('.checklist-category').forEach(function (catEl) {
+        const catName = catEl.getAttribute('data-category') || '';
+        let catVisible = 0;
+
+        // 카테고리 필터
+        if (filters.category && catName !== filters.category) {
+            catEl.classList.add('hidden');
+            return;
+        }
+
+        catEl.classList.remove('hidden');
+
+        catEl.querySelectorAll('.checklist-item').forEach(function (itemEl) {
+            const itemText = itemEl.getAttribute('data-item-text') || '';
+            const assigned = itemEl.getAttribute('data-assigned') || '';
+            const isDone = itemEl.getAttribute('data-done') === '1';
+
+            // 상태 필터
+            if (filters.status === 'done' && !isDone) {
+                itemEl.classList.add('hidden');
+                return;
+            }
+            if (filters.status === 'undone' && isDone) {
+                itemEl.classList.add('hidden');
+                return;
+            }
+
+            // 담당자 필터
+            if (filters.assignee === '__none__' && assigned !== '') {
+                itemEl.classList.add('hidden');
+                return;
+            }
+            if (filters.assignee && filters.assignee !== '__none__' && assigned !== filters.assignee) {
+                itemEl.classList.add('hidden');
+                return;
+            }
+
+            // 키워드 검색
+            if (keyword && !itemText.includes(keyword)) {
+                itemEl.classList.add('hidden');
+                return;
+            }
+
+            itemEl.classList.remove('hidden');
+            catVisible++;
+            totalVisible++;
+        });
+
+        // 카테고리 내 보이는 항목이 없으면 카드 숨김
+        if (catVisible === 0) {
+            catEl.classList.add('hidden');
+        }
+    });
+
+    // 결과 없음 메시지
+    const noResult = document.getElementById('noFilterResult');
+    const emptyMsg = document.getElementById('emptyMessage');
+    if (noResult) {
+        const hasItems = document.querySelectorAll('.checklist-item').length > 0;
+        if (hasItems && totalVisible === 0) {
+            noResult.classList.remove('hidden');
+        } else {
+            noResult.classList.add('hidden');
+        }
+    }
+    if (emptyMsg) emptyMsg.style.display = 'none';
+}
+
+/**
  * 추가 폼 표시
  */
 function showAddForm() {
@@ -72,13 +157,16 @@ async function toggleItem(id, checked) {
             if (el) {
                 if (checked) {
                     el.classList.add('done');
+                    el.setAttribute('data-done', '1');
                     el.querySelector('.checklist-item-text').style.textDecoration = 'line-through';
                 } else {
                     el.classList.remove('done');
+                    el.setAttribute('data-done', '0');
                     el.querySelector('.checklist-item-text').style.textDecoration = 'none';
                 }
             }
             updateProgress();
+            applyFilters();
         } else {
             WP.toast(data.message, 'error');
             // 체크박스 원복

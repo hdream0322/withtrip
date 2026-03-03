@@ -140,7 +140,9 @@
     color: var(--color-text);
     cursor: pointer;
     text-align: left;
+    text-decoration: none;
     transition: background 0.1s;
+    box-sizing: border-box;
 }
 
 .menu-item:hover {

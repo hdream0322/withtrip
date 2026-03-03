@@ -27,10 +27,15 @@ foreach ($trips as $trip) {
     $stmt->execute([$trip['trip_code']]);
     $noPinCount = (int) $stmt->fetchColumn();
 
+    $stmt = $db->prepare('SELECT user_id FROM users WHERE trip_code = ? AND is_owner = 1 LIMIT 1');
+    $stmt->execute([$trip['trip_code']]);
+    $ownerUserId = $stmt->fetchColumn();
+
     $tripData[] = [
         'trip' => $trip,
         'member_count' => $memberCount,
         'no_pin_count' => $noPinCount,
+        'owner_user_id' => $ownerUserId ?: null,
     ];
 }
 
@@ -90,6 +95,11 @@ require_once __DIR__ . '/../includes/header.php';
                         <span class="material-icons">more_vert</span>
                     </button>
                     <div class="card-menu-dropdown hidden" id="menu-<?= e($t['trip_code']) ?>">
+                        <?php if ($td['owner_user_id']): ?>
+                        <a class="menu-item" href="/<?= e($t['trip_code']) ?>/<?= e($td['owner_user_id']) ?>/">
+                            <span class="material-icons">open_in_new</span>플랜 열기
+                        </a>
+                        <?php endif; ?>
                         <button class="menu-item" onclick="openMembersModal('<?= e($t['trip_code']) ?>')">
                             <span class="material-icons">group</span>멤버 관리
                         </button>

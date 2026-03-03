@@ -1,5 +1,66 @@
 /* 체크리스트 스타일 */
 
+/* 검색창 */
+.checklist-search-bar {
+    margin-bottom: 10px;
+}
+
+.search-input-wrap {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    pointer-events: none;
+    color: var(--color-text-muted);
+}
+
+.search-input {
+    padding-left: 36px !important;
+}
+
+/* 필터 영역 */
+.checklist-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+
+.filter-select {
+    padding: 5px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    max-width: 130px;
+}
+
+.filter-select:focus {
+    border-color: var(--color-primary);
+}
+
+/* 숨김 유틸 */
+.hidden {
+    display: none !important;
+}
+
 .checklist-progress-badge {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;

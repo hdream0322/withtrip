@@ -79,8 +79,8 @@ body {
 /* 페이지 헤더 */
 .page-header {
     padding: 20px 16px 16px;
-    background: #fff;
-    border-bottom: 1px solid var(--color-border-light);
+    background: linear-gradient(135deg, #e0f7fa 0%, #f0fdff 100%);
+    border-bottom: 1px solid rgba(8, 145, 178, 0.15);
 }
 
 .page-header h1 {
