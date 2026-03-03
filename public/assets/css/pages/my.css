@@ -1,7 +1,82 @@
 /* /my 오너 대시보드 스타일 */
 
+/* ── 여행 카드 (컴팩트) ── */
 .trip-card {
+    padding: 12px 14px;
     transition: box-shadow 0.2s;
+}
+
+.trip-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.trip-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.trip-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.trip-card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.meta-sep {
+    color: var(--color-border);
+    padding: 0 2px;
+}
+
+.trip-card-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.trip-member-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.trip-member-badge .material-icons {
+    font-size: 13px;
+}
+
+.trip-pin-badge {
+    font-size: 0.72rem;
+    color: var(--color-warning);
+    background: #fef3c7;
+    padding: 1px 7px;
+    border-radius: 10px;
+}
+
+.trip-code-badge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    font-family: monospace;
+    letter-spacing: 0.03em;
 }
 
 /* ── more_vert 드롭다운 ── */

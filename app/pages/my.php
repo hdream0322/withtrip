@@ -68,10 +68,21 @@ require_once __DIR__ . '/../includes/header.php';
              data-start-date="<?= e($t['start_date'] ?? '') ?>"
              data-end-date="<?= e($t['end_date'] ?? '') ?>">
 
-            <div class="flex-between mb-8">
-                <div>
-                    <h3 class="card-title" style="margin-bottom: 2px;"><?= e($t['title']) ?></h3>
-                    <span class="text-sm text-muted"><?= e($t['trip_code']) ?></span>
+            <div class="trip-card-top">
+                <div class="trip-card-info">
+                    <h3 class="trip-card-title"><?= e($t['title']) ?></h3>
+                    <div class="trip-card-meta">
+                        <?php if ($t['destination']): ?>
+                            <span><?= e($t['destination']) ?></span>
+                        <?php endif; ?>
+                        <?php if ($t['start_date'] && $t['end_date']): ?>
+                            <?php if ($t['destination']): ?><span class="meta-sep">·</span><?php endif; ?>
+                            <span><?= e($t['start_date']) ?> ~ <?= e($t['end_date']) ?></span>
+                        <?php endif; ?>
+                        <?php if (!$t['destination'] && !$t['start_date']): ?>
+                            <span class="text-muted"><?= e($t['trip_code']) ?></span>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <!-- more_vert 드롭다운 -->
                 <div class="card-menu">
@@ -92,21 +103,15 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
-            <?php if ($t['destination']): ?>
-                <p class="text-sm text-muted"><?= e($t['destination']) ?></p>
-            <?php endif; ?>
-
-            <?php if ($t['start_date'] && $t['end_date']): ?>
-                <p class="text-sm text-muted"><?= e($t['start_date']) ?> ~ <?= e($t['end_date']) ?></p>
-            <?php endif; ?>
-
-            <div class="mt-16">
-                <span class="text-sm">
-                    멤버 <?= $td['member_count'] ?>명
-                    <?php if ($td['no_pin_count'] > 0): ?>
-                        <span style="color: var(--color-warning);">(PIN 미설정 <?= $td['no_pin_count'] ?>명)</span>
-                    <?php endif; ?>
+            <div class="trip-card-bottom">
+                <span class="trip-member-badge">
+                    <span class="material-icons">group</span>
+                    <?= $td['member_count'] ?>명
                 </span>
+                <?php if ($td['no_pin_count'] > 0): ?>
+                    <span class="trip-pin-badge">PIN 미설정 <?= $td['no_pin_count'] ?>명</span>
+                <?php endif; ?>
+                <span class="trip-code-badge"><?= e($t['trip_code']) ?></span>
             </div>
         </div>
     <?php endforeach; ?>
