@@ -52,11 +52,21 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="page-content">
-    <!-- 항목 추가 버튼 -->
-    <button class="btn btn-primary btn-full mb-16" onclick="showAddForm()">+ 할 일 추가</button>
 
-    <!-- 추가 폼 (기본 숨김) -->
-    <div id="addForm" class="card hidden">
+    <!-- 탭 네비게이션 -->
+    <div class="page-tabs">
+        <button class="page-tab-btn" onclick="location.href='/<?= e($tripCode) ?>/<?= e($userId) ?>/checklist'">준비물</button>
+        <button class="page-tab-btn active">할 일</button>
+    </div>
+    <!-- 할 일 추가 FAB -->
+    <button class="page-fab" onclick="showAddForm()" title="할 일 추가">
+        <span class="page-fab-icon">+</span>
+    </button>
+
+    <!-- 추가 폼 모달 (기본 숨김) -->
+    <div id="addFormOverlay" class="modal-overlay hidden" onclick="hideAddForm()"></div>
+    <div id="addForm" class="modal-sheet hidden">
+        <div class="modal-sheet-handle"></div>
         <h3 class="card-title">새 할 일 추가</h3>
         <div class="form-group">
             <label class="form-label">제목 *</label>

@@ -1,5 +1,35 @@
 /* To-Do 스타일 */
 
+/* 탭 네비게이션 */
+.page-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: var(--color-border-light);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.page-tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-tab-btn.active {
+    background: #fff;
+    color: var(--color-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
 .todo-count-badge {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
@@ -178,13 +208,10 @@
     color: var(--color-danger);
 }
 
-/* 수정 모달 */
+/* 수정 모달 (편집용) */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 200;
     display: flex;
     align-items: flex-end;
@@ -197,31 +224,24 @@
 
 .modal-backdrop {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
 }
 
 .modal-content {
     position: relative;
     background: var(--color-bg-card);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 24px 16px;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 32px;
     width: 100%;
     max-width: 480px;
-    max-height: 85vh;
+    max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: slideUp 0.3s ease;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.25s ease;
 }
 
 @keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
 }
