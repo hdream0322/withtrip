@@ -2,6 +2,15 @@
 
 /* 탭 네비게이션 → common.css 로 이동 */
 
+/* 탭 패널 */
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
 /* ---- 할일 항목 ---- */
 .todo-item {
     transition: opacity 0.3s ease;
