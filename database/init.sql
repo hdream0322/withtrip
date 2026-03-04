@@ -168,7 +168,20 @@ CREATE TABLE IF NOT EXISTS todo_completions (
   INDEX idx_trip_code (trip_code)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 16. incomes - 수입 내역
+-- 16. trip_exchange_rates - 여행별 환율 정보
+CREATE TABLE IF NOT EXISTS trip_exchange_rates (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  trip_code       VARCHAR(8) NOT NULL,
+  currency        VARCHAR(3) NOT NULL,
+  rate            DECIMAL(12,4) NOT NULL COMMENT 'TTS 기준 환율',
+  rate_adjustment DECIMAL(12,4) DEFAULT 0 COMMENT '카드 결제 조정값',
+  cash_rate       DECIMAL(12,4) DEFAULT NULL COMMENT '현금 환전 환율',
+  cash_exchanger_id VARCHAR(30) DEFAULT NULL COMMENT '환전한 사람 user_id',
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_trip_currency (trip_code, currency)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 17. incomes - 수입 내역
 CREATE TABLE IF NOT EXISTS incomes (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   trip_code   VARCHAR(8) NOT NULL,

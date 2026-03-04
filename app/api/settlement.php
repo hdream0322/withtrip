@@ -62,6 +62,19 @@ if ($method === 'GET') {
         $splitsByExpense[$split['expense_id']][] = $split;
     }
 
+    // 현금 환전자 정보 조회
+    $stmt = $db->prepare(
+        'SELECT currency, cash_exchanger_id, cash_rate
+         FROM trip_exchange_rates
+         WHERE trip_code = ? AND cash_exchanger_id IS NOT NULL AND cash_rate IS NOT NULL'
+    );
+    $stmt->execute([$tripCode]);
+    $cashExchangerRows = $stmt->fetchAll();
+    $cashExchangers = [];
+    foreach ($cashExchangerRows as $row) {
+        $cashExchangers[$row['currency']] = $row['cash_exchanger_id'];
+    }
+
     // 통화별 사용 여부 확인
     $currencies = [];
     foreach ($expenses as $exp) {
@@ -89,11 +102,17 @@ if ($method === 'GET') {
             $balanceByCurrencyAndMethod[$key] = [];
         }
 
-        // 결제자의 지출 기록
-        if (!isset($balanceByCurrencyAndMethod[$key][$paidBy])) {
-            $balanceByCurrencyAndMethod[$key][$paidBy] = ['paid' => 0, 'owed' => 0];
+        // 현금 + 환전자 지정 시: paid를 환전자에게 귀속
+        $effectivePaidBy = $paidBy;
+        if ($paymentMethod === 'cash' && isset($cashExchangers[$currency])) {
+            $effectivePaidBy = $cashExchangers[$currency];
         }
-        $balanceByCurrencyAndMethod[$key][$paidBy]['paid'] += $amount;
+
+        // 결제자(또는 환전자)의 지출 기록
+        if (!isset($balanceByCurrencyAndMethod[$key][$effectivePaidBy])) {
+            $balanceByCurrencyAndMethod[$key][$effectivePaidBy] = ['paid' => 0, 'owed' => 0];
+        }
+        $balanceByCurrencyAndMethod[$key][$effectivePaidBy]['paid'] += $amount;
 
         if ($isDutch && isset($splitsByExpense[$exp['id']])) {
             // 더치페이: 분담 내역에 따라 각자 부담
@@ -176,7 +195,8 @@ if ($method === 'GET') {
         'currencies'    => $currencyList,
         'has_multiple'  => $hasMultipleCurrencies,
         'member_names'  => $memberMap,
-        'balance_by_currency_and_method' => $balanceByCurrencyAndMethod, // 통합 정산 시 payment_method 구분용
+        'balance_by_currency_and_method' => $balanceByCurrencyAndMethod,
+        'cash_exchangers' => $cashExchangers,
     ]);
 }
 

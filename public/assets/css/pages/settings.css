@@ -106,6 +106,62 @@
     font-weight: 600;
 }
 
+/* 현금 환전 환율 */
+.rate-cash-line {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-border, #e0e0e0);
+}
+
+.rate-cash-label {
+    font-size: 0.78rem;
+    color: var(--color-coral, #e57373);
+    font-weight: 600;
+}
+
+.rate-cash-input {
+    width: 90px;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+    text-align: right;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.rate-cash-input:focus {
+    outline: none;
+    border-color: var(--color-coral, #e57373);
+}
+
+.rate-exchanger-line {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.rate-exchanger-select {
+    padding: 4px 6px;
+    font-size: 0.82rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-width: 90px;
+}
+
+.rate-exchanger-select:focus {
+    outline: none;
+    border-color: var(--color-coral, #e57373);
+}
+
 /* 이전 .rate-val (하위 호환) */
 .rate-val {
     text-align: right;

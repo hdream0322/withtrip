@@ -526,6 +526,17 @@
     font-weight: 600;
 }
 
+.cash-exchange-notice {
+    background: #fff8f0;
+    border: 1px solid #ffd6a5;
+    color: #7c4a03;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
 .unified-notice {
     background: #ecfdf5;
     border: 1px solid #a7f3d0;

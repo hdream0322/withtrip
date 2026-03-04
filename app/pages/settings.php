@@ -211,7 +211,8 @@ require_once __DIR__ . '/../includes/header.php';
         tripCode:  '<?= e($tripCode) ?>',
         userId:    '<?= e($userId) ?>',
         csrfToken: '<?= e($csrfToken) ?>',
-        isOwner:   <?= $isOwner ? 'true' : 'false' ?>
+        isOwner:   <?= $isOwner ? 'true' : 'false' ?>,
+        members:   <?= json_encode(array_map(function($m) { return ['user_id' => $m['user_id'], 'display_name' => $m['display_name']]; }, $members), JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
 

@@ -205,7 +205,9 @@ const Settings = {
             this.renderRateTable(
                 result.data.base_rates || result.data.rates,
                 result.data.adjustments || {},
-                result.data.updated_at
+                result.data.updated_at,
+                result.data.cash_rates || {},
+                result.data.cash_exchangers || {}
             );
 
             // 1시간 지났으면 자동 갱신
@@ -218,22 +220,25 @@ const Settings = {
         }
     },
 
-    renderRateTable(baseRates, adjustments, updatedAt) {
+    renderRateTable(baseRates, adjustments, updatedAt, cashRates, cashExchangers) {
         const wrap  = document.getElementById('rateTableWrap');
         const label = document.getElementById('rateSourceLabel');
+        const members = SC.members || [];
 
         if (!baseRates || Object.keys(baseRates).length === 0) {
             wrap.innerHTML = '<p class="text-sm text-muted">저장된 환율이 없습니다. 실시간 불러오기를 눌러주세요.</p>';
             return;
         }
 
-        let html = '<div class="rate-adj-notice">카드 결제 시 적용되는 환율을 조정할 수 있습니다.</div>';
+        let html = '<div class="rate-adj-notice">카드·현금 환전 환율을 설정할 수 있습니다.</div>';
         html += '<table class="rate-table"><tbody>';
 
         for (const [cur, base] of Object.entries(baseRates)) {
             const name = this.CURRENCY_LABELS[cur] || cur;
             const adj  = adjustments[cur] || 0;
             const eff  = base + adj;
+            const cashRate = cashRates[cur] ?? '';
+            const cashExchanger = cashExchangers[cur] || '';
 
             const baseStr = cur === 'JPY' ? base.toFixed(2) : Math.round(base).toLocaleString('ko-KR');
             const effStr  = cur === 'JPY' ? eff.toFixed(2)  : Math.round(eff).toLocaleString('ko-KR');
@@ -246,7 +251,7 @@ const Settings = {
                 + '<td class="rate-val-col">'
                 + '<div class="rate-base-line">기준 ' + baseStr + '원</div>'
                 + '<div class="rate-adj-line">'
-                + '<span class="rate-adj-label">조정</span>'
+                + '<span class="rate-adj-label">카드 조정</span>'
                 + '<input type="number" class="rate-adj-input" data-currency="' + cur + '" data-base="' + base + '" value="' + adj + '" step="' + (cur === 'JPY' ? '0.01' : '1') + '" placeholder="0">'
                 + '<span class="rate-adj-unit">원</span>'
                 + '</div>'
@@ -254,12 +259,29 @@ const Settings = {
                 + '= <strong>' + effStr + '원</strong>'
                 + (adj !== 0 ? ' <span class="rate-adj-diff">' + (adj > 0 ? '+' : '') + adj + '</span>' : '')
                 + '</div>'
+                + '<div class="rate-cash-line">'
+                + '<span class="rate-cash-label">현금 환전</span>'
+                + '<input type="number" class="rate-cash-input" data-currency="' + cur + '" value="' + cashRate + '" step="' + (cur === 'JPY' ? '0.01' : '1') + '" placeholder="미설정">'
+                + '<span class="rate-adj-unit">원</span>'
+                + '</div>'
+                + '<div class="rate-exchanger-line">'
+                + '<span class="rate-cash-label">환전자</span>'
+                + '<select class="rate-exchanger-select" data-currency="' + cur + '">'
+                + '<option value="">선택 안함</option>';
+
+            for (const m of members) {
+                const sel = m.user_id === cashExchanger ? ' selected' : '';
+                html += '<option value="' + m.user_id + '"' + sel + '>' + m.display_name + '</option>';
+            }
+
+            html += '</select>'
+                + '</div>'
                 + '</td>'
                 + '</tr>';
         }
 
         html += '</tbody></table>';
-        html += '<button class="btn btn-primary btn-sm btn-full mt-12" onclick="Settings.saveAdjustments()">조정값 저장</button>';
+        html += '<button class="btn btn-primary btn-sm btn-full mt-12" onclick="Settings.saveAdjustments()">환율 설정 저장</button>';
         wrap.innerHTML = html;
 
         wrap.querySelectorAll('.rate-adj-input').forEach(input => {
@@ -287,19 +309,31 @@ const Settings = {
 
     async saveAdjustments() {
         const adjustments = {};
+        const cashRates = {};
+        const cashExchangers = {};
+
         document.querySelectorAll('.rate-adj-input').forEach(input => {
             adjustments[input.dataset.currency] = parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('.rate-cash-input').forEach(input => {
+            const val = input.value.trim();
+            cashRates[input.dataset.currency] = val !== '' ? parseFloat(val) : '';
+        });
+        document.querySelectorAll('.rate-exchanger-select').forEach(select => {
+            cashExchangers[select.dataset.currency] = select.value;
         });
 
         try {
             const result = await WP.post('/api/trips/rate', {
-                csrf_token:  SC.csrfToken,
-                trip_code:   SC.tripCode,
-                adjustments: adjustments,
+                csrf_token:      SC.csrfToken,
+                trip_code:       SC.tripCode,
+                adjustments:     adjustments,
+                cash_rates:      cashRates,
+                cash_exchangers: cashExchangers,
             });
 
             if (result.success) {
-                WP.toast('조정값이 저장되었습니다.');
+                WP.toast('환율 설정이 저장되었습니다.');
             } else {
                 WP.toast(result.message, 'error');
             }

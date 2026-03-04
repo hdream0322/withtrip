@@ -58,6 +58,17 @@ require_once __DIR__ . '/../includes/header.php';
 
     <!-- 탭 2: 정산 -->
     <div class="tab-pane" id="tabSettlement">
+        <!-- 결제 방법 필터 (데이터 로드 후 항상 표시) -->
+        <div id="settlementFilterWrap" class="hidden">
+            <div class="settlement-filter-row">
+                <select id="settlementMethodFilter" class="form-select form-select-sm" onchange="Settlement.applyFilter()">
+                    <option value="all">💳💵 전체 정산</option>
+                    <option value="card">💳 카드만 정산</option>
+                    <option value="cash">💵 현금만 정산</option>
+                </select>
+            </div>
+        </div>
+
         <div id="settlementLoading" class="text-center mt-24">
             <div class="spinner"></div>
             <p class="text-sm text-muted mt-8">정산 데이터를 불러오는 중...</p>
@@ -70,15 +81,6 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
 
         <div id="settlementContent" class="hidden">
-            <!-- 결제 방법 필터 -->
-            <div class="settlement-filter-row">
-                <select id="settlementMethodFilter" class="form-select form-select-sm" onchange="Settlement.applyFilter()">
-                    <option value="all">💳💵 전체 정산</option>
-                    <option value="card">💳 카드만 정산</option>
-                    <option value="cash">💵 현금만 정산</option>
-                </select>
-            </div>
-
             <!-- 통화 혼용 시: 정산 방식 드롭다운 + 환율 설정 링크 -->
             <div id="exchangeRateSection" class="hidden">
                 <div class="settlement-mode-row">
