@@ -188,22 +188,24 @@ require_once __DIR__ . '/../includes/header.php';
 <div id="pinChangeSheet" class="modal-sheet hidden">
     <div class="modal-sheet-handle"></div>
     <h3 class="card-title">PIN 변경</h3>
-    <div class="form-group">
-        <label class="form-label">현재 PIN (6자리)</label>
-        <input type="password" id="currentPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*">
-    </div>
-    <div class="form-group">
-        <label class="form-label">새 PIN (6자리)</label>
-        <input type="password" id="newPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*">
-    </div>
-    <div class="form-group">
-        <label class="form-label">새 PIN 확인</label>
-        <input type="password" id="confirmPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*">
-    </div>
-    <div class="flex gap-8">
-        <button class="btn btn-secondary" onclick="Settings.closePinChangeModal()" style="flex:1;">취소</button>
-        <button class="btn btn-primary" onclick="Settings.changePIN()" style="flex:1;">변경</button>
-    </div>
+    <form onsubmit="Settings.changePIN(); return false;" autocomplete="off">
+        <div class="form-group">
+            <label class="form-label">현재 PIN (6자리)</label>
+            <input type="password" id="currentPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password">
+        </div>
+        <div class="form-group">
+            <label class="form-label">새 PIN (6자리)</label>
+            <input type="password" id="newPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+            <label class="form-label">새 PIN 확인</label>
+            <input type="password" id="confirmPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+        </div>
+        <div class="flex gap-8">
+            <button type="button" class="btn btn-secondary" onclick="Settings.closePinChangeModal()" style="flex:1;">취소</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;">변경</button>
+        </div>
+    </form>
 </div>
 
 <script>

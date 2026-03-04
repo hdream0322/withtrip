@@ -59,14 +59,21 @@ if ($method === 'GET') {
         $needsRefresh = $diff >= REFRESH_INTERVAL_SECONDS;
     }
 
+    // 활성 통화 목록 조회
+    $stmtTrip = $db->prepare('SELECT active_currencies FROM trips WHERE trip_code = ?');
+    $stmtTrip->execute([$tripCode]);
+    $tripRow          = $stmtTrip->fetch();
+    $activeCurrencies = $tripRow['active_currencies'] ?? 'KRW';
+
     jsonResponse(true, [
-        'rates'           => $rates,
-        'base_rates'      => $baseRates,
-        'adjustments'     => $adjustments,
-        'cash_rates'      => $cashRates,
-        'cash_exchangers' => $cashExchangers,
-        'updated_at'      => $updatedAt,
-        'needs_refresh'   => $needsRefresh,
+        'rates'             => $rates,
+        'base_rates'        => $baseRates,
+        'adjustments'       => $adjustments,
+        'cash_rates'        => $cashRates,
+        'cash_exchangers'   => $cashExchangers,
+        'updated_at'        => $updatedAt,
+        'needs_refresh'     => $needsRefresh,
+        'active_currencies' => $activeCurrencies,
     ]);
 }
 
@@ -78,11 +85,12 @@ if ($method === 'POST') {
         jsonResponse(false, null, '잘못된 요청입니다.', 403);
     }
 
-    $tripCode       = $input['trip_code'] ?? '';
-    $rates          = $input['rates'] ?? [];           // ['USD' => 1450, ...] 기준 환율
-    $adjustments    = $input['adjustments'] ?? [];     // ['USD' => 10, ...]   조정값
-    $cashRates      = $input['cash_rates'] ?? [];      // ['USD' => 1300, ...] 현금 환전 환율
-    $cashExchangers = $input['cash_exchangers'] ?? []; // ['USD' => 'dad', ...] 환전자
+    $tripCode         = $input['trip_code'] ?? '';
+    $rates            = $input['rates'] ?? [];
+    $adjustments      = $input['adjustments'] ?? [];
+    $cashRates        = $input['cash_rates'] ?? [];
+    $cashExchangers   = $input['cash_exchangers'] ?? [];
+    $activeCurrencies = $input['active_currencies'] ?? null; // null이면 변경 없음
 
     if (empty($tripCode)) {
         jsonResponse(false, null, '여행 코드가 필요합니다.', 400);
@@ -150,7 +158,19 @@ if ($method === 'POST') {
         }
     }
 
-    if (empty($rates) && empty($adjustments) && empty($cashRates) && empty($cashExchangers)) {
+    // 활성 통화 저장
+    if ($activeCurrencies !== null) {
+        $allAllowed  = array_merge(['KRW'], $allowed);
+        $parts       = array_filter(array_map('trim', explode(',', (string) $activeCurrencies)));
+        $valid        = array_values(array_intersect($parts, $allAllowed));
+        if (!in_array('KRW', $valid, true)) {
+            $valid[] = 'KRW';
+        }
+        $stmtAC = $db->prepare('UPDATE trips SET active_currencies = ? WHERE trip_code = ?');
+        $stmtAC->execute([implode(',', $valid), $tripCode]);
+    }
+
+    if (empty($rates) && empty($adjustments) && empty($cashRates) && empty($cashExchangers) && $activeCurrencies === null) {
         jsonResponse(false, null, '저장할 데이터가 없습니다.', 400);
     }
 

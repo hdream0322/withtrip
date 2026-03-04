@@ -26,6 +26,16 @@ foreach ($members as $member) {
     ];
 }
 
+// 활성 통화 조회
+$stmtAC = $db->prepare('SELECT active_currencies FROM trips WHERE trip_code = ?');
+$stmtAC->execute([$tripCode]);
+$tripAC = $stmtAC->fetch();
+$activeRaw = $tripAC['active_currencies'] ?? 'KRW';
+$activeCurrencies = array_values(array_filter(array_map('trim', explode(',', $activeRaw))));
+if (!in_array('KRW', $activeCurrencies, true)) {
+    array_unshift($activeCurrencies, 'KRW');
+}
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -156,17 +166,9 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="form-group form-group-shrink">
             <label class="form-label">통화</label>
             <select id="expenseCurrency" class="form-select">
-                <option value="KRW">KRW</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="JPY">JPY</option>
-                <option value="CNH">CNH</option>
-                <option value="GBP">GBP</option>
-                <option value="AUD">AUD</option>
-                <option value="CAD">CAD</option>
-                <option value="HKD">HKD</option>
-                <option value="SGD">SGD</option>
-                <option value="THB">THB</option>
+                <?php foreach ($activeCurrencies as $cur): ?>
+                <option value="<?= e($cur) ?>"><?= e($cur) ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
@@ -270,17 +272,9 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="form-group form-group-shrink">
             <label class="form-label">통화</label>
             <select id="incomeCurrency" class="form-select">
-                <option value="KRW">KRW</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="JPY">JPY</option>
-                <option value="CNH">CNH</option>
-                <option value="GBP">GBP</option>
-                <option value="AUD">AUD</option>
-                <option value="CAD">CAD</option>
-                <option value="HKD">HKD</option>
-                <option value="SGD">SGD</option>
-                <option value="THB">THB</option>
+                <?php foreach ($activeCurrencies as $cur): ?>
+                <option value="<?= e($cur) ?>"><?= e($cur) ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
@@ -308,10 +302,11 @@ require_once __DIR__ . '/../includes/header.php';
 
 <script>
     window.BUDGET_CONFIG = {
-        tripCode: '<?= e($tripCode) ?>',
-        userId: '<?= e($userId) ?>',
-        csrfToken: '<?= e($csrfToken) ?>',
-        members: <?= json_encode($membersJson, JSON_UNESCAPED_UNICODE) ?>
+        tripCode:          '<?= e($tripCode) ?>',
+        userId:            '<?= e($userId) ?>',
+        csrfToken:         '<?= e($csrfToken) ?>',
+        members:           <?= json_encode($membersJson, JSON_UNESCAPED_UNICODE) ?>,
+        activeCurrencies:  <?= json_encode(array_values($activeCurrencies), JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
 

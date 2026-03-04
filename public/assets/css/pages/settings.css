@@ -1,5 +1,53 @@
 /* 설정 페이지 스타일 */
 
+/* 통화 선택 칩 */
+.currency-picker {
+    margin-bottom: 14px;
+}
+
+.currency-picker-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+}
+
+.currency-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.currency-chip {
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1.5px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    letter-spacing: 0.02em;
+}
+
+.currency-chip.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+.currency-chip-krw {
+    background: var(--color-border-light, #f0f0f0);
+    border-color: transparent;
+    color: var(--color-text-secondary);
+    cursor: default;
+}
+
+.rate-item-empty {
+    border-color: var(--color-border-light);
+    background: transparent;
+}
+
 /* 환율 목록 */
 .rate-list {
     display: flex;
