@@ -226,61 +226,72 @@ const Settings = {
         const members = SC.members || [];
 
         if (!baseRates || Object.keys(baseRates).length === 0) {
-            wrap.innerHTML = '<p class="text-sm text-muted">저장된 환율이 없습니다. 실시간 불러오기를 눌러주세요.</p>';
+            wrap.innerHTML = '<p class="text-sm text-muted">저장된 환율이 없습니다. 환율 갱신을 눌러주세요.</p>';
             return;
         }
 
-        let html = '<div class="rate-adj-notice">카드·현금 환전 환율을 설정할 수 있습니다.</div>';
-        html += '<table class="rate-table"><tbody>';
+        // USD, EUR 우선 정렬
+        const PRIORITY = ['USD', 'EUR'];
+        const allCurs = Object.keys(baseRates);
+        const sorted = [
+            ...PRIORITY.filter(c => allCurs.includes(c)),
+            ...allCurs.filter(c => !PRIORITY.includes(c)),
+        ];
 
-        for (const [cur, base] of Object.entries(baseRates)) {
+        let html = '<div class="rate-list">';
+
+        for (const cur of sorted) {
+            const base = baseRates[cur];
             const name = this.CURRENCY_LABELS[cur] || cur;
             const adj  = adjustments[cur] || 0;
             const eff  = base + adj;
-            const cashRate = cashRates[cur] ?? '';
+            const cashRate      = cashRates[cur] ?? '';
             const cashExchanger = cashExchangers[cur] || '';
-
+            const step    = cur === 'JPY' ? '0.01' : '1';
             const baseStr = cur === 'JPY' ? base.toFixed(2) : Math.round(base).toLocaleString('ko-KR');
             const effStr  = cur === 'JPY' ? eff.toFixed(2)  : Math.round(eff).toLocaleString('ko-KR');
+            const isPriority = PRIORITY.includes(cur);
 
-            html += '<tr class="rate-row">'
-                + '<td class="rate-cur">'
-                + '<span class="rate-cur-code">' + cur + '</span>'
-                + '<span class="rate-cur-name">' + name + '</span>'
-                + '</td>'
-                + '<td class="rate-val-col">'
-                + '<div class="rate-base-line">기준 ' + baseStr + '원</div>'
-                + '<div class="rate-adj-line">'
-                + '<span class="rate-adj-label">카드 조정</span>'
-                + '<input type="number" class="rate-adj-input" data-currency="' + cur + '" data-base="' + base + '" value="' + adj + '" step="' + (cur === 'JPY' ? '0.01' : '1') + '" placeholder="0">'
-                + '<span class="rate-adj-unit">원</span>'
-                + '</div>'
-                + '<div class="rate-eff-line" id="rateEff_' + cur + '">'
-                + '= <strong>' + effStr + '원</strong>'
-                + (adj !== 0 ? ' <span class="rate-adj-diff">' + (adj > 0 ? '+' : '') + adj + '</span>' : '')
-                + '</div>'
-                + '<div class="rate-cash-line">'
-                + '<span class="rate-cash-label">현금 환전</span>'
-                + '<input type="number" class="rate-cash-input" data-currency="' + cur + '" value="' + cashRate + '" step="' + (cur === 'JPY' ? '0.01' : '1') + '" placeholder="미설정">'
-                + '<span class="rate-adj-unit">원</span>'
-                + '</div>'
-                + '<div class="rate-exchanger-line">'
-                + '<span class="rate-cash-label">환전자</span>'
-                + '<select class="rate-exchanger-select" data-currency="' + cur + '">'
-                + '<option value="">선택 안함</option>';
-
+            let memberOptions = '<option value="">환전자</option>';
             for (const m of members) {
-                const sel = m.user_id === cashExchanger ? ' selected' : '';
-                html += '<option value="' + m.user_id + '"' + sel + '>' + m.display_name + '</option>';
+                memberOptions += '<option value="' + m.user_id + '"' + (m.user_id === cashExchanger ? ' selected' : '') + '>' + m.display_name + '</option>';
             }
 
-            html += '</select>'
+            html += '<div class="rate-item' + (isPriority ? ' rate-item-primary' : '') + '">'
+                // 상단: 통화 정보 + 기준 환율
+                + '<div class="rate-item-top">'
+                +   '<div class="rate-item-currency">'
+                +     '<span class="rate-code">' + cur + '</span>'
+                +     '<span class="rate-name">' + name + '</span>'
+                +   '</div>'
+                +   '<div class="rate-item-base" id="rateEff_' + cur + '">'
+                +     effStr + '<span class="rate-unit">원</span>'
+                +     (adj !== 0 ? '<span class="rate-adj-badge">' + (adj > 0 ? '+' : '') + adj + '</span>' : '')
+                +   '</div>'
                 + '</div>'
-                + '</td>'
-                + '</tr>';
+                // 하단: 카드 조정 + 현금 환전
+                + '<div class="rate-item-fields">'
+                +   '<div class="rate-field">'
+                +     '<span class="rate-field-label">카드 조정</span>'
+                +     '<div class="rate-field-row">'
+                +       '<input type="number" class="rate-adj-input" data-currency="' + cur + '" data-base="' + base + '" value="' + adj + '" step="' + step + '" placeholder="0">'
+                +       '<span class="rate-field-unit">원</span>'
+                +       '<span class="rate-field-hint">기준 ' + baseStr + '원</span>'
+                +     '</div>'
+                +   '</div>'
+                +   '<div class="rate-field rate-field-cash">'
+                +     '<span class="rate-field-label cash">현금 환전</span>'
+                +     '<div class="rate-field-row">'
+                +       '<input type="number" class="rate-cash-input" data-currency="' + cur + '" value="' + cashRate + '" step="' + step + '" placeholder="미설정">'
+                +       '<span class="rate-field-unit">원</span>'
+                +       '<select class="rate-exchanger-select" data-currency="' + cur + '">' + memberOptions + '</select>'
+                +     '</div>'
+                +   '</div>'
+                + '</div>'
+                + '</div>';
         }
 
-        html += '</tbody></table>';
+        html += '</div>';
         html += '<button class="btn btn-primary btn-sm btn-full mt-12" onclick="Settings.saveAdjustments()">환율 설정 저장</button>';
         wrap.innerHTML = html;
 
@@ -303,8 +314,8 @@ const Settings = {
         const effStr = cur === 'JPY' ? eff.toFixed(2) : Math.round(eff).toLocaleString('ko-KR');
         const effEl = document.getElementById('rateEff_' + cur);
         if (!effEl) return;
-        effEl.innerHTML = '= <strong>' + effStr + '원</strong>'
-            + (adj !== 0 ? ' <span class="rate-adj-diff">' + (adj > 0 ? '+' : '') + adj + '</span>' : '');
+        effEl.innerHTML = effStr + '<span class="rate-unit">원</span>'
+            + (adj !== 0 ? '<span class="rate-adj-badge">' + (adj > 0 ? '+' : '') + adj + '</span>' : '');
     },
 
     async saveAdjustments() {
@@ -348,8 +359,9 @@ const Settings = {
         try {
             const liveResult = await WP.api('/api/budget/exchange_rate');
             if (!liveResult.success) {
-                if (liveResult.data?.debug) console.error('[환율 오류]', liveResult.data.debug);
-                if (!silent) WP.toast('환율 정보를 불러올 수 없습니다.', 'error');
+                const debugMsg = liveResult.data?.debug || '';
+                if (debugMsg) console.error('[환율 오류]', debugMsg);
+                if (!silent) WP.toast(liveResult.message || '환율 정보를 불러올 수 없습니다.', 'error');
                 return;
             }
 

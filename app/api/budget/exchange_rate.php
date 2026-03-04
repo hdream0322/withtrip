@@ -32,7 +32,9 @@ foreach (array_merge([0], range(1, 7)) as $daysAgo) {
 }
 
 if (empty($rates)) {
-    jsonResponse(false, ['debug' => $lastErr], '환율 정보를 불러올 수 없습니다.', 503);
+    // PHP 서버 자체는 정상 동작 중이므로 200 반환 (외부 API 연결 실패)
+    // WP.api()가 !response.ok 시 throw해서 debug 로그가 묻히는 문제 방지
+    jsonResponse(false, ['debug' => $lastErr], '환율 정보를 불러올 수 없습니다.');
 }
 
 jsonResponse(true, [
@@ -71,13 +73,15 @@ function fetchAllRates(string $authKey, string $date): array
         curl_setopt_array($ch, [
             CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 8,
+            CURLOPT_TIMEOUT        => 15,
             CURLOPT_CONNECTTIMEOUT => 5,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_USERAGENT      => 'WithPlan/1.0',
+            CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS      => 3,
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_COOKIEFILE     => '',   // 쿠키 엔진 활성화 (세션 쿠키 처리)
+            CURLOPT_COOKIEJAR      => '',   // 메모리 내 쿠키 저장
         ]);
         $body    = curl_exec($ch);
         $curlErr = curl_error($ch);
