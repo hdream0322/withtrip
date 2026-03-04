@@ -1,13 +1,4 @@
-/* 체크리스트 + 할일 통합 스타일 */
-
-/* 탭 콘텐츠 관리 */
-.check-tab-content {
-    display: block;
-}
-
-.check-tab-content.hidden {
-    display: none;
-}
+/* 체크리스트 스타일 */
 
 /* 탭 네비게이션 → common.css 로 이동 */
 
