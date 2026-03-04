@@ -120,6 +120,7 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    white-space: nowrap;
 }
 
 .expense-badge {
