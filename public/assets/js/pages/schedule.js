@@ -28,7 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
     initCategoryChips();
     initAllDayToggle();
     loadDays();
+    initLocationClickHandler();
 });
+
+// ========================
+// 위치 클릭 핸들러
+// ========================
+function initLocationClickHandler() {
+    document.addEventListener('click', (e) => {
+        const placeSpan = e.target.closest('.timeline-place');
+        if (!placeSpan) return;
+
+        e.stopPropagation();
+        const location = placeSpan.dataset.location;
+        const mapsUrl = placeSpan.dataset.mapsUrl || '';
+
+        if (location) {
+            openMaps(location, mapsUrl);
+        }
+    });
+}
 
 // ========================
 // 데이터 로드
@@ -197,7 +216,7 @@ function renderTimeline() {
         // 메타 (장소, 메모 아이콘, 카테고리)
         html += '<div class="timeline-meta">';
         if (item.location) {
-            html += '<span class="timeline-place" onclick="event.stopPropagation();openMaps(\'' + escAttr(item.location) + '\',\'' + escAttr(item.google_maps_url || '') + '\')">' +
+            html += '<span class="timeline-place" data-location="' + escHtml(item.location) + '" data-maps-url="' + escHtml(item.google_maps_url || '') + '" style="cursor:pointer;">' +
                     '<span class="material-icons" style="font-size:14px;vertical-align:middle;">place</span> ' + escHtml(item.location) + '</span>';
         }
         if (item.memo) {
