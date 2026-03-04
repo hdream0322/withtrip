@@ -163,10 +163,10 @@
 
 .timeline-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 4px;
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .timeline-place {
@@ -176,25 +176,40 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
+    flex-shrink: 0;
 }
 
 .timeline-place:active {
     text-decoration: underline;
 }
 
+.timeline-meta-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
 .timeline-memo-icon {
-    font-size: 0.75rem;
     color: var(--color-text-muted);
     display: inline-flex;
     align-items: center;
+    font-size: 1rem;
+}
+
+.timeline-memo-icon .material-icons {
+    font-size: 20px;
 }
 
 .timeline-cat-badge {
-    font-size: 0.7rem;
-    padding: 1px 6px;
+    font-size: 0.8rem;
+    padding: 4px 10px;
     border-radius: 4px;
     color: #fff;
-    font-weight: 500;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* ============================================================
@@ -297,13 +312,14 @@
 }
 
 .detail-memo {
-    background: var(--color-bg);
+    background: #f1f5f9;
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
-    padding: 12px;
-    margin-top: 12px;
+    padding: 14px;
+    margin-top: 14px;
     font-size: 0.9rem;
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--color-text-secondary);
 }
 

@@ -219,12 +219,15 @@ function renderTimeline() {
             html += '<span class="timeline-place" data-location="' + escHtml(item.location) + '" data-maps-url="' + escHtml(item.google_maps_url || '') + '" style="cursor:pointer;">' +
                     '<span class="material-icons" style="font-size:14px;vertical-align:middle;">place</span> ' + escHtml(item.location) + '</span>';
         }
+        // 우측 영역 (메모 아이콘 + 카테고리)
+        html += '<div class="timeline-meta-right">';
         if (item.memo) {
-            html += '<span class="timeline-memo-icon"><span class="material-icons" style="font-size:14px;">description</span></span>';
+            html += '<span class="timeline-memo-icon" title="메모 있음"><span class="material-icons">description</span></span>';
         }
         if (cat) {
-            html += '<span class="timeline-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>';
+            html += '<span class="timeline-cat-badge" style="background:' + cat.color + ';">' + cat.emoji + ' ' + cat.label + '</span>';
         }
+        html += '</div>';
         html += '</div>';
 
         html += '</div>'; // .timeline-body
