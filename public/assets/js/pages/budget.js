@@ -191,8 +191,8 @@ function renderExpenseCard(exp) {
 
     html +=
         '<div class="expense-actions">' +
-        '<button class="btn btn-sm btn-secondary" onclick="editExpense(' + exp.id + ')">수정</button>' +
-        '<button class="btn btn-sm btn-danger" onclick="deleteExpense(' + exp.id + ')">삭제</button>' +
+        '<button class="btn-icon" onclick="editExpense(' + exp.id + ')" title="수정"><span class="material-icons">edit</span></button>' +
+        '<button class="btn-icon danger" onclick="deleteExpense(' + exp.id + ')" title="삭제"><span class="material-icons">delete_outline</span></button>' +
         '</div>' +
         '</div>';
 
@@ -222,8 +222,8 @@ function renderIncomeCard(inc) {
         '<span class="income-badge">' + (typeLabel[inc.type] || '기타') + '</span>' +
         '</div>' +
         '<div class="expense-actions">' +
-        '<button class="btn btn-sm btn-secondary" onclick="editIncome(' + inc.id + ')">수정</button>' +
-        '<button class="btn btn-sm btn-danger" onclick="deleteIncome(' + inc.id + ')">삭제</button>' +
+        '<button class="btn-icon" onclick="editIncome(' + inc.id + ')" title="수정"><span class="material-icons">edit</span></button>' +
+        '<button class="btn-icon danger" onclick="deleteIncome(' + inc.id + ')" title="삭제"><span class="material-icons">delete_outline</span></button>' +
         '</div>' +
         '</div>';
 
