@@ -150,8 +150,8 @@ if ($method === 'DELETE') {
 
     try {
         // 관련 데이터 삭제 (외래키 없으므로 수동 삭제)
-        $tables = ['dutch_splits', 'expenses', 'budget_categories', 'schedule_items', 'schedule_days',
-                    'checklists', 'todos', 'shared_notes', 'pin_attempts', 'users'];
+        $tables = ['dutch_splits', 'expenses', 'incomes', 'schedule_items', 'schedule_days',
+                    'checklists', 'checklist_completions', 'todos', 'todo_completions', 'shared_notes', 'pin_attempts', 'users'];
 
         foreach ($tables as $table) {
             $stmt = $db->prepare("DELETE FROM {$table} WHERE trip_code = ?");

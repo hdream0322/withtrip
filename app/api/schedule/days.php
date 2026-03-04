@@ -1,6 +1,7 @@
 <?php
 /**
  * 일정 Day API
+ * GET    /api/schedule/days - Day 목록 조회
  * POST   /api/schedule/days - Day 추가
  * PUT    /api/schedule/days - Day 수정
  * DELETE /api/schedule/days - Day 삭제
@@ -8,6 +9,16 @@
 
 $method = $_SERVER['REQUEST_METHOD'];
 $db = getDB();
+
+if ($method === 'GET') {
+    $tripCode = $_GET['trip_code'] ?? '';
+
+    $stmt = $db->prepare('SELECT * FROM schedule_days WHERE trip_code = ? ORDER BY day_number ASC');
+    $stmt->execute([$tripCode]);
+    $days = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    jsonResponse(true, ['days' => $days]);
+}
 
 if ($method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);

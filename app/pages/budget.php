@@ -1,16 +1,16 @@
 <?php
 /**
- * 예산 관리 페이지
+ * 지출 관리 페이지
  * /{trip_code}/{user_id}/budget
  *
- * 탭 1: 예산 계획 - 카테고리별 예산, 계획금액 vs 실지출 비교
- * 탭 2: 지출 입력 - 지출 추가/편집/삭제, 더치페이 분담
+ * 탭 1: 지출 내역 - 지출/수입 추가/편집/삭제, 더치페이 분담
+ * 탭 2: 정산 - 멤버별 지출 현황, 최소 이체 계산
  */
 $currentPage = 'budget';
 $showNav = true;
 $pageCss = 'budget';
 $pageJs = 'budget';
-$pageTitle = '예산 관리';
+$pageTitle = '지출';
 $tripTitle = $trip['title'];
 
 $db = getDB();
@@ -29,79 +29,17 @@ foreach ($members as $member) {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header">
-    <div class="page-header-row">
-        <div class="page-header-left">
-            <h1>예산 관리</h1>
-            <p class="subtitle"><?= e($tripTitle) ?></p>
-        </div>
-        <div class="header-more-wrap">
-            <button class="header-more-btn" onclick="toggleHeaderMenu()">
-                <span class="material-icons">more_vert</span>
-            </button>
-            <div class="header-dropdown" id="headerDropdown">
-                <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="header-dropdown-item">
-                    <span class="material-icons">settings</span> 설정
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+<?php $pageHeaderTitle = '지출'; require __DIR__ . '/../includes/page_header.php'; ?>
 
 <div class="page-content">
     <!-- 탭 네비게이션 -->
     <div class="budget-tabs">
-        <button class="budget-tab active" data-tab="plan">예산 계획</button>
-        <button class="budget-tab" data-tab="expenses">지출 내역</button>
+        <button class="budget-tab active" data-tab="expenses">지출 내역</button>
         <button class="budget-tab" data-tab="settlement">정산</button>
     </div>
 
-    <!-- 탭 1: 예산 계획 -->
-    <div class="tab-panel active" id="tabPlan">
-        <!-- 환율 입력 -->
-        <div class="card exchange-rate-card">
-            <div class="flex-between">
-                <span class="card-title" style="margin-bottom: 0;">환율 설정</span>
-                <div class="exchange-input-wrap">
-                    <span class="text-sm">1 USD =</span>
-                    <input type="number" id="exchangeRate" class="form-input exchange-input"
-                           placeholder="1350" min="0" step="1">
-                    <span class="text-sm">원</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 총합 요약 -->
-        <div class="card budget-summary-card">
-            <div class="flex-between mb-8">
-                <span class="summary-label">총 예산</span>
-                <span class="summary-amount" id="totalPlanned">0원</span>
-            </div>
-            <div class="flex-between mb-8">
-                <span class="summary-label">총 지출</span>
-                <span class="summary-amount summary-spent" id="totalSpent">0원</span>
-            </div>
-            <div class="budget-progress-wrap">
-                <div class="budget-progress-bar">
-                    <div class="budget-progress-fill" id="totalProgressFill" style="width: 0%;"></div>
-                </div>
-                <span class="budget-progress-text" id="totalProgressText">0%</span>
-            </div>
-        </div>
-
-        <!-- 카테고리 목록 -->
-        <div id="categoryList">
-            <div class="text-center text-muted text-sm">
-                <div class="spinner"></div>
-            </div>
-        </div>
-
-        <!-- 카테고리 추가 버튼 -->
-        <button class="btn btn-primary btn-full mt-16" id="btnAddCategory">+ 카테고리 추가</button>
-    </div>
-
-    <!-- 탭 2: 지출 내역 -->
-    <div class="tab-panel" id="tabExpenses">
+    <!-- 탭 1: 지출 내역 -->
+    <div class="tab-panel active" id="tabExpenses">
         <!-- 지출 목록 -->
         <div id="expenseList">
             <div class="text-center text-muted text-sm">
@@ -160,40 +98,13 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <!-- FAB 버튼: 수입 -->
-    <button class="budget-fab budget-fab-income" onclick="openIncomeModal()" title="수입 추가" style="display:none;" id="fabIncome">
+    <button class="budget-fab budget-fab-income" onclick="openIncomeModal()" title="수입 추가" id="fabIncome">
         <span class="material-icons">add</span>
     </button>
     <!-- FAB 버튼: 지출 -->
-    <button class="budget-fab budget-fab-expense" onclick="openExpenseModal()" title="지출 추가" style="display:none;" id="fabExpense">
+    <button class="budget-fab budget-fab-expense" onclick="openExpenseModal()" title="지출 추가" id="fabExpense">
         <span class="material-icons">remove</span>
     </button>
-</div>
-
-<!-- 카테고리 추가/수정 Sheet 모달 -->
-<div id="categoryOverlay" class="modal-overlay hidden" onclick="closeCategoryModal()"></div>
-<div id="categorySheet" class="modal-sheet hidden">
-    <div class="modal-sheet-handle"></div>
-    <h3 class="card-title" id="categoryModalTitle">카테고리 추가</h3>
-    <input type="hidden" id="categoryEditId" value="">
-    <div class="form-group">
-        <label class="form-label">카테고리 이름 *</label>
-        <input type="text" id="categoryName" class="form-input" placeholder="예: 항공, 숙박, 식비">
-    </div>
-    <div class="form-group">
-        <label class="form-label">계획 금액</label>
-        <input type="number" id="categoryAmount" class="form-input" placeholder="0" min="0">
-    </div>
-    <div class="form-group">
-        <label class="form-label">통화</label>
-        <select id="categoryCurrency" class="form-select">
-            <option value="KRW">KRW (원)</option>
-            <option value="USD">USD ($)</option>
-        </select>
-    </div>
-    <div class="flex gap-8">
-        <button class="btn btn-secondary" onclick="closeCategoryModal()" style="flex:1;">취소</button>
-        <button class="btn btn-primary" onclick="saveCategory()" style="flex:1;">저장</button>
-    </div>
 </div>
 
 <!-- 지출 추가/수정 Sheet 모달 -->
@@ -202,13 +113,6 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="modal-sheet-handle"></div>
     <h3 class="card-title" id="expenseModalTitle">지출 추가</h3>
     <input type="hidden" id="expenseEditId" value="">
-
-    <div class="form-group">
-        <label class="form-label">카테고리</label>
-        <select id="expenseCategory" class="form-select">
-            <option value="">선택 안 함</option>
-        </select>
-    </div>
 
     <div class="form-group">
         <label class="form-label">결제자 *</label>

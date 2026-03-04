@@ -8,17 +8,17 @@ $showNav = $showNav ?? false;
 
 <?php if ($showNav && !empty($tripCode) && !empty($userId)): ?>
 <nav class="bottom-nav">
+    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/" class="nav-item <?= $currentPage === 'home' ? 'active' : '' ?>">
+        <span class="nav-icon">&#127968;</span>
+        <span class="nav-label">홈</span>
+    </a>
     <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/schedule" class="nav-item <?= $currentPage === 'schedule' ? 'active' : '' ?>">
         <span class="nav-icon">&#128197;</span>
         <span class="nav-label">일정</span>
     </a>
     <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/budget" class="nav-item <?= $currentPage === 'budget' ? 'active' : '' ?>">
         <span class="nav-icon">&#128176;</span>
-        <span class="nav-label">예산</span>
-    </a>
-    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/" class="nav-item nav-home <?= $currentPage === 'home' ? 'active' : '' ?>">
-        <span class="nav-icon">&#127968;</span>
-        <span class="nav-label">홈</span>
+        <span class="nav-label">지출</span>
     </a>
     <?php
         $checkActive = in_array($currentPage, ['checklist', 'todo']) ? 'active' : '';
@@ -30,7 +30,7 @@ $showNav = $showNav ?? false;
         <span class="nav-icon">&#9989;</span>
         <span class="nav-label">체크</span>
     </a>
-    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/notes" id="nav-todo" class="nav-item <?= $currentPage === 'notes' ? 'active' : '' ?>">
+    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/notes" class="nav-item <?= $currentPage === 'notes' ? 'active' : '' ?>">
         <span class="nav-icon">&#128221;</span>
         <span class="nav-label">메모</span>
     </a>

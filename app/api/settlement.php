@@ -29,11 +29,9 @@ if ($method === 'GET') {
 
     // 전체 지출 내역 조회
     $stmt = $db->prepare(
-        'SELECT e.*, bc.name AS category_name
-         FROM expenses e
-         LEFT JOIN budget_categories bc ON e.category_id = bc.id
-         WHERE e.trip_code = ?
-         ORDER BY e.expense_date DESC, e.created_at DESC'
+        'SELECT * FROM expenses
+         WHERE trip_code = ?
+         ORDER BY expense_date DESC, created_at DESC'
     );
     $stmt->execute([$tripCode]);
     $expenses = $stmt->fetchAll();

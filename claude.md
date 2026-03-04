@@ -556,6 +556,7 @@ $dotenv->load();
 > 정산→예산 통합: `budget.php` 3탭 구조(예산 계획|지출 내역|정산). Settlement JS를 `budget.js`에 통합, lazy loading. settlement.css를 budget.css에 병합. `settlement.php`는 `budget#settlement`로 리다이렉트.
 > 예산 FAB + 수입 기능: 지출 내역 탭에 FAB 2개(수입: 초록, 지출: 코랄). `incomes` 테이블 신규. `api/budget/incomes.php` CRUD. sheet 모달로 모든 모달 교체. 수입/지출 합쳐서 날짜순 표시. `database/init.sql`에 incomes 테이블 추가.
 > 홈 "더보기" 카드 제거(정산→예산탭, 멤버→설정에서 접근). `checklist.js`/`todo.js`에서 중복 `_showModal`/`_hideModal` 제거. CSS_VERSION 2.1.0.
+> 예산 축소 + 일정 리디자인 + 네비 변경: `budget_categories` 테이블 삭제, 예산 계획 탭 제거(지출 내역+정산 2탭만 유지), "예산"→"지출" 라벨 변경. 하단 네비 순서: 홈/일정/지출/체크/메모. `page_header.php` partial 추출(멤버 페이지 7개 공통 헤더). 일정 페이지 전면 리디자인: 날짜 스크롤바, 타임라인 뷰, Google Maps 외부 연결, FAB, sheet 모달, 카테고리 시스템(meal/transport/accommodation/sightseeing/shopping/other), 스와이프 일차 전환. `schedule_items`에 `end_time`, `is_all_day`, `memo`, `google_maps_url`, `category` 컬럼 추가. CSS_VERSION 3.0.0.
 
 ---
 

@@ -47,26 +47,21 @@ CREATE TABLE IF NOT EXISTS schedule_days (
 
 -- 5. schedule_items - 일정 내 세부 항목
 CREATE TABLE IF NOT EXISTS schedule_items (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  day_id      INT NOT NULL,
-  trip_code   VARCHAR(8) NOT NULL,
-  time        VARCHAR(10),
-  content     VARCHAR(200) NOT NULL,
-  location    VARCHAR(100),
-  sort_order  INT DEFAULT 0
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  day_id          INT NOT NULL,
+  trip_code       VARCHAR(8) NOT NULL,
+  time            VARCHAR(10),
+  end_time        VARCHAR(10) DEFAULT NULL,
+  is_all_day      TINYINT(1) DEFAULT 0,
+  content         VARCHAR(200) NOT NULL COMMENT '일정 제목',
+  location        VARCHAR(100),
+  memo            TEXT DEFAULT NULL,
+  google_maps_url VARCHAR(500) DEFAULT NULL,
+  category        ENUM('meal','transport','accommodation','sightseeing','shopping','other') DEFAULT NULL,
+  sort_order      INT DEFAULT 0
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 6. budget_categories - 예산 카테고리
-CREATE TABLE IF NOT EXISTS budget_categories (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  trip_code   VARCHAR(8) NOT NULL,
-  name        VARCHAR(50) NOT NULL,
-  planned_amount DECIMAL(12,0) DEFAULT 0,
-  currency    VARCHAR(3) DEFAULT 'KRW',
-  sort_order  INT DEFAULT 0
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- 7. expenses - 실지출 내역
+-- 6. expenses - 실지출 내역
 CREATE TABLE IF NOT EXISTS expenses (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   trip_code   VARCHAR(8) NOT NULL,

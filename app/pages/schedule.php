@@ -2,6 +2,8 @@
 /**
  * 일정표 페이지
  * /{trip_code}/{user_id}/schedule
+ *
+ * 날짜 스크롤 바 + 타임라인 + Google Maps 외부 연결 + FAB + Sheet 모달
  */
 $currentPage = 'schedule';
 $showNav = true;
@@ -13,98 +15,124 @@ $tripTitle = $trip['title'];
 $db = getDB();
 $csrfToken = generateCsrfToken();
 
-// 일정 데이터 로드
-$stmt = $db->prepare('SELECT * FROM schedule_days WHERE trip_code = ? ORDER BY day_number ASC');
-$stmt->execute([$tripCode]);
-$days = $stmt->fetchAll();
-
-// 각 일자의 세부 항목
-$dayItems = [];
-foreach ($days as $day) {
-    $stmt = $db->prepare('SELECT * FROM schedule_items WHERE day_id = ? ORDER BY sort_order ASC, time ASC');
-    $stmt->execute([$day['id']]);
-    $dayItems[$day['id']] = $stmt->fetchAll();
-}
-
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header">
-    <div class="page-header-row">
-        <div class="page-header-left">
-            <h1>일정표</h1>
-            <p class="subtitle"><?= e($tripTitle) ?></p>
+<?php $pageHeaderTitle = '일정표'; require __DIR__ . '/../includes/page_header.php'; ?>
+
+<div class="page-content">
+    <!-- 날짜 스크롤 바 -->
+    <div class="schedule-date-bar">
+        <button class="date-today-btn" id="btnToday" onclick="scrollToToday()">오늘</button>
+        <div class="date-scroll" id="dateScroll">
+            <!-- JS에서 날짜 칩 생성 -->
         </div>
-        <div class="header-more-wrap">
-            <button class="header-more-btn" onclick="toggleHeaderMenu()">
-                <span class="material-icons">more_vert</span>
-            </button>
-            <div class="header-dropdown" id="headerDropdown">
-                <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="header-dropdown-item">
-                    <span class="material-icons">settings</span> 설정
-                </a>
-            </div>
+    </div>
+
+    <!-- 일차 헤더 -->
+    <div class="schedule-day-header" id="dayHeader">
+        <!-- JS에서 렌더링 -->
+    </div>
+
+    <!-- 타임라인 본문 -->
+    <div class="schedule-timeline" id="timeline">
+        <div class="text-center text-muted text-sm">
+            <div class="spinner"></div>
         </div>
+    </div>
+
+    <!-- FAB 일정 추가 -->
+    <button class="schedule-fab" id="fabAddSchedule" onclick="openScheduleModal()">
+        <span class="material-icons">add</span>
+    </button>
+</div>
+
+<!-- 상세 보기 Sheet 모달 -->
+<div id="detailOverlay" class="modal-overlay hidden" onclick="closeDetailModal()"></div>
+<div id="detailSheet" class="modal-sheet hidden">
+    <div class="modal-sheet-handle"></div>
+    <div id="detailContent">
+        <!-- JS에서 렌더링 -->
     </div>
 </div>
 
-<div class="page-content">
-    <div id="scheduleContainer">
-        <?php if (empty($days)): ?>
-            <div class="card text-center">
-                <p class="text-muted mb-16">아직 일정이 없습니다.</p>
-            </div>
-        <?php endif; ?>
+<!-- 일정 추가/수정 Sheet 모달 -->
+<div id="scheduleOverlay" class="modal-overlay hidden" onclick="closeScheduleModal()"></div>
+<div id="scheduleSheet" class="modal-sheet hidden">
+    <div class="modal-sheet-handle"></div>
+    <h3 class="card-title" id="scheduleModalTitle">일정 추가</h3>
+    <input type="hidden" id="scheduleEditId" value="">
 
-        <?php foreach ($days as $day): ?>
-            <div class="card schedule-day" data-day-id="<?= $day['id'] ?>">
-                <div class="flex-between mb-8">
-                    <h3 class="card-title" style="margin-bottom: 0;">
-                        Day <?= $day['day_number'] ?>
-                        <?php if ($day['date']): ?>
-                            <span class="text-sm text-muted">(<?= e($day['date']) ?>)</span>
-                        <?php endif; ?>
-                    </h3>
-                    <button class="btn btn-sm btn-secondary" onclick="editDay(<?= $day['id'] ?>)">편집</button>
-                </div>
-                <?php if ($day['title']): ?>
-                    <p class="text-sm" style="font-weight: 500;"><?= e($day['title']) ?></p>
-                <?php endif; ?>
-                <?php if ($day['note']): ?>
-                    <p class="text-sm text-muted mt-8"><?= nl2br(e($day['note'])) ?></p>
-                <?php endif; ?>
-
-                <div class="schedule-items mt-16">
-                    <?php foreach ($dayItems[$day['id']] ?? [] as $item): ?>
-                        <div class="schedule-item" data-item-id="<?= $item['id'] ?>">
-                            <div class="item-time"><?= e($item['time'] ?? '') ?></div>
-                            <div class="item-content">
-                                <div><?= e($item['content']) ?></div>
-                                <?php if ($item['location']): ?>
-                                    <div class="text-sm text-muted"><?= e($item['location']) ?></div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn btn-sm btn-secondary" onclick="editItem(<?= $item['id'] ?>)">편집</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteItem(<?= $item['id'] ?>, <?= $day['id'] ?>)">삭제</button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <button class="btn btn-sm btn-secondary btn-full mt-8" onclick="addItem(<?= $day['id'] ?>)">+ 항목 추가</button>
-            </div>
-        <?php endforeach; ?>
+    <div class="form-group">
+        <label class="form-label">제목 *</label>
+        <input type="text" id="scheduleTitle" class="form-input" placeholder="일정 제목">
     </div>
 
-    <button class="btn btn-primary btn-full mt-16" onclick="addDay()">+ Day 추가</button>
+    <div class="form-group">
+        <label class="form-label">날짜 (일차)</label>
+        <select id="scheduleDay" class="form-select">
+            <!-- JS에서 옵션 생성 -->
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label class="form-check">
+            <input type="checkbox" id="scheduleAllDay">
+            <span>종일</span>
+        </label>
+    </div>
+
+    <div class="form-row" id="timeRow">
+        <div class="form-group form-group-grow">
+            <label class="form-label">시작 시간</label>
+            <input type="time" id="scheduleStartTime" class="form-input">
+        </div>
+        <div class="form-group form-group-grow">
+            <label class="form-label">종료 시간</label>
+            <input type="time" id="scheduleEndTime" class="form-input">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">장소</label>
+        <input type="text" id="schedulePlace" class="form-input" placeholder="장소 이름">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Google Maps URL (선택)</label>
+        <input type="url" id="scheduleMapsUrl" class="form-input" placeholder="https://maps.google.com/...">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">메모</label>
+        <textarea id="scheduleMemo" class="form-input" rows="3" placeholder="상세 메모"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <div class="category-chips" id="categoryChips">
+            <button type="button" class="cat-chip" data-cat="meal">🍽 식사</button>
+            <button type="button" class="cat-chip" data-cat="transport">🚗 이동</button>
+            <button type="button" class="cat-chip" data-cat="accommodation">🏨 숙소</button>
+            <button type="button" class="cat-chip" data-cat="sightseeing">📸 관광</button>
+            <button type="button" class="cat-chip" data-cat="shopping">🛍 쇼핑</button>
+            <button type="button" class="cat-chip" data-cat="other">📌 기타</button>
+        </div>
+    </div>
+
+    <div class="flex gap-8 mt-16">
+        <button class="btn btn-secondary" onclick="closeScheduleModal()" style="flex:1;">취소</button>
+        <button class="btn btn-primary" onclick="saveScheduleItem()" style="flex:1;">저장</button>
+    </div>
 </div>
 
 <script>
     window.SCHEDULE_CONFIG = {
         tripCode: '<?= e($tripCode) ?>',
         userId: '<?= e($userId) ?>',
-        csrfToken: '<?= e($csrfToken) ?>'
+        csrfToken: '<?= e($csrfToken) ?>',
+        startDate: '<?= e($trip['start_date'] ?? '') ?>',
+        endDate: '<?= e($trip['end_date'] ?? '') ?>',
     };
 </script>
 

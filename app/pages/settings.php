@@ -22,14 +22,7 @@ $isOwner = (bool) $user['is_owner'];
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header">
-    <div class="page-header-row">
-        <div class="page-header-left">
-            <h1>설정</h1>
-            <p class="subtitle"><?= e($tripTitle) ?></p>
-        </div>
-    </div>
-</div>
+<?php $pageHeaderTitle = '설정'; $pageHeaderMenu = false; require __DIR__ . '/../includes/page_header.php'; ?>
 
 <div class="page-content">
     <!-- 여행 정보 -->
