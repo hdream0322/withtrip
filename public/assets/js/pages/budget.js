@@ -244,8 +244,12 @@ function renderExpenseCard(exp) {
 
     html += '<span class="expense-meta-item">' + escHtml(paidByName) + ' 결제</span>';
 
-    if (dateStr) {
-        html += '<span class="expense-meta-item">' + escHtml(dateStr) + '</span>';
+    let dateTimeStr = dateStr;
+    if (exp.expense_time) {
+        dateTimeStr += ' ' + escHtml(exp.expense_time);
+    }
+    if (dateTimeStr) {
+        html += '<span class="expense-meta-item">' + dateTimeStr + '</span>';
     }
 
     const paymentMethod = exp.payment_method || 'card';
@@ -295,8 +299,12 @@ function renderIncomeCard(inc) {
         '<div class="expense-meta">' +
         '<span class="expense-meta-item">' + escHtml(userName) + '</span>';
 
-    if (dateStr) {
-        html += '<span class="expense-meta-item">' + escHtml(dateStr) + '</span>';
+    let dateTimeStr = dateStr;
+    if (inc.income_time) {
+        dateTimeStr += ' ' + escHtml(inc.income_time);
+    }
+    if (dateTimeStr) {
+        html += '<span class="expense-meta-item">' + dateTimeStr + '</span>';
     }
 
     html +=
@@ -352,6 +360,8 @@ function getPaymentMethod() {
 function openExpenseModal(exp) {
     const title = document.getElementById('expenseModalTitle');
     const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
     if (exp) {
         title.textContent = '지출 수정';
@@ -361,6 +371,7 @@ function openExpenseModal(exp) {
         document.getElementById('expenseCurrency').value = exp.currency || 'KRW';
         document.getElementById('expenseDescription').value = exp.description || '';
         document.getElementById('expenseDate').value = exp.expense_date || '';
+        document.getElementById('expenseTime').value = exp.expense_time || '';
         document.getElementById('expenseDutch').checked = exp.is_dutch === 1;
         document.getElementById('dutchSection').style.display = exp.is_dutch === 1 ? 'block' : 'none';
         setPaymentMethod(exp.payment_method || 'card');
@@ -388,6 +399,7 @@ function openExpenseModal(exp) {
         document.getElementById('expenseCurrency').value = 'KRW';
         document.getElementById('expenseDescription').value = '';
         document.getElementById('expenseDate').value = today;
+        document.getElementById('expenseTime').value = currentTime;
         document.getElementById('expenseDutch').checked = false;
         document.getElementById('dutchSection').style.display = 'none';
         setPaymentMethod('card');
@@ -472,6 +484,7 @@ async function saveExpense() {
     const currency = document.getElementById('expenseCurrency').value;
     const description = document.getElementById('expenseDescription').value.trim();
     const expenseDate = document.getElementById('expenseDate').value;
+    const expenseTime = document.getElementById('expenseTime').value;
     const isDutch = document.getElementById('expenseDutch').checked ? 1 : 0;
 
     if (!paidBy) { WP.toast('결제자를 선택해주세요.', 'error'); return; }
@@ -505,6 +518,7 @@ async function saveExpense() {
         currency: currency,
         description: description,
         expense_date: expenseDate || null,
+        expense_time: expenseTime || null,
         is_dutch: isDutch,
         payment_method: getPaymentMethod(),
         splits: splits,
@@ -578,6 +592,8 @@ async function loadIncomes() {
 function openIncomeModal(inc) {
     const title = document.getElementById('incomeModalTitle');
     const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
     if (inc) {
         title.textContent = '수입 수정';
@@ -588,6 +604,7 @@ function openIncomeModal(inc) {
         document.getElementById('incomeCurrency').value = inc.currency || 'KRW';
         document.getElementById('incomeDescription').value = inc.description || '';
         document.getElementById('incomeDate').value = inc.income_date || '';
+        document.getElementById('incomeTime').value = inc.income_time || '';
     } else {
         title.textContent = '수입 추가';
         document.getElementById('incomeEditId').value = '';
@@ -597,6 +614,7 @@ function openIncomeModal(inc) {
         document.getElementById('incomeCurrency').value = 'KRW';
         document.getElementById('incomeDescription').value = '';
         document.getElementById('incomeDate').value = today;
+        document.getElementById('incomeTime').value = currentTime;
     }
 
     _showModal('incomeOverlay', 'incomeSheet');
@@ -621,6 +639,7 @@ async function saveIncome() {
         type: document.getElementById('incomeType').value,
         description: document.getElementById('incomeDescription').value.trim(),
         income_date: document.getElementById('incomeDate').value || null,
+        income_time: document.getElementById('incomeTime').value || null,
     };
 
     try {

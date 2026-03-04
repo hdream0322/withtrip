@@ -4,6 +4,7 @@
 /* 탭 패널 */
 .tab-pane {
     display: none;
+    padding-bottom: 140px;
 }
 
 .tab-pane.active {

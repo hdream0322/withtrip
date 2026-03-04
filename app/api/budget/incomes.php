@@ -21,7 +21,7 @@ if ($method === 'GET') {
          FROM incomes i
          LEFT JOIN users u ON u.trip_code = i.trip_code AND u.user_id = i.user_id
          WHERE i.trip_code = ?
-         ORDER BY i.income_date DESC, i.created_at DESC'
+         ORDER BY i.income_date DESC, IFNULL(i.income_time, "23:59:59") DESC, i.created_at DESC'
     );
     $stmt->execute([$tripCode]);
     $incomes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -43,6 +43,7 @@ if ($method === 'POST') {
     $type        = trim($input['type'] ?? 'other');
     $description = trim($input['description'] ?? '');
     $incomeDate  = $input['income_date'] ?? null;
+    $incomeTime  = $input['income_time'] ?? null;
 
     if (empty($tripCode) || empty($userId) || $amount <= 0) {
         jsonResponse(false, null, '필수 항목을 입력해주세요.', 400);
@@ -57,10 +58,10 @@ if ($method === 'POST') {
     }
 
     $stmt = $db->prepare(
-        'INSERT INTO incomes (trip_code, user_id, amount, currency, type, description, income_date)
-         VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO incomes (trip_code, user_id, amount, currency, type, description, income_date, income_time)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$tripCode, $userId, $amount, $currency, $type, $description ?: null, $incomeDate ?: null]);
+    $stmt->execute([$tripCode, $userId, $amount, $currency, $type, $description ?: null, $incomeDate ?: null, $incomeTime ?: null]);
 
     jsonResponse(true, ['id' => $db->lastInsertId()], '수입이 추가되었습니다.');
 }
@@ -80,6 +81,7 @@ if ($method === 'PUT') {
     $type        = trim($input['type'] ?? 'other');
     $description = trim($input['description'] ?? '');
     $incomeDate  = $input['income_date'] ?? null;
+    $incomeTime  = $input['income_time'] ?? null;
 
     if ($id <= 0 || empty($tripCode) || $amount <= 0) {
         jsonResponse(false, null, '필수 항목을 입력해주세요.', 400);
@@ -94,10 +96,10 @@ if ($method === 'PUT') {
     }
 
     $stmt = $db->prepare(
-        'UPDATE incomes SET user_id = ?, amount = ?, currency = ?, type = ?, description = ?, income_date = ?
+        'UPDATE incomes SET user_id = ?, amount = ?, currency = ?, type = ?, description = ?, income_date = ?, income_time = ?
          WHERE id = ? AND trip_code = ?'
     );
-    $stmt->execute([$userId, $amount, $currency, $type, $description ?: null, $incomeDate ?: null, $id, $tripCode]);
+    $stmt->execute([$userId, $amount, $currency, $type, $description ?: null, $incomeDate ?: null, $incomeTime ?: null, $id, $tripCode]);
 
     jsonResponse(true, null, '수입이 수정되었습니다.');
 }

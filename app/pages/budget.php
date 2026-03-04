@@ -177,6 +177,11 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="form-group">
+        <label class="form-label">시간</label>
+        <input type="time" id="expenseTime" class="form-input">
+    </div>
+
+    <div class="form-group">
         <label class="form-label">결제 방법</label>
         <select id="expensePaymentMethod" class="form-select">
             <option value="card">💳 카드</option>
@@ -283,6 +288,11 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="form-group">
         <label class="form-label">날짜</label>
         <input type="date" id="incomeDate" class="form-input">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">시간</label>
+        <input type="time" id="incomeTime" class="form-input">
     </div>
 
     <div class="flex gap-8">

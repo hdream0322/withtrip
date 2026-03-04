@@ -24,7 +24,7 @@ if ($method === 'GET') {
          FROM expenses e
          LEFT JOIN users u ON u.trip_code = e.trip_code AND u.user_id = e.paid_by
          WHERE e.trip_code = ?
-         ORDER BY e.expense_date DESC, e.created_at DESC'
+         ORDER BY e.expense_date DESC, IFNULL(e.expense_time, "23:59:59") DESC, e.created_at DESC'
     );
     $stmt->execute([$tripCode]);
     $expenses = $stmt->fetchAll();
@@ -74,6 +74,7 @@ if ($method === 'POST') {
     $currency      = $input['currency'] ?? 'KRW';
     $description   = trim($input['description'] ?? '');
     $expenseDate   = $input['expense_date'] ?? null;
+    $expenseTime   = $input['expense_time'] ?? null;
     $isDutch       = (int) ($input['is_dutch'] ?? 0);
     $paymentMethod = in_array($input['payment_method'] ?? '', ['cash', 'card'], true) ? $input['payment_method'] : 'card';
     $splits        = $input['splits'] ?? [];
@@ -92,6 +93,7 @@ if ($method === 'POST') {
     }
 
     $expenseDate = !empty($expenseDate) ? $expenseDate : null;
+    $expenseTime = !empty($expenseTime) ? $expenseTime : null;
 
     // 트랜잭션 시작
     $db->beginTransaction();
@@ -99,10 +101,10 @@ if ($method === 'POST') {
     try {
         // 지출 저장
         $stmt = $db->prepare(
-            'INSERT INTO expenses (trip_code, category_id, paid_by, amount, currency, description, expense_date, is_dutch, payment_method)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO expenses (trip_code, category_id, paid_by, amount, currency, description, expense_date, expense_time, is_dutch, payment_method)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $stmt->execute([$tripCode, $categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch, $paymentMethod]);
+        $stmt->execute([$tripCode, $categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $expenseTime, $isDutch, $paymentMethod]);
         $expenseId = (int) $db->lastInsertId();
 
         // 더치페이 분담 내역 저장
@@ -152,6 +154,7 @@ if ($method === 'PUT') {
     $currency      = $input['currency'] ?? 'KRW';
     $description   = trim($input['description'] ?? '');
     $expenseDate   = $input['expense_date'] ?? null;
+    $expenseTime   = $input['expense_time'] ?? null;
     $isDutch       = (int) ($input['is_dutch'] ?? 0);
     $paymentMethod = in_array($input['payment_method'] ?? '', ['cash', 'card'], true) ? $input['payment_method'] : 'card';
     $splits        = $input['splits'] ?? [];
@@ -169,6 +172,7 @@ if ($method === 'PUT') {
     }
 
     $expenseDate = !empty($expenseDate) ? $expenseDate : null;
+    $expenseTime = !empty($expenseTime) ? $expenseTime : null;
 
     $db->beginTransaction();
 
@@ -177,10 +181,10 @@ if ($method === 'PUT') {
         $stmt = $db->prepare(
             'UPDATE expenses
              SET category_id = ?, paid_by = ?, amount = ?, currency = ?,
-                 description = ?, expense_date = ?, is_dutch = ?, payment_method = ?
+                 description = ?, expense_date = ?, expense_time = ?, is_dutch = ?, payment_method = ?
              WHERE id = ? AND trip_code = ?'
         );
-        $stmt->execute([$categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch, $paymentMethod, $id, $tripCode]);
+        $stmt->execute([$categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $expenseTime, $isDutch, $paymentMethod, $id, $tripCode]);
 
         // 기존 분담 내역 삭제 후 재입력
         $stmt = $db->prepare('DELETE FROM dutch_splits WHERE expense_id = ? AND trip_code = ?');

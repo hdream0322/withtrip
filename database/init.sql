@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   currency    VARCHAR(3) DEFAULT 'KRW',
   description VARCHAR(200),
   expense_date DATE,
+  expense_time TIME DEFAULT NULL COMMENT '지출 시간 (선택)',
   is_dutch     TINYINT(1) DEFAULT 1,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -191,6 +192,7 @@ CREATE TABLE IF NOT EXISTS incomes (
   type        ENUM('budget','refund','other') NOT NULL DEFAULT 'other',
   description VARCHAR(200),
   income_date DATE,
+  income_time TIME DEFAULT NULL COMMENT '수입 시간 (선택)',
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_trip_code (trip_code)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
