@@ -229,7 +229,7 @@ async function addMemberFromModal() {
 }
 
 async function deleteMember(tripCode, userId) {
-    if (!WP.confirm(`${userId} 멤버를 삭제하시겠습니까?`)) return;
+    if (!await WP.confirm(`${userId} 멤버를 삭제하시겠습니까?`)) return;
 
     try {
         const data = await WP.delete(
@@ -253,7 +253,7 @@ async function deleteMember(tripCode, userId) {
 
 async function deleteTrip(tripCode, title) {
     closeAllMenus();
-    if (!WP.confirm(`"${title}" 여행을 삭제하시겠습니까?\n모든 데이터가 삭제됩니다.`)) return;
+    if (!await WP.confirm(`"${title}" 여행을 삭제하시겠습니까?\n모든 데이터가 삭제됩니다.`)) return;
 
     try {
         const data = await WP.api('/api/trips', {

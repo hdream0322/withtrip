@@ -96,7 +96,7 @@ const Settings = {
     },
 
     async deleteMember(userId, displayName) {
-        if (!WP.confirm(displayName + ' 멤버를 삭제하시겠습니까?')) return;
+        if (!await WP.confirm(displayName + ' 멤버를 삭제하시겠습니까?')) return;
 
         try {
             const data = await WP.delete(

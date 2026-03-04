@@ -122,10 +122,47 @@ const WP = {
     },
 
     /**
-     * 확인 다이얼로그
+     * 삭제 확인 모달 (Promise 기반)
      */
-    confirm(message) {
-        return window.confirm(message);
+    async confirm(message) {
+        const overlay = document.getElementById('confirmOverlay');
+        const sheet = document.getElementById('confirmSheet');
+        const messageEl = document.getElementById('confirmMessage');
+
+        if (!overlay || !sheet || !messageEl) {
+            // 폴백: 모달이 없으면 브라우저 대화상자 사용
+            return window.confirm(message);
+        }
+
+        messageEl.textContent = message;
+
+        return new Promise(resolve => {
+            // 전역 resolve 함수 저장 (버튼 클릭 시 호출용)
+            window._confirmResolve = (result) => {
+                _hideModal('confirmOverlay', 'confirmSheet');
+                resolve(result);
+            };
+
+            _showModal('confirmOverlay', 'confirmSheet');
+        });
+    },
+
+    /**
+     * 내부 헬퍼: 삭제 확인 취소
+     */
+    _cancelConfirm() {
+        if (window._confirmResolve) {
+            window._confirmResolve(false);
+        }
+    },
+
+    /**
+     * 내부 헬퍼: 삭제 확인
+     */
+    _confirmDelete() {
+        if (window._confirmResolve) {
+            window._confirmResolve(true);
+        }
     },
 };
 
@@ -149,11 +186,17 @@ document.addEventListener('click', function (e) {
     }
 });
 
-// ESC 키로 드롭다운 닫기
+// ESC 키로 드롭다운 또는 모달 닫기
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         const dd = document.getElementById('headerDropdown');
         if (dd) dd.classList.remove('open');
+
+        // 삭제 확인 모달 닫기
+        const confirmSheet = document.getElementById('confirmSheet');
+        if (confirmSheet && !confirmSheet.classList.contains('hidden')) {
+            WP._cancelConfirm();
+        }
     }
 });
 

@@ -44,6 +44,18 @@ $showNav = $showNav ?? false;
 </nav>
 <?php endif; ?>
 
+<!-- 삭제 확인 모달 (전역) -->
+<div id="confirmOverlay" class="modal-overlay hidden" onclick="WP._cancelConfirm()"></div>
+<div id="confirmSheet" class="modal-sheet hidden">
+    <div class="modal-sheet-handle"></div>
+    <h3 class="card-title">삭제 확인</h3>
+    <p id="confirmMessage" class="confirm-message"></p>
+    <div class="confirm-actions">
+        <button class="btn btn-secondary" onclick="WP._cancelConfirm()">취소</button>
+        <button class="btn btn-danger" id="confirmBtn" onclick="WP._confirmDelete()">삭제</button>
+    </div>
+</div>
+
 </div><!-- /.app-container -->
 
 <script src="/assets/js/common.js?v=<?= CSS_VERSION ?>"></script>

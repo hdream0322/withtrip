@@ -444,7 +444,7 @@ async function saveScheduleItem() {
 }
 
 async function deleteScheduleItem(id) {
-    if (!WP.confirm('이 일정을 삭제하시겠습니까?')) return;
+    if (!await WP.confirm('이 일정을 삭제하시겠습니까?')) return;
 
     try {
         const data = await WP.delete(

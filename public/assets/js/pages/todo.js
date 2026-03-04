@@ -217,7 +217,7 @@ async function saveTodoEdit() {
 }
 
 async function deleteTodoItem(id) {
-    if (!WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
+    if (!await WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
 
     try {
         const data = await WP.delete(

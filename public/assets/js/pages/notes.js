@@ -230,7 +230,7 @@ const Notes = {
        메모 삭제
        ============================================================ */
     async deleteNote(noteId) {
-        if (!WP.confirm('이 메모를 삭제하시겠습니까?')) return;
+        if (!await WP.confirm('이 메모를 삭제하시겠습니까?')) return;
 
         try {
             const result = await WP.delete(

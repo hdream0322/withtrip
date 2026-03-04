@@ -217,7 +217,7 @@ async function saveChecklistEdit() {
 }
 
 async function deleteChecklistItem(id) {
-    if (!WP.confirm('이 항목을 삭제하시겠습니까?')) return;
+    if (!await WP.confirm('이 항목을 삭제하시겠습니까?')) return;
 
     try {
         const data = await WP.delete(

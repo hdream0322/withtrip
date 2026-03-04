@@ -444,7 +444,7 @@ function editExpense(id) {
 }
 
 async function deleteExpense(id) {
-    if (!WP.confirm('이 지출 내역을 삭제하시겠습니까?')) return;
+    if (!await WP.confirm('이 지출 내역을 삭제하시겠습니까?')) return;
 
     try {
         const data = await WP.delete(
@@ -556,7 +556,7 @@ function editIncome(id) {
 }
 
 async function deleteIncome(id) {
-    if (!WP.confirm('이 수입 내역을 삭제하시겠습니까?')) return;
+    if (!await WP.confirm('이 수입 내역을 삭제하시겠습니까?')) return;
 
     try {
         const data = await WP.delete(
