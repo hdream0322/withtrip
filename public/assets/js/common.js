@@ -260,21 +260,14 @@ function _attachModalDragHandler(sheet, overlayId, sheetId) {
         const clientY = e.type.indexOf('touch') === 0 ? e.touches[0].clientY : e.clientY;
         currentY = clientY - startY;
 
-        // scrollTop이 변하면 사용자가 스크롤 중이므로 드래그 무시
+        // scrollTop이 변하면 사용자가 실제로 스크롤 중이므로 드래그 무시
         if (sheet.scrollTop !== startScrollTop) {
             hasScrolled = true;
             return;
         }
 
-        // 최상단(scrollTop === 0)에서만 위로 더 드래그하려는 시도를 감지
-        if (currentY < 0 && sheet.scrollTop === 0) {
-            // 위로 드래그 시도 → 모달 닫기 준비
-            e.preventDefault();
-            var percent = Math.min(Math.abs(currentY) / 300, 1);
-            sheet.style.opacity = Math.max(1 - percent * 0.3, 0.7);
-            sheet.style.transform = 'translateX(-50%) translateY(' + currentY + 'px)';
-        } else if (currentY > 15 && sheet.scrollTop === 0) {
-            // 아래로 드래그 (최상단에서만) → 모달 닫기 준비
+        // 스크롤이 일어나지 않은 상태에서 아래로 드래그할 때만 모달 이동
+        if (currentY > 15) {
             e.preventDefault();
             var percent = Math.min(currentY / 300, 1);
             sheet.style.opacity = Math.max(1 - percent * 0.3, 0.7);
@@ -288,8 +281,8 @@ function _attachModalDragHandler(sheet, overlayId, sheetId) {
         sheet.style.transition = '';
         sheet.style.opacity = '';
 
-        // 스크롤이 일어나지 않았고, 충분히 드래그했을 때만 모달 닫기
-        if (!hasScrolled && Math.abs(currentY) > CLOSE_THRESHOLD && sheet.scrollTop === 0) {
+        // 스크롤이 일어나지 않았고, 충분히 아래로 드래그했을 때만 모달 닫기
+        if (!hasScrolled && currentY > CLOSE_THRESHOLD) {
             _hideModal(overlayId, sheetId);
         } else {
             sheet.style.transform = 'translateX(-50%) translateY(0)';
