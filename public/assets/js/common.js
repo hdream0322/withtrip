@@ -253,12 +253,12 @@ function _attachModalDragHandler(sheet, overlayId, sheetId) {
 
     function handleMove(e) {
         if (!isDragging || startY === 0) return;
-        e.preventDefault();
         const clientY = e.type.indexOf('touch') === 0 ? e.touches[0].clientY : e.clientY;
         currentY = clientY - startY;
 
-        // 아래로 드래그할 때만 이동
-        if (currentY > 0) {
+        // 아래로 드래그할 때만 이동 (위로 스크롤할 때는 스크롤 허용)
+        if (currentY > 15) {
+            e.preventDefault();
             var percent = Math.min(currentY / 300, 1);
             sheet.style.opacity = Math.max(1 - percent * 0.3, 0.7);
             sheet.style.transform = 'translateX(-50%) translateY(' + currentY + 'px)';
