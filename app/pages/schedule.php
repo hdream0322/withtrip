@@ -23,9 +23,8 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="page-content">
     <!-- 날짜 스크롤 바 -->
     <div class="schedule-date-bar">
-        <button class="date-today-btn" id="btnToday" onclick="scrollToToday()">오늘</button>
         <div class="date-scroll" id="dateScroll">
-            <!-- JS에서 날짜 칩 생성 -->
+            <!-- JS에서 전체보기/오늘/1일차/2일차... 칩 생성 -->
         </div>
     </div>
 

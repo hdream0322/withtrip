@@ -13,6 +13,40 @@ $db = getDB();
 if ($method === 'GET') {
     $tripCode = $_GET['trip_code'] ?? '';
 
+    // 여행 기간이 설정되어 있으면 날짜 범위에 맞게 schedule_days 자동 생성
+    $tripStmt = $db->prepare('SELECT start_date, end_date FROM trips WHERE trip_code = ?');
+    $tripStmt->execute([$tripCode]);
+    $tripData = $tripStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($tripData && $tripData['start_date'] && $tripData['end_date']) {
+        $start = new DateTime($tripData['start_date']);
+        $end   = new DateTime($tripData['end_date']);
+
+        // 기존 날짜 목록
+        $existStmt = $db->prepare('SELECT date FROM schedule_days WHERE trip_code = ? AND date IS NOT NULL');
+        $existStmt->execute([$tripCode]);
+        $existingDates = array_column($existStmt->fetchAll(PDO::FETCH_ASSOC), 'date');
+
+        $current = clone $start;
+        while ($current <= $end) {
+            $dateStr = $current->format('Y-m-d');
+            if (!in_array($dateStr, $existingDates)) {
+                $diff = (int)$start->diff($current)->days + 1;
+                // day_number가 이미 있으면 date만 업데이트, 없으면 INSERT
+                $checkStmt = $db->prepare('SELECT id FROM schedule_days WHERE trip_code = ? AND day_number = ?');
+                $checkStmt->execute([$tripCode, $diff]);
+                if ($checkStmt->fetch()) {
+                    $db->prepare('UPDATE schedule_days SET date = ? WHERE trip_code = ? AND day_number = ? AND date IS NULL')
+                       ->execute([$dateStr, $tripCode, $diff]);
+                } else {
+                    $db->prepare('INSERT INTO schedule_days (trip_code, day_number, date) VALUES (?, ?, ?)')
+                       ->execute([$tripCode, $diff, $dateStr]);
+                }
+            }
+            $current->modify('+1 day');
+        }
+    }
+
     $stmt = $db->prepare('SELECT * FROM schedule_days WHERE trip_code = ? ORDER BY day_number ASC');
     $stmt->execute([$tripCode]);
     $days = $stmt->fetchAll(PDO::FETCH_ASSOC);

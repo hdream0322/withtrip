@@ -574,6 +574,7 @@ $dotenv->load();
 > **헤더 메뉴 확장** (2026-03-04): `page_header.php` 드롭다운 메뉴에 "여행 목록"(`/my`), "로그아웃"(`/auth/logout`) 항목 추가. 구분선(`.header-dropdown-divider`) 추가로 설정과 분리. 로그아웃 항목에 위험색(빨간색 #e53935) 강조. CSS_VERSION 3.2.1.
 > **랜딩 페이지 전면 재설계** (2026-03-04): GSAP ScrollTrigger 기반 프리미엄 랜딩 페이지로 전면 개편. 7개 섹션: 다크 그라디언트 Hero + 이모지 파티클 float 애니메이션 / 3단계 사용 흐름 / 4개 기능 쇼케이스 (SVG 모바일 폰 목업) / 숫자 통계 (카운트업) / FAQ 아코디언 / CTA 그라디언트 / 다크 Footer. 플로팅 바 ScrollTrigger 연동. `header.php`: `$bodyClass`/`$headExtra` 변수 지원. `landing.js` 신규: GSAP `defer` 로드 + CDN 미로드 폴백, 모든 애니메이션 `fromTo()`로 명시적 도착 상태, 부모 카드 `tl.set()`. CSS_VERSION 4.0.2.
 > **랜딩 페이지 콘텐츠 정정 및 애니메이션 조정** (2026-03-04): 일정 관리 기능에서 "드래그로 순서 변경" 항목 제거 (미구현). 준비물 체크 기능에서 "뱃지" → "배지" 오타 수정. 통계 섹션 재구성: 구현된 여행 생성 수→DB `schedule_items` 카운트로 변경하여 "등록된 일정" 표시. "앱 설치 필요" → "멤버 초대 무제한"(∞ 기호)로 변경. `landing.js`: ScrollTrigger 애니메이션 시작점을 `top 80%` → `top 60%`로 통일 (화면 40% 상단에 진입했을 때 애니메이션 시작). 무한기호(∞) 정적 표시 처리 추가. CSS_VERSION 4.0.5.
+> **일정 페이지 날짜 선택 개선** (2026-03-04): 상단 날짜 바를 "전체보기", "오늘", "1일차 (6/1)", "2일차 (6/2)" 형태로 리디자인. API `GET /api/schedule/days`에서 여행 start_date~end_date 범위에 맞게 `schedule_days`를 자동으로 생성 (date 없는 여행은 기존방식 유지). 일정 추가 모달 드롭다운에서 "새 일차 추가" 옵션 제거, "1일차 (6/1 일)" 형태로 표시. "전체보기" 칩 선택 시 모든 일차의 아이템을 일차별 섹션으로 묶어 표시. `buildDateBar()`/`selectAll()`/`renderAllTimeline()` 함수 신규. 스와이프는 개별 일차 선택 시에만 동작. CSS_VERSION 4.0.6.
 
 ---
 
