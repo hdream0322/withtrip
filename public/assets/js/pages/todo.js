@@ -1,89 +1,86 @@
 /**
- * To-Do 페이지 JS
+ * 할 일 페이지 JS
  */
-const TD = window.TODO_CONFIG;
 
-/* ============================================================
-   담당자 토글 버튼 (공통)
-   ============================================================ */
+// 모달 열기/닫기
+function openAddModal() {
+    document.getElementById('addOverlay').classList.remove('hidden');
+    document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('addTitle').focus();
+}
 
+function closeAddModal() {
+    document.getElementById('addOverlay').classList.add('hidden');
+    document.getElementById('addModal').classList.add('hidden');
+    document.getElementById('addTitle').value = '';
+    document.getElementById('addDetail').value = '';
+    document.getElementById('addDueDate').value = '';
+    clearAssignees('addAssigneeGroup');
+}
+
+function openEditModal() {
+    document.getElementById('editOverlay').classList.remove('hidden');
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editTitle').focus();
+}
+
+function closeEditModal() {
+    document.getElementById('editOverlay').classList.add('hidden');
+    document.getElementById('editModal').classList.add('hidden');
+}
+
+// 담당자 토글
 function toggleAssigneeBtn(btn, groupId) {
     btn.classList.toggle('selected');
 }
 
-function getSelectedAssignees(groupId) {
-    const group = document.getElementById(groupId);
-    if (!group) return '';
-    const selected = group.querySelectorAll('.assignee-toggle-btn.selected');
-    return Array.from(selected).map(function (b) { return b.getAttribute('data-user-id'); }).join(',');
-}
-
-function clearAssigneeGroup(groupId) {
-    const group = document.getElementById(groupId);
-    if (!group) return;
-    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+function clearAssignees(groupId) {
+    document.querySelectorAll(`#${groupId} .assignee-toggle-btn`).forEach(b => {
         b.classList.remove('selected');
     });
 }
 
-function initAssigneeGroup(groupId, assignedTo) {
-    clearAssigneeGroup(groupId);
+function getSelectedAssignees(groupId) {
+    const selected = document.querySelectorAll(`#${groupId} .assignee-toggle-btn.selected`);
+    return Array.from(selected).map(b => b.getAttribute('data-user-id')).join(',');
+}
+
+function setAssignees(groupId, assignedTo) {
+    clearAssignees(groupId);
     if (!assignedTo) return;
-    const ids = assignedTo.split(',').map(function (s) { return s.trim(); });
-    const group = document.getElementById(groupId);
-    if (!group) return;
-    group.querySelectorAll('.assignee-toggle-btn').forEach(function (b) {
+    const ids = assignedTo.split(',').map(s => s.trim());
+    document.querySelectorAll(`#${groupId} .assignee-toggle-btn`).forEach(b => {
         if (ids.includes(b.getAttribute('data-user-id'))) {
             b.classList.add('selected');
         }
     });
 }
 
-/* ============================================================
-   추가 폼
-   ============================================================ */
-
-function showAddForm() {
-    clearAssigneeGroup('addTodoAssigneeGroup');
-    document.getElementById('addTitle').value   = '';
-    document.getElementById('addDetail').value  = '';
-    document.getElementById('addDueDate').value = '';
-    _showModal('addFormOverlay', 'addForm');
-    document.getElementById('addTitle').focus();
-}
-
-function hideAddForm() {
-    _hideModal('addFormOverlay', 'addForm');
-}
-
-/* ============================================================
-   할일 CRUD
-   ============================================================ */
-
-async function addTodoItem() {
-    const title      = document.getElementById('addTitle').value.trim();
-    const detail     = document.getElementById('addDetail').value.trim();
-    const assignedTo = getSelectedAssignees('addTodoAssigneeGroup');
-    const dueDate    = document.getElementById('addDueDate').value;
+// 할 일 추가
+async function addTodo() {
+    const title = document.getElementById('addTitle').value.trim();
+    const detail = document.getElementById('addDetail').value.trim();
+    const assignedTo = getSelectedAssignees('addAssigneeGroup');
+    const dueDate = document.getElementById('addDueDate').value;
 
     if (!title) {
         WP.toast('제목을 입력해주세요.', 'error');
-        document.getElementById('addTitle').focus();
         return;
     }
 
     try {
         const data = await WP.post('/api/todo', {
-            csrf_token:  TD.csrfToken,
-            trip_code:   TD.tripCode,
-            title:       title,
-            detail:      detail,
+            csrf_token: CONFIG.csrfToken,
+            trip_code: CONFIG.tripCode,
+            title: title,
+            detail: detail,
             assigned_to: assignedTo,
-            due_date:    dueDate,
+            due_date: dueDate
         });
 
         if (data.success) {
-            WP.toast('할 일이 추가되었습니다.');
+            WP.toast('추가되었습니다.');
+            closeAddModal();
             location.reload();
         } else {
             WP.toast(data.message, 'error');
@@ -93,14 +90,15 @@ async function addTodoItem() {
     }
 }
 
+// 할 일 토글
 async function toggleTodo(id, checked) {
     try {
         const data = await WP.put('/api/todo', {
-            csrf_token: TD.csrfToken,
-            id:         id,
-            trip_code:  TD.tripCode,
-            user_id:    TD.userId,
-            is_done:    checked ? 1 : 0,
+            csrf_token: CONFIG.csrfToken,
+            id: id,
+            trip_code: CONFIG.tripCode,
+            user_id: CONFIG.userId,
+            is_done: checked ? 1 : 0
         });
 
         if (data.success) {
@@ -109,7 +107,6 @@ async function toggleTodo(id, checked) {
                 el.classList.toggle('done', checked);
             }
 
-            // 담당자 완료 현황 뱃지 업데이트
             if (data.data && data.data.completedUsers) {
                 updateAssigneeStatus(id, data.data.completedUsers);
             }
@@ -127,15 +124,13 @@ async function toggleTodo(id, checked) {
     }
 }
 
-/**
- * 담당자 완료 현황 뱃지 업데이트
- */
+// 담당자 완료 상태 업데이트
 function updateAssigneeStatus(itemId, completedUsers) {
     const container = document.querySelector(`.assignee-status[data-item-id="${itemId}"]`);
     if (!container) return;
 
-    container.querySelectorAll('.badge-assignee').forEach(function (badge) {
-        const uid  = badge.getAttribute('data-uid');
+    container.querySelectorAll('.badge-assignee').forEach(badge => {
+        const uid = badge.getAttribute('data-uid');
         const name = badge.getAttribute('data-name') || badge.textContent.replace(' ✓', '').trim();
         badge.setAttribute('data-name', name);
 
@@ -149,59 +144,37 @@ function updateAssigneeStatus(itemId, completedUsers) {
     });
 }
 
-async function editTodoItem(id) {
-    try {
-        const data = await WP.api('/api/todo?trip_code=' + TD.tripCode + '&user_id=' + TD.userId);
-
-        if (!data.success) {
-            WP.toast('데이터를 불러올 수 없습니다.', 'error');
-            return;
-        }
-
-        const item = data.data.items.find(function (i) { return parseInt(i.id) === id; });
-        if (!item) {
-            WP.toast('항목을 찾을 수 없습니다.', 'error');
-            return;
-        }
-
-        document.getElementById('editId').value    = id;
-        document.getElementById('editTitle').value  = item.title || '';
-        document.getElementById('editDetail').value = item.detail || '';
-        document.getElementById('editDueDate').value = item.due_date || '';
-        initAssigneeGroup('editTodoAssigneeGroup', item.assigned_to || '');
-
-        document.getElementById('editModal').classList.remove('hidden');
-    } catch (err) {
-        WP.toast(err.message, 'error');
-    }
+// 할 일 수정
+function editTodo(id, title, detail, assignedTo, dueDate) {
+    document.getElementById('editId').value = id;
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editDetail').value = detail;
+    document.getElementById('editDueDate').value = dueDate;
+    setAssignees('editAssigneeGroup', assignedTo);
+    openEditModal();
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden');
-}
-
-async function saveTodoEdit() {
-    const id         = parseInt(document.getElementById('editId').value);
-    const title      = document.getElementById('editTitle').value.trim();
-    const detail     = document.getElementById('editDetail').value.trim();
-    const assignedTo = getSelectedAssignees('editTodoAssigneeGroup');
-    const dueDate    = document.getElementById('editDueDate').value;
+async function updateTodo() {
+    const id = document.getElementById('editId').value;
+    const title = document.getElementById('editTitle').value.trim();
+    const detail = document.getElementById('editDetail').value.trim();
+    const assignedTo = getSelectedAssignees('editAssigneeGroup');
+    const dueDate = document.getElementById('editDueDate').value;
 
     if (!title) {
         WP.toast('제목을 입력해주세요.', 'error');
-        document.getElementById('editTitle').focus();
         return;
     }
 
     try {
         const data = await WP.put('/api/todo', {
-            csrf_token:  TD.csrfToken,
-            id:          id,
-            trip_code:   TD.tripCode,
-            title:       title,
-            detail:      detail,
+            csrf_token: CONFIG.csrfToken,
+            id: parseInt(id),
+            trip_code: CONFIG.tripCode,
+            title: title,
+            detail: detail,
             assigned_to: assignedTo,
-            due_date:    dueDate,
+            due_date: dueDate
         });
 
         if (data.success) {
@@ -216,14 +189,12 @@ async function saveTodoEdit() {
     }
 }
 
-async function deleteTodoItem(id) {
+// 할 일 삭제
+async function deleteTodo(id) {
     if (!await WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
 
     try {
-        const data = await WP.delete(
-            '/api/todo?csrf_token=' + TD.csrfToken +
-            '&id=' + id + '&trip_code=' + TD.tripCode
-        );
+        const data = await WP.delete(`/api/todo?csrf_token=${CONFIG.csrfToken}&id=${id}&trip_code=${CONFIG.tripCode}`);
 
         if (data.success) {
             WP.toast('삭제되었습니다.');
@@ -231,11 +202,9 @@ async function deleteTodoItem(id) {
             if (el) {
                 el.remove();
                 updateTodoCount();
+
                 if (document.querySelectorAll('.todo-item').length === 0) {
-                    const container = document.getElementById('todoContainer');
-                    container.innerHTML = '<div class="card text-center" id="emptyMessage">' +
-                        '<p class="text-muted">아직 할 일이 없습니다.</p>' +
-                        '<p class="text-sm text-muted mt-8">오른쪽 아래 버튼으로 추가해보세요.</p></div>';
+                    document.getElementById('listContainer').innerHTML = '<div class="card text-center"><p class="text-muted">아직 할 일이 없습니다.</p><p class="text-sm text-muted mt-8">오른쪽 아래 버튼으로 추가해보세요.</p></div>';
                 }
             }
         } else {
@@ -246,29 +215,27 @@ async function deleteTodoItem(id) {
     }
 }
 
+// 카운트 업데이트
 function updateTodoCount() {
-    const allItems  = document.querySelectorAll('.todo-item');
+    const allItems = document.querySelectorAll('.todo-item');
     const doneItems = document.querySelectorAll('.todo-item.done');
     const badge = document.getElementById('todoCountBadge');
     if (badge) badge.textContent = doneItems.length + '/' + allItems.length;
 }
 
-/* ============================================================
-   초기화
-   ============================================================ */
+// 모달 클로즈 (오버레이 클릭)
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('addOverlay').addEventListener('click', closeAddModal);
+    document.getElementById('editOverlay').addEventListener('click', closeEditModal);
 
-document.addEventListener('DOMContentLoaded', function () {
-    const addTitleInput = document.getElementById('addTitle');
-    if (addTitleInput) {
-        addTitleInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addTodoItem();
-            }
-        });
-    }
+    document.getElementById('addTitle').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addTodo(); }
+    });
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeEditModal();
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAddModal();
+            closeEditModal();
+        }
     });
 });

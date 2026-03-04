@@ -559,7 +559,7 @@ $dotenv->load();
 > 예산 축소 + 일정 리디자인 + 네비 변경: `budget_categories` 테이블 삭제, 예산 계획 탭 제거(지출 내역+정산 2탭만 유지), "예산"→"지출" 라벨 변경. 하단 네비 순서: 홈/일정/지출/체크/메모. `page_header.php` partial 추출(멤버 페이지 7개 공통 헤더). 일정 페이지 전면 리디자인: 날짜 스크롤바, 타임라인 뷰, Google Maps 외부 연결, FAB, sheet 모달, 카테고리 시스템(meal/transport/accommodation/sightseeing/shopping/other), 스와이프 일차 전환. `schedule_items`에 `end_time`, `is_all_day`, `memo`, `google_maps_url`, `category` 컬럼 추가. CSS_VERSION 3.0.0.
 > 지출 탭 UI 통일: 지출·체크·할일 페이지 탭 스타일 동일하게 통합(`page-tabs`/`page-tab-btn` 공유 CSS in common.css). 지출 내역 ↔ 정산 탭 전환. 하단 네비 "지출" 버튼: 페이지 내 탭 토글(redirect 대신 JS toggle). `footer.php`에서 budget 페이지일 때만 `navBudget` id 설정, `budget.js`에서 intercept해 `switchTab()` 호출. CSS_VERSION 3.0.1.
 > 삭제 확인 모달: 모든 삭제 버튼(지출/수입/체크/할일/일정/메모/멤버/여행)에서 브라우저 기본 `confirm()` 대신 추가/수정 모달과 동일한 sheet 모달 사용. `WP.confirm()` Promise 기반 개선, ESC/오버레이 클릭 닫기 지원. 메시지 개행(\n) CSS `white-space: pre-wrap` 지원. CSS_VERSION 3.0.6.
-> 준비물/할일 페이지 분리: `checklist.php`는 준비물 페이지만, `todo.php`는 할일 페이지만 표시. 각각 독립적인 페이지. footer.php 체크 네비: checklist ↔ todo 간 토글 이동. `checklist.js`는 준비물만, `todo.js`는 할일 기능만 담당. CSS_VERSION 3.0.16.
+> 준비물/할일 페이지 완전 재작성: 모달 구조 단순화 (오버레이 클릭으로 닫기, ESC 키 지원). `checklist.php`/`todo.php` 각각 독립적인 페이지, 추가/수정/삭제 모달 포함. `checklist.js`/`todo.js` 각각 순수 JavaScript로 작성 (modal 열기/닫기, 담당자 관리, CRUD). CONFIG 객체로 tripCode/userId/csrfToken 관리. CSS_VERSION 3.0.17.
 
 ---
 
