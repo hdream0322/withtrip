@@ -29,11 +29,8 @@ $showNav = $showNav ?? false;
     <?php endif; ?>
     <?php
         $checkActive = in_array($currentPage, ['checklist', 'todo']) ? 'active' : '';
-        $checkHref   = $currentPage === 'checklist'
-            ? '/' . e($tripCode) . '/' . e($userId) . '/todo'
-            : '/' . e($tripCode) . '/' . e($userId) . '/checklist';
     ?>
-    <a href="<?= $checkHref ?>" id="nav-checklist" class="nav-item <?= $checkActive ?>">
+    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/checklist" class="nav-item <?= $checkActive ?>">
         <span class="nav-icon">&#9989;</span>
         <span class="nav-label">체크</span>
     </a>

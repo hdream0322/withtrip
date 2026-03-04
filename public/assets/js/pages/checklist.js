@@ -1,7 +1,75 @@
 /**
- * 체크리스트 페이지 JS
+ * 통합 체크 페이지 JS (준비물 + 할 일)
  */
 const CL = window.CHECKLIST_CONFIG;
+const TD = window.TODO_CONFIG;
+
+let currentCheckTab = 'checklist'; // 'checklist' | 'todo'
+
+/* ============================================================
+   탭 전환
+   ============================================================ */
+
+/**
+ * 탭 전환
+ * @param {string} tab - 'checklist' | 'todo'
+ */
+function switchCheckTab(tab) {
+    currentCheckTab = tab;
+
+    const checklistTab = document.getElementById('checklistTab');
+    const todoTab = document.getElementById('todoTab');
+    const tabBtns = document.querySelectorAll('.page-tabs .page-tab-btn');
+
+    if (tab === 'checklist') {
+        checklistTab.classList.remove('hidden');
+        todoTab.classList.add('hidden');
+        tabBtns[0].classList.add('active');
+        tabBtns[1].classList.remove('active');
+        updateHeaderBadge();
+    } else {
+        checklistTab.classList.add('hidden');
+        todoTab.classList.remove('hidden');
+        tabBtns[0].classList.remove('active');
+        tabBtns[1].classList.add('active');
+        updateTodoHeaderBadge();
+    }
+}
+
+/**
+ * FAB 클릭 핸들러
+ */
+function fabClickHandler() {
+    if (currentCheckTab === 'checklist') {
+        showAddClForm();
+    } else {
+        openTodoModal();
+    }
+}
+
+/**
+ * 준비물 탭 헤더 뱃지 업데이트
+ */
+function updateHeaderBadge() {
+    const allItems = document.querySelectorAll('#checklistTab .checklist-item');
+    const doneItems = document.querySelectorAll('#checklistTab .checklist-item.done');
+    const total = allItems.length;
+    const done = doneItems.length;
+    const percent = total > 0 ? Math.round(done / total * 100) : 0;
+
+    const badge = document.getElementById('checklist-header-badge');
+    if (badge) badge.textContent = percent + '%';
+}
+
+/**
+ * 할 일 탭 헤더 뱃지 업데이트
+ */
+function updateTodoHeaderBadge() {
+    const allItems = document.querySelectorAll('#todoTab .todo-item');
+    const doneItems = document.querySelectorAll('#todoTab .todo-item.done');
+    const badge = document.getElementById('checklist-header-badge');
+    if (badge) badge.textContent = doneItems.length + '/' + allItems.length;
+}
 
 /* ============================================================
    담당자 토글 버튼 (공통)
@@ -333,6 +401,148 @@ function applyFilters() {
    초기화
    ============================================================ */
 
+/* ============================================================
+   할 일 (TODO) 함수들
+   ============================================================ */
+
+function openTodoModal(item) {
+    const titleEl = document.getElementById('todoTitle');
+    const detailEl = document.getElementById('todoDetail');
+    const dueEl = document.getElementById('todoDueDate');
+    const titleHeaderEl = document.getElementById('todoModalTitle');
+    const idEl = document.getElementById('todoEditId');
+
+    if (item) {
+        if (titleHeaderEl) titleHeaderEl.textContent = '할 일 수정';
+        if (idEl) idEl.value = item.id;
+        if (titleEl) titleEl.value = item.title || '';
+        if (detailEl) detailEl.value = item.detail || '';
+        if (dueEl) dueEl.value = item.due_date || '';
+        initAssigneeGroup('todoAssigneeGroup', item.assigned_to || '');
+    } else {
+        if (titleHeaderEl) titleHeaderEl.textContent = '할 일 추가';
+        if (idEl) idEl.value = '';
+        if (titleEl) titleEl.value = '';
+        if (detailEl) detailEl.value = '';
+        if (dueEl) dueEl.value = '';
+        clearAssigneeGroup('todoAssigneeGroup');
+    }
+
+    _showModal('todoOverlay', 'todoSheet');
+    if (titleEl) titleEl.focus();
+}
+
+function closeTodoModal() {
+    _hideModal('todoOverlay', 'todoSheet');
+}
+
+function editTodoItem(id) {
+    const item = window.TODO_DATA.find(function (i) { return parseInt(i.id) === id; });
+    if (item) openTodoModal(item);
+}
+
+async function saveTodoItem() {
+    const idEl = document.getElementById('todoEditId');
+    const titleEl = document.getElementById('todoTitle');
+    const detailEl = document.getElementById('todoDetail');
+    const dueEl = document.getElementById('todoDueDate');
+
+    const id = idEl ? idEl.value : '';
+    const title = titleEl ? titleEl.value.trim() : '';
+    const detail = detailEl ? detailEl.value.trim() : '';
+    const assignedTo = getSelectedAssignees('todoAssigneeGroup');
+    const dueDate = dueEl ? dueEl.value : '';
+
+    if (!title) {
+        WP.toast('제목을 입력해주세요.', 'error');
+        if (titleEl) titleEl.focus();
+        return;
+    }
+
+    try {
+        const payload = {
+            csrf_token: TD.csrfToken,
+            trip_code: TD.tripCode,
+            title: title,
+            detail: detail,
+            assigned_to: assignedTo,
+            due_date: dueDate,
+        };
+        if (id) payload.id = id;
+
+        const data = id
+            ? await WP.put('/api/todo', payload)
+            : await WP.post('/api/todo', payload);
+
+        if (data.success) {
+            WP.toast(id ? '수정되었습니다.' : '할 일이 추가되었습니다.');
+            closeTodoModal();
+            location.reload();
+        } else {
+            WP.toast(data.message, 'error');
+        }
+    } catch (err) {
+        WP.toast(err.message, 'error');
+    }
+}
+
+async function toggleTodo(id, checked) {
+    try {
+        const data = await WP.put('/api/todo', {
+            csrf_token: TD.csrfToken,
+            id: id,
+            trip_code: TD.tripCode,
+            user_id: TD.userId,
+            is_done: checked ? 1 : 0,
+        });
+
+        if (data.success) {
+            const el = document.querySelector('.todo-item[data-id="' + id + '"]');
+            if (el) el.classList.toggle('done', checked);
+            if (data.data && data.data.completedUsers) {
+                updateAssigneeStatus(id, data.data.completedUsers);
+            }
+            updateTodoHeaderBadge();
+        } else {
+            WP.toast(data.message, 'error');
+            const cb = document.querySelector('.todo-item[data-id="' + id + '"] input[type="checkbox"]');
+            if (cb) cb.checked = !checked;
+        }
+    } catch (err) {
+        WP.toast(err.message, 'error');
+        const cb = document.querySelector('.todo-item[data-id="' + id + '"] input[type="checkbox"]');
+        if (cb) cb.checked = !checked;
+    }
+}
+
+async function deleteTodoItem(id) {
+    if (!await WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
+
+    try {
+        const data = await WP.delete('/api/todo?csrf_token=' + TD.csrfToken + '&id=' + id + '&trip_code=' + TD.tripCode);
+        if (data.success) {
+            WP.toast('삭제되었습니다.');
+            const el = document.querySelector('.todo-item[data-id="' + id + '"]');
+            if (el) {
+                el.remove();
+                updateTodoHeaderBadge();
+                if (document.querySelectorAll('.todo-item').length === 0) {
+                    const container = document.getElementById('todoContainer');
+                    container.innerHTML = '<div class="card text-center" id="emptyMessage"><p class="text-muted">아직 할 일이 없습니다.</p><p class="text-sm text-muted mt-8">오른쪽 아래 버튼으로 추가해보세요.</p></div>';
+                }
+            }
+        } else {
+            WP.toast(data.message, 'error');
+        }
+    } catch (err) {
+        WP.toast(err.message, 'error');
+    }
+}
+
+/* ============================================================
+   초기화
+   ============================================================ */
+
 document.addEventListener('DOMContentLoaded', function () {
     // 엔터키: 준비물 추가
     var addItemInput = document.getElementById('addItem');
@@ -342,8 +552,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 엔터키: 할 일 제목 입력
+    var todoTitleInput = document.getElementById('todoTitle');
+    if (todoTitleInput) {
+        todoTitleInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); saveTodoItem(); }
+        });
+    }
+
     // ESC: 모달 닫기
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') hideEditClForm();
+        if (e.key === 'Escape') {
+            hideEditClForm();
+            closeTodoModal();
+        }
     });
 });
