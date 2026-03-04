@@ -516,7 +516,10 @@ $dotenv->load();
 11. **display_errors 비활성화:** `public/index.php` 최상단에 `ini_set('display_errors', 0);` 추가. `APP_ENV=development`일 때만 에러 상세 출력, `production`에서는 커스텀 에러 페이지로 대체
 12. **Post-Login Redirect:** Google OAuth 로그인 시작 전 현재 URL을 `$_SESSION['redirect_after_login']`에 저장 → 콜백 완료 후 해당 URL로 복귀 (없으면 `/my`). `/`로 시작하는 내부 URL만 허용, `//`로 시작하는 URL은 차단
 13. **Login IP 추적:** 오너 로그인 시 `CF-Connecting-IP` 헤더 우선 확인 → 없으면 `X-Forwarded-For` → 없으면 `REMOTE_ADDR` 순으로 IP 감지 후 `owners.last_ip`에 저장
-14. **CSS 버전 관리:** `header.php`에 `const CSS_VERSION = '1.0.0'` 상수 정의. 모든 CSS/JS 링크에 `?v=<?= CSS_VERSION ?>` 파라미터 추가. CSS 수정 시 버전 번호 increment 필수
+14. **CSS 버전 관리:** `header.php`에 `const CSS_VERSION` 상수 정의. 모든 CSS/JS 링크에 `?v=<?= CSS_VERSION ?>` 파라미터 추가. 버전 관리 규칙:
+    - **패치 버전 (마지막 자리)**: UI 작은 수정, 버그 픽스, 스타일 미세 조정 등 자주 올림 (2.0.4 → 2.0.5)
+    - **마이너 버전 (중간 자리)**: 특정 페이지/기능의 대폭 리디자인, 새로운 컴포넌트 추가 등 큰 변화 (2.0.x → 2.1.0)
+    - **메이저 버전 (첫 자리)**: 전체 디자인 시스템 개편, 구조적 변화 등 완전 전면 개편 (2.x.x → 3.0.0)
 
 ---
 
@@ -585,7 +588,7 @@ $dotenv->load();
 - **페이지 새로고침 최소화 (AJAX 우선):** 모든 데이터 조작(지출 추가, 체크리스트 토글, To-Do 완료 등)은 `fetch()` API 기반으로 구현. DOM만 부분 업데이트. 폼 submit으로 페이지 리로드하는 방식 금지
 - **에러 메시지 한국어화:** fetch 실패 시 `"Failed to fetch"` 등 기술적 메시지를 사용자에게 그대로 노출 금지. `"네트워크 연결을 확인해주세요."` 등 한국어 안내 메시지로 변환
 - **환경 분기:** `APP_ENV` 값으로 개발/운영 동작 분기. 운영환경에서는 절대 스택 트레이스 노출 금지
-- **CSS 수정 시:** 반드시 `header.php`의 `CSS_VERSION` 상수를 increment하여 브라우저 캐시 강제 갱신
+- **CSS 수정 시:** 반드시 `header.php`의 `CSS_VERSION` 상수를 버전 관리 규칙에 따라 increment (패치: 자주, 마이너: 큰 변화, 메이저: 전면 개편). 브라우저 캐시 강제 갱신
 - **기능별 파일 분리 (유지보수 우선):** 기능 단위로 파일을 최대한 잘게 쪼갤 것. 하나의 파일이 하나의 역할만 담당하도록 설계. 구체적인 원칙은 아래와 같음
 
   - **API:** 기능별로 파일 분리. 예: `api/budget.php` 하나에 모든 예산 로직을 넣지 말고 `api/budget/plan.php` / `api/budget/expense.php` / `api/budget/settlement.php` 로 분리
