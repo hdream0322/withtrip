@@ -1,43 +1,12 @@
-/* 예산 관리 스타일 */
-
-/* 탭 네비게이션 */
-.budget-tabs {
-    display: flex;
-    background: var(--color-bg-card);
-    border-radius: var(--radius);
-    padding: 4px;
-    gap: 4px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border-light);
-}
-
-.budget-tab {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    font-weight: 600;
-    background: transparent;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 44px;
-}
-
-.budget-tab.active {
-    background: var(--color-primary);
-    color: #fff;
-    box-shadow: var(--shadow-sm);
-}
+/* 지출 관리 스타일 */
+/* 탭 네비게이션 → common.css의 .page-tabs/.page-tab-btn 사용 */
 
 /* 탭 패널 */
-.tab-panel {
+.tab-pane {
     display: none;
 }
 
-.tab-panel.active {
+.tab-pane.active {
     display: block;
 }
 

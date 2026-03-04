@@ -705,6 +705,46 @@ body {
 }
 .hidden { display: none !important; }
 
+/* 공통 탭 네비게이션 (체크/할일/지출 공유) */
+.page-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: var(--color-border-light);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.page-tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 40px;
+}
+
+.page-tab-btn.active {
+    background: #fff;
+    color: var(--color-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-pane {
+    animation: fadeInUp 0.15s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* 인라인 링크 (메모·할일 내용에서 URL 자동 변환) */
 .note-link {
     color: var(--color-primary);

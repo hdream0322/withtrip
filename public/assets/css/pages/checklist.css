@@ -1,44 +1,6 @@
 /* 체크리스트 + 할일 통합 스타일 */
 
-/* 탭 네비게이션 */
-.page-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 16px;
-    background: var(--color-border-light);
-    border-radius: var(--radius-sm);
-    padding: 3px;
-}
-
-.page-tab-btn {
-    flex: 1;
-    padding: 8px 0;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.page-tab-btn.active {
-    background: #fff;
-    color: var(--color-primary);
-    font-weight: 600;
-    box-shadow: var(--shadow-sm);
-}
-
-/* 탭 콘텐츠 */
-.tab-pane {
-    animation: fadeIn 0.15s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+/* 탭 네비게이션 → common.css 로 이동 */
 
 /* ---- 할일 항목 ---- */
 .todo-item {

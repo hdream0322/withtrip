@@ -33,13 +33,13 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="page-content">
     <!-- 탭 네비게이션 -->
-    <div class="budget-tabs">
-        <button class="budget-tab active" data-tab="expenses">지출 내역</button>
-        <button class="budget-tab" data-tab="settlement">정산</button>
+    <div class="page-tabs">
+        <button class="page-tab-btn active" data-tab="expenses">지출 내역</button>
+        <button class="page-tab-btn" data-tab="settlement">정산</button>
     </div>
 
     <!-- 탭 1: 지출 내역 -->
-    <div class="tab-panel active" id="tabExpenses">
+    <div class="tab-pane active" id="tabExpenses">
         <!-- 지출 목록 -->
         <div id="expenseList">
             <div class="text-center text-muted text-sm">
@@ -48,8 +48,8 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 탭 3: 정산 -->
-    <div class="tab-panel" id="tabSettlement">
+    <!-- 탭 2: 정산 -->
+    <div class="tab-pane" id="tabSettlement">
         <div id="settlementLoading" class="text-center mt-24">
             <div class="spinner"></div>
             <p class="text-sm text-muted mt-8">정산 데이터를 불러오는 중...</p>

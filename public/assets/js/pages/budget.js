@@ -31,34 +31,49 @@ function initTabs() {
         'settlement': 'tabSettlement',
     };
 
-    document.querySelectorAll('.budget-tab').forEach(tab => {
+    document.querySelectorAll('.page-tab-btn[data-tab]').forEach(tab => {
         tab.addEventListener('click', () => {
-            document.querySelectorAll('.budget-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            const targetId = tabMap[tab.dataset.tab] || 'tabExpenses';
-            document.getElementById(targetId).classList.add('active');
-
-            // FAB 표시/숨기기
-            updateFabVisibility(tab.dataset.tab);
-
-            // 정산 탭 lazy loading
-            if (tab.dataset.tab === 'settlement' && !settlementLoaded) {
-                settlementLoaded = true;
-                Settlement.init();
-            }
+            switchTab(tab.dataset.tab);
         });
     });
 
     updateFabVisibility('expenses');
+
+    // 하단 네비 "지출" 클릭 시 탭 토글
+    const navBudget = document.getElementById('navBudget');
+    if (navBudget) {
+        navBudget.addEventListener('click', e => {
+            e.preventDefault();
+            const active = document.querySelector('.tab-pane.active');
+            const next = active?.id === 'tabExpenses' ? 'settlement' : 'expenses';
+            switchTab(next);
+        });
+    }
+}
+
+function switchTab(tabName) {
+    const tabMap = { 'expenses': 'tabExpenses', 'settlement': 'tabSettlement' };
+
+    document.querySelectorAll('.page-tab-btn[data-tab]').forEach(t => t.classList.remove('active'));
+    const activeBtn = document.querySelector('.page-tab-btn[data-tab="' + tabName + '"]');
+    if (activeBtn) activeBtn.classList.add('active');
+
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const targetId = tabMap[tabName] || 'tabExpenses';
+    document.getElementById(targetId).classList.add('active');
+
+    updateFabVisibility(tabName);
+
+    if (tabName === 'settlement' && !settlementLoaded) {
+        settlementLoaded = true;
+        Settlement.init();
+    }
 }
 
 function handleHashTab() {
     const hash = location.hash.replace('#', '');
     if (hash === 'settlement') {
-        const tab = document.querySelector('.budget-tab[data-tab="' + hash + '"]');
-        if (tab) tab.click();
+        switchTab('settlement');
     }
 }
 

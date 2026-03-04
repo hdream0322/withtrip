@@ -16,10 +16,17 @@ $showNav = $showNav ?? false;
         <span class="nav-icon">&#128197;</span>
         <span class="nav-label">일정</span>
     </a>
-    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/budget" class="nav-item <?= $currentPage === 'budget' ? 'active' : '' ?>">
+    <?php if ($currentPage === 'budget'): ?>
+    <a href="#" id="navBudget" class="nav-item active">
         <span class="nav-icon">&#128176;</span>
         <span class="nav-label">지출</span>
     </a>
+    <?php else: ?>
+    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/budget" class="nav-item">
+        <span class="nav-icon">&#128176;</span>
+        <span class="nav-label">지출</span>
+    </a>
+    <?php endif; ?>
     <?php
         $checkActive = in_array($currentPage, ['checklist', 'todo']) ? 'active' : '';
         $checkHref   = $currentPage === 'checklist'
