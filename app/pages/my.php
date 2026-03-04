@@ -50,7 +50,10 @@ require_once __DIR__ . '/../includes/header.php';
             <h1>내 여행</h1>
             <p class="subtitle"><?= e($_SESSION['owner_name'] ?? '') ?>님</p>
         </div>
-        <a href="/auth/logout" class="btn btn-sm btn-secondary">로그아웃</a>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <a href="/" class="back-link">← 홈</a>
+            <a href="/auth/logout" class="btn btn-sm btn-secondary">로그아웃</a>
+        </div>
     </div>
 </div>
 

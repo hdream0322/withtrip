@@ -546,6 +546,8 @@ $dotenv->load();
 > 체크리스트·할일 담당자 복수 선택 기능 추가 (토글 버튼 UI, comma-separated 저장). 개인별 완료 체크 기능 추가: `checklist_completions`, `todo_completions` 테이블로 사용자별 완료 상태 독립 관리. 담당자별 완료 현황(✓/미완료) 뱃지 표시. CSS_VERSION 1.9.0.
 > 공유 메모 목록 UI를 체크리스트 스타일 컴팩트 행으로 변경. 클릭 시 전체 내용 펼침/접기. 메모·할일 상세 내용의 URL 자동 링크 변환(`linkify` PHP/JS 함수, http 없는 도메인도 지원). 확장된 메모 블록 간 여백 문제 수정. CSS_VERSION 1.9.5.
 > `.page-header` 플로팅 스타일 개선: `position: sticky` + `backdrop-filter: blur(16px)` 반투명 유리 효과, 하단 청록→코랄 그라디언트 하이라이트 테두리(`::after`). `overflow: hidden` → `overflow: clip` 변경으로 PC뷰에서도 sticky 정상 동작. CSS_VERSION 2.0.2.
+> `/my` 페이지 모달: 체크리스트·할일과 동일한 디자인/모션 적용. `translateY(100%)` → `translateY(0)` 슬라이드업 애니메이션(0.25s), visible/hidden 클래스 기반, requestAnimationFrame 최적화. PC에서도 모바일과 동일하게 하단에서 올라옴 (중앙 정렬 제거). ESC 키 닫기 지원. CSS_VERSION 2.0.3.
+> 뒤로가기 버튼: 네비게이션 바가 없는 모든 페이지에 뒤로가기 버튼 추가. `my.php`→`/`, `new.php`→`/my`, `contact.php`→`/`. `.back-link` 스타일을 common.css로 통합 (frosted glass 헤더에 맞는 다크 텍스트). `home.php` 더보기 메뉴에서 공유 메모 항목 제거 (하단 네비에 이미 있음). CSS_VERSION 2.0.4.
 
 ---
 

@@ -1,19 +1,5 @@
 /* 멤버 목록 페이지 스타일 */
 
-.back-link {
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    font-size: 0.85rem;
-    padding: 6px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: var(--radius-sm);
-    transition: all 0.2s;
-}
-
-.back-link:active {
-    background: rgba(255, 255, 255, 0.15);
-}
-
 /* 멤버 리스트 */
 .members-list {
     display: flex;

@@ -36,17 +36,38 @@ document.addEventListener('click', function (e) {
 
 // ── 모달 공통 ──────────────────────────────────────────────
 
+function openModal(id) {
+    const overlay = document.getElementById(id);
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(function () {
+        overlay.classList.add('visible');
+    });
+}
+
 function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
+    const overlay = document.getElementById(id);
+    overlay.classList.remove('visible');
+    setTimeout(function () {
+        overlay.classList.add('hidden');
+    }, 250);
 }
 
 // 오버레이 클릭 시 모달 닫기
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', function (e) {
         if (e.target === this) {
-            this.classList.add('hidden');
+            closeModal(this.id);
         }
     });
+});
+
+// ESC 키 닫기
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.visible').forEach(overlay => {
+            closeModal(overlay.id);
+        });
+    }
 });
 
 // ── 수정 모달 ──────────────────────────────────────────────
@@ -63,7 +84,7 @@ function openEditModal(tripCode) {
     document.getElementById('editStartDate').value = card.dataset.startDate || '';
     document.getElementById('editEndDate').value = card.dataset.endDate || '';
 
-    document.getElementById('editModal').classList.remove('hidden');
+    openModal('editModal');
     document.getElementById('editTitle').focus();
 }
 
@@ -121,7 +142,7 @@ async function openMembersModal(tripCode) {
     document.getElementById('modalNewUserId').value = '';
     document.getElementById('modalNewDisplayName').value = '';
 
-    document.getElementById('membersModal').classList.remove('hidden');
+    openModal('membersModal');
     await loadMembers(tripCode);
 }
 

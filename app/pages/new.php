@@ -12,8 +12,13 @@ $csrfToken = generateCsrfToken();
 ?>
 
 <div class="page-header">
-    <h1>새 여행 만들기</h1>
-    <p class="subtitle"><?= e($_SESSION['owner_name'] ?? '') ?>님의 새로운 여행</p>
+    <div class="flex-between">
+        <div>
+            <h1>새 여행 만들기</h1>
+            <p class="subtitle"><?= e($_SESSION['owner_name'] ?? '') ?>님의 새로운 여행</p>
+        </div>
+        <a href="/my" class="back-link">← 내 여행</a>
+    </div>
 </div>
 
 <div class="page-content no-nav">

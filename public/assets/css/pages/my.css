@@ -166,44 +166,37 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
     z-index: 200;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    animation: overlayFade 0.18s ease;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.25s ease;
 }
 
-@keyframes overlayFade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.modal-overlay.visible {
+    background: rgba(0, 0, 0, 0.45);
 }
 
 .modal {
-    background: #fff;
+    background: var(--color-bg-card);
     border-radius: 20px 20px 0 0;
     width: 100%;
     max-width: 480px;
     max-height: 88vh;
     display: flex;
     flex-direction: column;
-    animation: modalSlideUp 0.22s ease;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
 }
 
-@keyframes modalSlideUp {
-    from { transform: translateY(24px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-
-@media (min-width: 481px) {
-    .modal-overlay {
-        align-items: center;
-        padding: 24px;
-    }
-    .modal {
-        border-radius: 16px;
-        max-height: 90vh;
-    }
+.modal-overlay.visible .modal {
+    transform: translateY(0);
 }
 
 .modal-header {

@@ -125,10 +125,6 @@ require_once __DIR__ . '/../includes/header.php';
                 <span>정산</span>
                 <span>&rsaquo;</span>
             </a>
-            <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/notes" class="menu-item">
-                <span>공유 메모</span>
-                <span>&rsaquo;</span>
-            </a>
             <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/members" class="menu-item">
                 <span>멤버 목록</span>
                 <span>&rsaquo;</span>

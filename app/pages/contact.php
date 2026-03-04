@@ -14,8 +14,13 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
-    <h1>문의 및 제안</h1>
-    <p class="subtitle">WithPlan에 대한 의견을 보내주세요</p>
+    <div class="flex-between">
+        <div>
+            <h1>문의 및 제안</h1>
+            <p class="subtitle">WithPlan에 대한 의견을 보내주세요</p>
+        </div>
+        <a href="/" class="back-link">← 홈</a>
+    </div>
 </div>
 
 <div class="page-content no-nav">
