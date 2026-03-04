@@ -174,6 +174,10 @@ function renderExpenseCard(exp) {
         '<span class="expense-badge ' + (isDutch ? 'badge-dutch' : 'badge-solo') + '">' +
         (isDutch ? '분담' : '개인') +
         '</span>' +
+        '<div class="expense-actions">' +
+        '<button class="btn-icon" onclick="editExpense(' + exp.id + ')" title="수정"><span class="material-icons">edit</span></button>' +
+        '<button class="btn-icon danger" onclick="deleteExpense(' + exp.id + ')" title="삭제"><span class="material-icons">delete_outline</span></button>' +
+        '</div>' +
         '</div>';
 
     if (isDutch && exp.splits && exp.splits.length > 0) {
@@ -189,12 +193,7 @@ function renderExpenseCard(exp) {
         html += '</div>';
     }
 
-    html +=
-        '<div class="expense-actions">' +
-        '<button class="btn-icon" onclick="editExpense(' + exp.id + ')" title="수정"><span class="material-icons">edit</span></button>' +
-        '<button class="btn-icon danger" onclick="deleteExpense(' + exp.id + ')" title="삭제"><span class="material-icons">delete_outline</span></button>' +
-        '</div>' +
-        '</div>';
+    html += '</div>';
 
     return html;
 }
@@ -220,10 +219,10 @@ function renderIncomeCard(inc) {
 
     html +=
         '<span class="income-badge">' + (typeLabel[inc.type] || '기타') + '</span>' +
-        '</div>' +
         '<div class="expense-actions">' +
         '<button class="btn-icon" onclick="editIncome(' + inc.id + ')" title="수정"><span class="material-icons">edit</span></button>' +
         '<button class="btn-icon danger" onclick="deleteIncome(' + inc.id + ')" title="삭제"><span class="material-icons">delete_outline</span></button>' +
+        '</div>' +
         '</div>' +
         '</div>';
 

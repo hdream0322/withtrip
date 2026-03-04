@@ -56,10 +56,12 @@
 .expense-meta {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     font-size: 0.8rem;
     color: var(--color-text-muted);
     margin-bottom: 6px;
+    margin-top: 8px;
 }
 
 .expense-meta-item {
@@ -109,10 +111,9 @@
 
 .expense-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-border-light);
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 /* 모달 */
