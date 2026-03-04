@@ -59,33 +59,6 @@ function initAssigneeGroup(groupId, assignedTo) {
 }
 
 /* ============================================================
-   모달 유틸
-   ============================================================ */
-
-function _showModal(overlayId, sheetId) {
-    var overlay = document.getElementById(overlayId);
-    var sheet   = document.getElementById(sheetId);
-    overlay.classList.remove('hidden');
-    sheet.classList.remove('hidden');
-    requestAnimationFrame(function () {
-        overlay.classList.add('visible');
-        sheet.classList.add('visible');
-    });
-}
-
-function _hideModal(overlayId, sheetId) {
-    var overlay = document.getElementById(overlayId);
-    var sheet   = document.getElementById(sheetId);
-    if (!overlay || !sheet) return;
-    overlay.classList.remove('visible');
-    sheet.classList.remove('visible');
-    setTimeout(function () {
-        overlay.classList.add('hidden');
-        sheet.classList.add('hidden');
-    }, 250);
-}
-
-/* ============================================================
    추가 모달
    ============================================================ */
 

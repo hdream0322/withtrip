@@ -48,27 +48,12 @@ function showAddForm() {
     document.getElementById('addTitle').value   = '';
     document.getElementById('addDetail').value  = '';
     document.getElementById('addDueDate').value = '';
-
-    var overlay = document.getElementById('addFormOverlay');
-    var form    = document.getElementById('addForm');
-    overlay.classList.remove('hidden');
-    form.classList.remove('hidden');
-    requestAnimationFrame(function () {
-        overlay.classList.add('visible');
-        form.classList.add('visible');
-    });
+    _showModal('addFormOverlay', 'addForm');
     document.getElementById('addTitle').focus();
 }
 
 function hideAddForm() {
-    var overlay = document.getElementById('addFormOverlay');
-    var form    = document.getElementById('addForm');
-    overlay.classList.remove('visible');
-    form.classList.remove('visible');
-    setTimeout(function () {
-        overlay.classList.add('hidden');
-        form.classList.add('hidden');
-    }, 250);
+    _hideModal('addFormOverlay', 'addForm');
 }
 
 /* ============================================================

@@ -172,3 +172,17 @@ CREATE TABLE IF NOT EXISTS todo_completions (
   UNIQUE KEY uniq_todo_completion (todo_id, user_id),
   INDEX idx_trip_code (trip_code)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 16. incomes - 수입 내역
+CREATE TABLE IF NOT EXISTS incomes (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  trip_code   VARCHAR(8) NOT NULL,
+  user_id     VARCHAR(30) NOT NULL,
+  amount      DECIMAL(12,0) NOT NULL,
+  currency    VARCHAR(3) DEFAULT 'KRW',
+  type        ENUM('budget','refund','other') NOT NULL DEFAULT 'other',
+  description VARCHAR(200),
+  income_date DATE,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_trip_code (trip_code)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

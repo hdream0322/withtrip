@@ -23,7 +23,7 @@
     --radius: 12px;
     --radius-sm: 8px;
     --nav-height: 64px;
-    --header-height: 62px;
+    --header-height: 50px;
 }
 
 * {
@@ -77,16 +77,16 @@ body {
     padding-bottom: 24px;
 }
 
-/* 페이지 헤더 - 플로팅 스타일 */
+/* 페이지 헤더 - LiquidGlass 스타일 */
 .page-header {
     position: sticky;
     top: 0;
     z-index: 50;
-    padding: 14px 20px 13px;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 4px 24px rgba(8, 145, 178, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 10px 16px 9px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 24px rgba(8, 145, 178, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .page-header::after {
@@ -95,7 +95,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 2.5px;
+    height: 2px;
     background: linear-gradient(
         90deg,
         var(--color-primary) 0%,
@@ -105,15 +105,125 @@ body {
 }
 
 .page-header h1 {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--color-text);
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .page-header .subtitle {
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 헤더 내부 레이아웃 */
+.page-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.page-header-left {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* 헤더 more_vert 드롭다운 */
+.header-more-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.header-more-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.header-more-btn:hover,
+.header-more-btn:active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.header-more-btn .material-icons {
+    font-size: 22px;
+}
+
+.header-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 4px 0;
+    z-index: 60;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.header-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: background 0.12s;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.header-dropdown-item:hover,
+.header-dropdown-item:active {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.header-dropdown-item .material-icons {
+    font-size: 20px;
+    color: var(--color-text-secondary);
+}
+
+/* 헤더 우측 뱃지(진행률 등) + more_vert 공존 */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 /* 뒤로가기 링크 (page-header 내 우측 배치) */

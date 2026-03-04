@@ -166,6 +166,7 @@ try {
             'settlement' => 'settlement',
             'members'    => 'members',
             'notes'      => 'notes',
+            'settings'   => 'settings',
         ];
 
         if (!isset($pageMap[$page])) {

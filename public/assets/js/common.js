@@ -128,3 +128,59 @@ const WP = {
         return window.confirm(message);
     },
 };
+
+/* ============================================================
+   헤더 드롭다운 메뉴
+   ============================================================ */
+
+function toggleHeaderMenu() {
+    const dd = document.getElementById('headerDropdown');
+    if (!dd) return;
+    dd.classList.toggle('open');
+}
+
+// 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', function (e) {
+    const dd = document.getElementById('headerDropdown');
+    if (!dd) return;
+    const wrap = dd.closest('.header-more-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+        dd.classList.remove('open');
+    }
+});
+
+// ESC 키로 드롭다운 닫기
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        const dd = document.getElementById('headerDropdown');
+        if (dd) dd.classList.remove('open');
+    }
+});
+
+/* ============================================================
+   공용 Sheet 모달 유틸
+   ============================================================ */
+
+function _showModal(overlayId, sheetId) {
+    var overlay = document.getElementById(overlayId);
+    var sheet   = document.getElementById(sheetId);
+    if (!overlay || !sheet) return;
+    overlay.classList.remove('hidden');
+    sheet.classList.remove('hidden');
+    requestAnimationFrame(function () {
+        overlay.classList.add('visible');
+        sheet.classList.add('visible');
+    });
+}
+
+function _hideModal(overlayId, sheetId) {
+    var overlay = document.getElementById(overlayId);
+    var sheet   = document.getElementById(sheetId);
+    if (!overlay || !sheet) return;
+    overlay.classList.remove('visible');
+    sheet.classList.remove('visible');
+    setTimeout(function () {
+        overlay.classList.add('hidden');
+        sheet.classList.add('hidden');
+    }, 250);
+}

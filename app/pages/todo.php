@@ -69,13 +69,25 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
-    <div class="flex-between">
-        <div>
+    <div class="page-header-row">
+        <div class="page-header-left">
             <h1>할 일</h1>
             <p class="subtitle"><?= e($tripTitle) ?></p>
         </div>
-        <div class="todo-count-badge" id="todoCountBadge">
-            <?= $doneItems ?>/<?= $totalItems ?>
+        <div class="header-right">
+            <div class="todo-count-badge" id="todoCountBadge">
+                <?= $doneItems ?>/<?= $totalItems ?>
+            </div>
+            <div class="header-more-wrap">
+                <button class="header-more-btn" onclick="toggleHeaderMenu()">
+                    <span class="material-icons">more_vert</span>
+                </button>
+                <div class="header-dropdown" id="headerDropdown">
+                    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="header-dropdown-item">
+                        <span class="material-icons">settings</span> 설정
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -57,13 +57,29 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
-    <h1><?= e($tripTitle) ?></h1>
-    <?php if ($trip['destination']): ?>
-        <p class="subtitle"><?= e($trip['destination']) ?></p>
-    <?php endif; ?>
-    <?php if ($trip['start_date'] && $trip['end_date']): ?>
-        <p class="subtitle"><?= e($trip['start_date']) ?> ~ <?= e($trip['end_date']) ?></p>
-    <?php endif; ?>
+    <div class="page-header-row">
+        <div class="page-header-left">
+            <h1><?= e($tripTitle) ?></h1>
+            <?php
+            $subtitleParts = [];
+            if ($trip['destination']) $subtitleParts[] = e($trip['destination']);
+            if ($trip['start_date'] && $trip['end_date']) $subtitleParts[] = e($trip['start_date']) . ' ~ ' . e($trip['end_date']);
+            if ($subtitleParts):
+            ?>
+                <p class="subtitle"><?= implode(' · ', $subtitleParts) ?></p>
+            <?php endif; ?>
+        </div>
+        <div class="header-more-wrap">
+            <button class="header-more-btn" onclick="toggleHeaderMenu()">
+                <span class="material-icons">more_vert</span>
+            </button>
+            <div class="header-dropdown" id="headerDropdown">
+                <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="header-dropdown-item">
+                    <span class="material-icons">settings</span> 설정
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="page-content">
@@ -114,21 +130,6 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="text-sm text-muted mt-8">
                 <?= $doneChecklist ?> / <?= $totalChecklist ?>개 완료
             </div>
-        </div>
-    </div>
-
-    <!-- 추가 메뉴 -->
-    <div class="card">
-        <h3 class="card-title">더보기</h3>
-        <div class="menu-list">
-            <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settlement" class="menu-item">
-                <span>정산</span>
-                <span>&rsaquo;</span>
-            </a>
-            <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/members" class="menu-item">
-                <span>멤버 목록</span>
-                <span>&rsaquo;</span>
-            </a>
         </div>
     </div>
 

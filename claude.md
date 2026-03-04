@@ -551,6 +551,11 @@ $dotenv->load();
 > `.page-header` 플로팅 스타일 개선: `position: sticky` + `backdrop-filter: blur(16px)` 반투명 유리 효과, 하단 청록→코랄 그라디언트 하이라이트 테두리(`::after`). `overflow: hidden` → `overflow: clip` 변경으로 PC뷰에서도 sticky 정상 동작. CSS_VERSION 2.0.2.
 > `/my` 페이지 모달: 체크리스트·할일과 동일한 디자인/모션 적용. `translateY(100%)` → `translateY(0)` 슬라이드업 애니메이션(0.25s), visible/hidden 클래스 기반, requestAnimationFrame 최적화. PC에서도 모바일과 동일하게 하단에서 올라옴 (중앙 정렬 제거). ESC 키 닫기 지원. CSS_VERSION 2.0.3.
 > 뒤로가기 버튼: 네비게이션 바가 없는 모든 페이지에 뒤로가기 버튼 추가. `my.php`→`/`, `new.php`→`/my`, `contact.php`→`/`. `.back-link` 스타일을 common.css로 통합 (frosted glass 헤더에 맞는 다크 텍스트). `home.php` 더보기 메뉴에서 공유 메모 항목 제거 (하단 네비에 이미 있음). CSS_VERSION 2.0.4.
+> 헤더 LiquidGlass 리디자인: `--header-height: 50px`, `blur(20px) saturate(180%)`, `inset 0 1px 0 rgba(255,255,255,0.6)` 상단 빛 반사 효과. 모든 멤버 페이지에 `more_vert` 드롭다운 메뉴(설정 링크) 추가. `page-header-row`/`page-header-left`/`header-more-wrap`/`header-dropdown` 구조. `common.js`에 `toggleHeaderMenu()`, `_showModal()`/`_hideModal()` 공용 함수 이동.
+> 설정 페이지(`settings.php`): 여행 정보(오너 수정 가능), 멤버 관리(오너: 추가/삭제/URL복사), PIN 변경, 내 정보. 멤버 세션 + `is_owner` 기반 권한 확인. API: `api/pin_change.php`, `api/trips/update.php`, `api/members/manage.php`.
+> 정산→예산 통합: `budget.php` 3탭 구조(예산 계획|지출 내역|정산). Settlement JS를 `budget.js`에 통합, lazy loading. settlement.css를 budget.css에 병합. `settlement.php`는 `budget#settlement`로 리다이렉트.
+> 예산 FAB + 수입 기능: 지출 내역 탭에 FAB 2개(수입: 초록, 지출: 코랄). `incomes` 테이블 신규. `api/budget/incomes.php` CRUD. sheet 모달로 모든 모달 교체. 수입/지출 합쳐서 날짜순 표시. `database/init.sql`에 incomes 테이블 추가.
+> 홈 "더보기" 카드 제거(정산→예산탭, 멤버→설정에서 접근). `checklist.js`/`todo.js`에서 중복 `_showModal`/`_hideModal` 제거. CSS_VERSION 2.1.0.
 
 ---
 
