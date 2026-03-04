@@ -121,6 +121,7 @@
     align-items: center;
     gap: 3px;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .expense-badge {
