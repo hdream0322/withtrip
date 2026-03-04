@@ -562,6 +562,7 @@ $dotenv->load();
 > 준비물/할일 페이지 완전 재작성: 모달 구조 단순화 (오버레이 클릭으로 닫기, ESC 키 지원). `checklist.php`/`todo.php` 각각 독립적인 페이지, 추가/수정/삭제 모달 포함. `checklist.js`/`todo.js` 각각 순수 JavaScript로 작성 (modal 열기/닫기, 담당자 관리, CRUD). CONFIG 객체로 tripCode/userId/csrfToken 관리. CSS_VERSION 3.0.17.
 > 모달 표시 문제 해결: `requestAnimationFrame`을 사용하여 `hidden` 클래스 제거 후 `visible` 클래스를 제대로 적용. 모달 닫을 때는 `visible` 제거 후 250ms `setTimeout`으로 `hidden` 추가하여 CSS 애니메이션 완료 후 DOM 업데이트. `checklist.js`/`todo.js` 모두 적용. CSS_VERSION 3.0.18.
 > 준비물/할일 페이지 통합: `checklist.php` 단일 페이지에서 "준비물/할일" 탭으로 구분(budget.php 탭 패턴 동일). `checklist.js`에 탭 전환 로직 추가 (`switchTab()`). 모달도 탭에 따라 폼 전환 (준비물/할일 폼 분리, JS로 display 토글). 네비게이션 "체크" 버튼도 budget처럼 페이지 내 탭 전환 (`navChecklist` id, footer.php 수정). `/todo` URL은 `/checklist`로 리다이렉트. CSS_VERSION 3.0.19.
+> 탭 콘텐츠 표시 - `tab-pane` CSS 스타일 추가: `.tab-pane { display: none; }`, `.tab-pane.active { display: block; }` (budget.css 패턴 동일). 탭 버튼 클릭 시 탭 콘텐츠가 정상 표시됨. CSS_VERSION 3.0.20.
 
 ---
 
