@@ -33,6 +33,13 @@ $pageHeaderMenu     = $pageHeaderMenu ?? true;
                     <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="header-dropdown-item">
                         <span class="material-icons">settings</span> 설정
                     </a>
+                    <div class="header-dropdown-divider"></div>
+                    <a href="/my" class="header-dropdown-item">
+                        <span class="material-icons">travel_explore</span> 여행 목록
+                    </a>
+                    <a href="/auth/logout" class="header-dropdown-item danger">
+                        <span class="material-icons">logout</span> 로그아웃
+                    </a>
                 </div>
             </div>
             <?php endif; ?>

@@ -218,6 +218,20 @@ body {
     color: var(--color-text-secondary);
 }
 
+.header-dropdown-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 4px 0;
+}
+
+.header-dropdown-item.danger {
+    color: #e53935;
+}
+
+.header-dropdown-item.danger .material-icons {
+    color: #e53935;
+}
+
 /* 헤더 우측 뱃지(진행률 등) + more_vert 공존 */
 .header-right {
     display: flex;
