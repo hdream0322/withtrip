@@ -745,6 +745,38 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* 공통 아이콘 버튼 */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+    color: var(--color-text-secondary);
+}
+
+.btn-icon.danger {
+    color: var(--color-danger);
+}
+
+.btn-icon.danger:hover,
+.btn-icon.danger:active {
+    color: var(--color-coral);
+}
+
 /* 인라인 링크 (메모·할일 내용에서 URL 자동 변환) */
 .note-link {
     color: var(--color-primary);

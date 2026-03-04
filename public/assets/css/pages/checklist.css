@@ -377,35 +377,4 @@
     font-weight: 600;
 }
 
-/* 아이콘 버튼 */
-.btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    transition: all 0.15s;
-    flex-shrink: 0;
-}
-
-.btn-icon:hover,
-.btn-icon:active {
-    background: var(--color-border-light);
-    color: var(--color-text-secondary);
-}
-
-.btn-icon-danger {
-    color: var(--color-danger);
-}
-
-.btn-icon-danger:hover,
-.btn-icon-danger:active {
-    background: #fef2f2;
-    color: var(--color-danger);
-}
+/* 아이콘 버튼 → common.css로 이동 */

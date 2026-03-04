@@ -302,36 +302,7 @@
     color: var(--color-warning);
 }
 
-/* 아이콘 버튼 (편집/삭제) */
-.btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: var(--color-border-light);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.2s;
-    padding: 0;
-}
-
-.btn-icon:hover,
-.btn-icon:active {
-    background: var(--color-border);
-}
-
-.btn-icon.danger {
-    color: var(--color-danger);
-}
-
-.btn-icon.danger:hover,
-.btn-icon.danger:active {
-    background: #fef2f2;
-}
+/* 아이콘 버튼 → common.css로 이동 */
 
 /* ============================================================
    정산 탭 스타일 (settlement.css 통합)

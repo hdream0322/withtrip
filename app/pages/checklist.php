@@ -195,7 +195,7 @@ require __DIR__ . '/../includes/page_header.php';
                                     </div>
                                 <?php endif; ?>
                                 <button class="btn-icon" onclick="showEditClForm(<?= $item['id'] ?>, '<?= e(addslashes($item['item'])) ?>', '<?= e(addslashes($category)) ?>', '<?= e(addslashes($item['assigned_to'] ?? '')) ?>')" title="수정"><span class="material-icons">edit</span></button>
-                                <button class="btn-icon btn-icon-danger" onclick="deleteChecklistItem(<?= $item['id'] ?>)" title="삭제"><span class="material-icons">delete_outline</span></button>
+                                <button class="btn-icon danger" onclick="deleteChecklistItem(<?= $item['id'] ?>)" title="삭제"><span class="material-icons">delete_outline</span></button>
                             </div>
                         </div>
                     <?php endforeach; ?>
