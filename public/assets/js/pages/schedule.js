@@ -301,7 +301,7 @@ function openDetailModal(itemId) {
 
     // Google Maps 버튼
     if (mapsLink) {
-        html += '<button class="detail-maps-btn" onclick="window.open(\'' + escAttr(mapsLink) + '\',\'_blank\')">' +
+        html += '<button class="detail-maps-btn" data-maps-link="' + escHtml(mapsLink) + '" style="cursor:pointer;">' +
                 '<span class="material-icons">map</span> 구글맵에서 열기</button>';
     }
 
@@ -313,6 +313,15 @@ function openDetailModal(itemId) {
 
     document.getElementById('detailContent').innerHTML = html;
     _showModal('detailOverlay', 'detailSheet');
+
+    // 구글맵 버튼 이벤트
+    const mapsBtn = document.querySelector('.detail-maps-btn[data-maps-link]');
+    if (mapsBtn) {
+        mapsBtn.addEventListener('click', () => {
+            const link = mapsBtn.dataset.mapsLink;
+            if (link) window.open(link, '_blank');
+        });
+    }
 }
 
 function closeDetailModal() {
