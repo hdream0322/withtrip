@@ -1,53 +1,127 @@
-/* 랜딩 페이지 */
+/* ===================================================
+   WithPlan Landing Page v4.0
+   GSAP ScrollTrigger 기반 프리미엄 랜딩
+   =================================================== */
 
-/* Hero */
-.hero {
-    min-height: 100svh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    padding: 60px 28px 48px;
+/* ── 랜딩 전용 오버라이드 ── */
+.is-landing { padding: 0 !important; background: #0f172a; }
+.is-landing .app-container {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    background: transparent;
 }
 
-.hero-inner {
+/* 공통 섹션 내부 폭 제한 */
+.section-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 28px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+/* ===================================================
+   1. Hero
+   =================================================== */
+.landing-hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #0f172a 0%, #0e4a5c 50%, #164e63 100%);
+    overflow: hidden;
+}
+
+/* 이모지 파티클 */
+.hero-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.12;
+    animation: particleFloat 8s ease-in-out infinite;
+}
+.particle:nth-child(1) { top: 12%; left: 8%;  animation-delay: 0s;   font-size: 1.8rem; }
+.particle:nth-child(2) { top: 25%; right: 10%; animation-delay: 1.2s; font-size: 2.2rem; }
+.particle:nth-child(3) { top: 55%; left: 5%;   animation-delay: 2.4s; font-size: 1.6rem; }
+.particle:nth-child(4) { top: 70%; right: 15%; animation-delay: 3.6s; font-size: 2rem;   }
+.particle:nth-child(5) { top: 40%; left: 75%;  animation-delay: 4.8s; font-size: 1.4rem; }
+.particle:nth-child(6) { top: 85%; left: 45%;  animation-delay: 6s;   font-size: 1.8rem; }
+
+@keyframes particleFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    33%      { transform: translateY(-18px) rotate(5deg); }
+    66%      { transform: translateY(12px) rotate(-3deg); }
+}
+
+.hero-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-eyebrow {
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--color-primary);
-    margin-bottom: 16px;
+    color: #22d3ee;
+    margin-bottom: 20px;
 }
 
 .hero-title {
-    font-size: 3.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+}
+
+.hero-title-line {
+    display: block;
+    font-size: 2.8rem;
     font-weight: 800;
     letter-spacing: -0.04em;
-    color: var(--color-text);
-    margin-bottom: 16px;
-    line-height: 1;
+    line-height: 1.15;
+    color: #fff;
+}
+
+.hero-title-grad {
+    font-size: 3.4rem;
+    background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 40%, #f43f5e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .hero-desc {
     font-size: 1rem;
-    color: var(--color-text-secondary);
+    color: rgba(255, 255, 255, 0.6);
     line-height: 1.7;
     margin-bottom: 36px;
 }
 
 .hero-error {
-    background: #fef2f2;
-    color: var(--color-danger);
-    border: 1px solid #fecaca;
-    border-radius: var(--radius-sm);
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
     padding: 10px 16px;
     font-size: 0.85rem;
     margin-bottom: 20px;
@@ -60,97 +134,441 @@
     align-items: center;
     gap: 10px;
     padding: 14px 28px;
-    background: var(--color-text);
-    color: #fff;
-    border-radius: var(--radius-sm);
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.2s;
-    min-height: 48px;
-}
-
-.btn-hero:active {
-    opacity: 0.85;
-}
-
-/* 기능 소개 */
-.features {
-    padding: 0 28px 16px;
     background: #fff;
-}
-
-.feature-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 28px 0;
-    border-top: 1px solid var(--color-border-light);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.feature-item.revealed {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.feature-num {
-    font-size: 0.7rem;
+    color: #0f172a;
+    border-radius: 12px;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--color-primary);
-    letter-spacing: 0.05em;
-    min-width: 24px;
-    padding-top: 3px;
+    text-decoration: none;
+    min-height: 48px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-hero:active { transform: scale(0.97); }
+
+/* 스크롤 힌트 */
+.hero-scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.3);
+    animation: scrollBounce 2s ease-in-out infinite;
 }
 
-.feature-body h3 {
-    font-size: 1rem;
+@keyframes scrollBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(8px); }
+}
+
+/* GSAP 초기 상태 */
+.gsap-hero { opacity: 0; }
+
+/* ===================================================
+   2. 사용 흐름
+   =================================================== */
+.landing-flow {
+    background: #f8fafc;
+    padding: 72px 0;
+}
+
+.landing-flow .section-title { color: var(--color-text); }
+
+.flow-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.flow-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.flow-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.flow-text strong {
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--color-text);
-    margin-bottom: 6px;
 }
 
-.feature-body p {
-    font-size: 0.875rem;
+.flow-text span {
+    font-size: 0.82rem;
     color: var(--color-text-secondary);
-    line-height: 1.65;
+    line-height: 1.5;
 }
 
-/* Footer */
-.landing-footer {
+.flow-arrow {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    padding: 8px 0;
+}
+
+.gsap-flow { opacity: 0; }
+
+/* ===================================================
+   3. 기능 쇼케이스
+   =================================================== */
+.landing-features {
+    background: #fff;
+    padding: 72px 0;
+}
+
+.landing-features .section-title { color: var(--color-text); }
+
+.feature-card {
+    margin-bottom: 56px;
+}
+
+.feature-card:last-child { margin-bottom: 0; }
+
+.feature-phone {
+    width: 100%;
+    max-width: 240px;
+    margin: 0 auto 24px;
+}
+
+.feature-phone svg {
+    width: 100%;
+    height: auto;
+    border-radius: 28px;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.1));
+}
+
+.feature-info {
+    text-align: center;
+}
+
+.feature-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(8, 145, 178, 0.1);
+    color: #0891b2;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+}
+
+.badge-coral { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+.badge-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.badge-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+.feature-info h3 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.4;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+}
+
+.feature-checks {
+    list-style: none;
+    text-align: left;
+    max-width: 260px;
+    margin: 0 auto;
+}
+
+.feature-checks li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 2;
+}
+
+.feature-checks li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #0891b2;
+    font-weight: 700;
+}
+
+.gsap-feat { opacity: 0; }
+
+/* ===================================================
+   4. 숫자 통계
+   =================================================== */
+.landing-stats {
+    background: #0f172a;
+    padding: 72px 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 24px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-num {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #22d3ee;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.stat-suffix {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 2px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 8px;
+}
+
+.gsap-stat { opacity: 0; }
+
+/* ===================================================
+   5. FAQ
+   =================================================== */
+.landing-faq {
+    background: #f8fafc;
+    padding: 72px 0;
+}
+
+.landing-faq .section-title { color: var(--color-text); }
+
+.faq-item {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.faq-item:first-of-type {
+    border-top: 1px solid #e2e8f0;
+}
+
+.faq-q {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* 하단 플로팅 바 높이(약 60px) + 여유 */
-    padding: 20px 28px 80px;
-    border-top: 1px solid var(--color-border-light);
-    background: #fff;
-}
-
-.footer-brand {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-text-muted);
-}
-
-.footer-links {
-    display: flex;
-    gap: 16px;
-}
-
-.footer-link {
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    text-decoration: none;
-}
-
-.footer-link:hover {
+    width: 100%;
+    padding: 18px 0;
+    background: none;
+    border: none;
+    font-size: 0.92rem;
+    font-weight: 600;
     color: var(--color-text);
+    cursor: pointer;
+    text-align: left;
+    gap: 12px;
 }
 
-/* ── 하단 플로팅 바 ── */
+.faq-arrow {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-arrow {
+    transform: rotate(180deg);
+}
+
+.faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+}
+
+.faq-item.open .faq-a {
+    max-height: 200px;
+}
+
+.faq-a p {
+    padding: 0 0 18px;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+}
+
+.gsap-faq { opacity: 0; }
+
+/* ===================================================
+   6. CTA
+   =================================================== */
+.landing-cta {
+    background: linear-gradient(135deg, #0891b2 0%, #0e7490 40%, #f43f5e 100%);
+    padding: 80px 0;
+    text-align: center;
+}
+
+.cta-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.35;
+    margin-bottom: 28px;
+    letter-spacing: -0.03em;
+}
+
+.btn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: #fff;
+    color: #0f172a;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    min-height: 48px;
+    transition: transform 0.2s;
+}
+.btn-cta:active { transform: scale(0.97); }
+
+.cta-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 32px 0 24px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.82rem;
+}
+.cta-divider::before,
+.cta-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cta-invite {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 16px;
+}
+
+.cta-code-form {
+    display: flex;
+    gap: 8px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.cta-code-input {
+    flex: 1;
+    height: 44px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    letter-spacing: 0.08em;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.cta-code-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.cta-code-input:focus { border-color: rgba(255, 255, 255, 0.6); }
+
+.cta-code-btn {
+    height: 44px;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.cta-code-btn:active { background: rgba(255, 255, 255, 0.3); }
+
+.cta-code-error {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #fecaca;
+}
+
+.gsap-cta { opacity: 0; }
+
+/* ===================================================
+   7. Footer
+   =================================================== */
+.landing-footer {
+    background: #0f172a;
+    padding: 48px 0;
+    /* 플로팅 바 높이 확보 */
+    padding-bottom: calc(48px + 80px);
+    text-align: center;
+}
+
+.landing-footer .footer-brand {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.landing-footer .footer-tagline {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 24px;
+}
+
+.landing-footer .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.landing-footer .footer-links a {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.landing-footer .footer-links a:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.landing-footer .footer-copy {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ===================================================
+   플로팅 바
+   =================================================== */
 .landing-float {
     position: fixed;
     bottom: 0;
@@ -167,20 +585,33 @@
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid rgba(0, 0, 0, 0.07);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+
+    /* 초기 상태: 숨김 */
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+.landing-float.visible {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 @media (min-width: 481px) {
     .landing-float {
         left: 50%;
         right: auto;
-        transform: translateX(-50%);
         width: 480px;
-        border-radius: 0 0 16px 16px;
-        bottom: 24px;
+        border-radius: 16px 16px 0 0;
+        /* 숨김 상태에서도 중앙 정렬 유지 */
+        transform: translateX(-50%) translateY(100%);
+    }
+    .landing-float.visible {
+        transform: translateX(-50%) translateY(0);
     }
 }
 
-/* 인증 버튼 (Google 로그인 / 내 여행 관리) */
+/* 인증 버튼 */
 .float-auth {
     display: inline-flex;
     align-items: center;
@@ -197,12 +628,8 @@
     flex-shrink: 0;
     transition: opacity 0.15s;
 }
+.float-auth:active { opacity: 0.82; }
 
-.float-auth:active {
-    opacity: 0.82;
-}
-
-/* 구분선 */
 .float-sep {
     width: 1px;
     height: 22px;
@@ -211,7 +638,6 @@
     flex-shrink: 0;
 }
 
-/* 여행 코드 폼 */
 .float-code {
     flex: 1;
     display: flex;
@@ -235,7 +661,6 @@
     background: var(--color-bg);
     transition: border-color 0.15s;
 }
-
 .float-code-input:focus {
     outline: none;
     border-color: var(--color-primary);
@@ -255,12 +680,8 @@
     flex-shrink: 0;
     transition: background 0.15s;
 }
+.float-code-btn:active { background: var(--color-primary-dark); }
 
-.float-code-btn:active {
-    background: var(--color-primary-dark);
-}
-
-/* 에러 툴팁 (입력 위에 떠오름) */
 .float-code-error {
     position: absolute;
     bottom: calc(100% + 8px);
@@ -274,7 +695,6 @@
     pointer-events: none;
     line-height: 1.4;
 }
-
 .float-code-error::after {
     content: '';
     position: absolute;
@@ -283,3 +703,29 @@
     border: 5px solid transparent;
     border-top-color: #1e293b;
 }
+
+/* ===================================================
+   GSAP 폴백 — CDN 로드 실패 시 모든 요소 표시
+   =================================================== */
+.gsap-loaded .gsap-hero,
+.gsap-loaded .gsap-flow,
+.gsap-loaded .gsap-feat,
+.gsap-loaded .gsap-stat,
+.gsap-loaded .gsap-faq,
+.gsap-loaded .gsap-cta {
+    /* GSAP가 직접 제어 */
+}
+
+/* GSAP 미로드 시 즉시 표시 */
+body:not(.gsap-loaded) .gsap-hero,
+body:not(.gsap-loaded) .gsap-flow,
+body:not(.gsap-loaded) .gsap-feat,
+body:not(.gsap-loaded) .gsap-stat,
+body:not(.gsap-loaded) .gsap-faq,
+body:not(.gsap-loaded) .gsap-cta {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* .hidden 유틸리티 */
+.hidden { display: none !important; }

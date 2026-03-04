@@ -3,7 +3,7 @@
  * 공통 헤더
  * CSS_VERSION: CSS/JS 캐시 버스팅 버전
  */
-const CSS_VERSION = '3.2.1';
+const CSS_VERSION = '4.0.2';
 
 // 현재 페이지 정보 (네비게이션 활성 탭 판별용)
 $currentPage = $currentPage ?? 'home';
@@ -11,6 +11,8 @@ $tripCode    = $tripCode ?? '';
 $userId      = $userId ?? '';
 $tripTitle   = $tripTitle ?? 'WithPlan';
 $pageTitle   = $pageTitle ?? $tripTitle;
+$bodyClass   = $bodyClass ?? '';
+$headExtra   = $headExtra ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -24,6 +26,7 @@ $pageTitle   = $pageTitle ?? $tripTitle;
     <?php if (!empty($pageCss)): ?>
     <link rel="stylesheet" href="/assets/css/pages/<?= $pageCss ?>.css?v=<?= CSS_VERSION ?>">
     <?php endif; ?>
+    <?= $headExtra ?>
 </head>
-<body>
+<body<?= $bodyClass ? ' class="' . e($bodyClass) . '"' : '' ?>>
 <div class="app-container">

@@ -572,6 +572,7 @@ $dotenv->load();
 > **환율 실시간 불러오기 버그 수정 + 설정 UI 개선** (2026-03-04): `exchange_rate.php` cURL에 쿠키 엔진(`CURLOPT_COOKIEFILE/COOKIEJAR`) 추가로 한국수출입은행 세션 쿠키 처리. HTTP 503→200 변경(외부 API 실패는 PHP 서버 오류 아님). "실시간 불러오기" → "환율 갱신" 버튼 텍스트 변경. 환율 목록 테이블→카드 리스트 재디자인: USD/EUR 상단 우선 정렬, 청록 배경 강조, 통화 코드+이름+적용환율 상단 표시, 카드조정·현금환전 입력 하단 배치. CSS_VERSION 3.1.9.
 > **통화 선택 기능 추가** (2026-03-04): `trips` 테이블에 `active_currencies VARCHAR(200)` 컬럼 추가. 설정 페이지에서 10개 외화(USD/EUR/JPY/CNH/GBP/AUD/CAD/HKD/SGD/THB) 중 사용할 통화를 칩으로 선택 (KRW는 항상 활성). 환율 갱신 시 활성 통화만 API 호출. 지출/수입 모달 통화 드롭다운을 활성 통화만 표시. `api/trips/rate.php` GET/POST에 `active_currencies` 필드 추가. `settings.js`에 통화 칩 UI, `toggleCurrencyChip()`, `loadRate()` 재구현. `budget.php`에서 트립의 활성 통화 조회하여 SELECT 옵션 필터링. PIN 변경 모달을 `<form>` 태그로 감싸 브라우저 경고 제거. CSS_VERSION 3.2.0.
 > **헤더 메뉴 확장** (2026-03-04): `page_header.php` 드롭다운 메뉴에 "여행 목록"(`/my`), "로그아웃"(`/auth/logout`) 항목 추가. 구분선(`.header-dropdown-divider`) 추가로 설정과 분리. 로그아웃 항목에 위험색(빨간색 #e53935) 강조. CSS_VERSION 3.2.1.
+> **랜딩 페이지 전면 재설계** (2026-03-04): GSAP ScrollTrigger 기반 프리미엄 랜딩 페이지로 전면 개편. 7개 섹션: 다크 그라디언트 Hero + 이모지 파티클 float 애니메이션 / 3단계 사용 흐름 / 4개 기능 쇼케이스 (SVG 모바일 폰 목업) / 숫자 통계 (카운트업) / FAQ 아코디언 / CTA 그라디언트 / 다크 Footer. 플로팅 바 ScrollTrigger 연동. `header.php`: `$bodyClass`/`$headExtra` 변수 지원. `landing.js` 신규: GSAP `defer` 로드 + CDN 미로드 폴백, 모든 애니메이션 `fromTo()`로 명시적 도착 상태, 부모 카드 `tl.set()`. CSS_VERSION 4.0.2.
 
 ---
 
