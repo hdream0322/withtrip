@@ -70,38 +70,59 @@ if ($method === 'GET') {
     $currencyList = array_keys($currencies);
     $hasMultipleCurrencies = count($currencyList) > 1;
 
-    // 각 멤버별 통화별 지출/부담 계산
+    // 각 멤버별 통화별·결제수단별 지출/부담 계산
     // paid: 실제 결제한 금액, owed: 부담해야 할 금액
-    $balanceByCurrency = [];
+    // payment_method별로 분리하여 저장 (통합 정산 시 환율 구분 용도)
+    $balanceByCurrencyAndMethod = [];
 
     foreach ($expenses as $exp) {
         $currency = $exp['currency'];
         $paidBy = $exp['paid_by'];
         $amount = (int) $exp['amount'];
         $isDutch = (int) $exp['is_dutch'];
+        $paymentMethod = $exp['payment_method'] ?? 'card'; // 기본값: 카드
 
-        if (!isset($balanceByCurrency[$currency])) {
-            $balanceByCurrency[$currency] = [];
+        // 키: "currency:payment_method"
+        $key = $currency . ':' . $paymentMethod;
+
+        if (!isset($balanceByCurrencyAndMethod[$key])) {
+            $balanceByCurrencyAndMethod[$key] = [];
         }
 
         // 결제자의 지출 기록
-        if (!isset($balanceByCurrency[$currency][$paidBy])) {
-            $balanceByCurrency[$currency][$paidBy] = ['paid' => 0, 'owed' => 0];
+        if (!isset($balanceByCurrencyAndMethod[$key][$paidBy])) {
+            $balanceByCurrencyAndMethod[$key][$paidBy] = ['paid' => 0, 'owed' => 0];
         }
-        $balanceByCurrency[$currency][$paidBy]['paid'] += $amount;
+        $balanceByCurrencyAndMethod[$key][$paidBy]['paid'] += $amount;
 
         if ($isDutch && isset($splitsByExpense[$exp['id']])) {
             // 더치페이: 분담 내역에 따라 각자 부담
             foreach ($splitsByExpense[$exp['id']] as $split) {
                 $splitUser = $split['user_id'];
-                if (!isset($balanceByCurrency[$currency][$splitUser])) {
-                    $balanceByCurrency[$currency][$splitUser] = ['paid' => 0, 'owed' => 0];
+                if (!isset($balanceByCurrencyAndMethod[$key][$splitUser])) {
+                    $balanceByCurrencyAndMethod[$key][$splitUser] = ['paid' => 0, 'owed' => 0];
                 }
-                $balanceByCurrency[$currency][$splitUser]['owed'] += (int) $split['amount'];
+                $balanceByCurrencyAndMethod[$key][$splitUser]['owed'] += (int) $split['amount'];
             }
         } else {
             // 더치페이 아님: 결제자 단독 부담
-            $balanceByCurrency[$currency][$paidBy]['owed'] += $amount;
+            $balanceByCurrencyAndMethod[$key][$paidBy]['owed'] += $amount;
+        }
+    }
+
+    // 호환성을 위해 통화별로도 유지
+    $balanceByCurrency = [];
+    foreach ($balanceByCurrencyAndMethod as $key => $userBalances) {
+        list($currency, $paymentMethod) = explode(':', $key);
+        if (!isset($balanceByCurrency[$currency])) {
+            $balanceByCurrency[$currency] = [];
+        }
+        foreach ($userBalances as $uid => $bal) {
+            if (!isset($balanceByCurrency[$currency][$uid])) {
+                $balanceByCurrency[$currency][$uid] = ['paid' => 0, 'owed' => 0];
+            }
+            $balanceByCurrency[$currency][$uid]['paid'] += $bal['paid'];
+            $balanceByCurrency[$currency][$uid]['owed'] += $bal['owed'];
         }
     }
 
@@ -155,6 +176,7 @@ if ($method === 'GET') {
         'currencies'    => $currencyList,
         'has_multiple'  => $hasMultipleCurrencies,
         'member_names'  => $memberMap,
+        'balance_by_currency_and_method' => $balanceByCurrencyAndMethod, // 통합 정산 시 payment_method 구분용
     ]);
 }
 

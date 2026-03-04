@@ -770,6 +770,7 @@ const Settlement = {
 
     renderUnified() {
         const { members, settlements, currencies, member_names } = this.data;
+        const balanceByMethod = this.data.balance_by_currency_and_method || {};
 
         const unifiedBalances = {};
         for (const member of members) {
@@ -777,12 +778,15 @@ const Settlement = {
             let totalPaid = 0;
             let totalOwed = 0;
 
-            for (const currency of currencies) {
-                const bal = member.by_currency[currency];
-                if (!bal) continue;
+            // payment_method별로 분리하여 환산
+            for (const key in balanceByMethod) {
+                const [currency, paymentMethod] = key.split(':');
+                const userBal = balanceByMethod[key][uid];
+                if (!userBal) continue;
 
-                const krwPaid = toKrw(bal.paid, currency);
-                const krwOwed = toKrw(bal.owed, currency);
+                // payment_method에 따라 다른 환율 사용
+                const krwPaid = toKrw(userBal.paid, currency, paymentMethod);
+                const krwOwed = toKrw(userBal.owed, currency, paymentMethod);
                 if (krwPaid === null || krwOwed === null) continue; // 환율 없는 통화 스킵
                 totalPaid += krwPaid;
                 totalOwed += krwOwed;

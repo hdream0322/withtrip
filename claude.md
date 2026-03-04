@@ -564,6 +564,7 @@ $dotenv->load();
 > 준비물/할일 페이지 통합: `checklist.php` 단일 페이지에서 "준비물/할일" 탭으로 구분(budget.php 탭 패턴 동일). `checklist.js`에 탭 전환 로직 추가 (`switchTab()`). 모달도 탭에 따라 폼 전환 (준비물/할일 폼 분리, JS로 display 토글). 네비게이션 "체크" 버튼도 budget처럼 페이지 내 탭 전환 (`navChecklist` id, footer.php 수정). `/todo` URL은 `/checklist`로 리다이렉트. CSS_VERSION 3.0.19.
 > 탭 콘텐츠 표시 - `tab-pane` CSS 스타일 추가: `.tab-pane { display: none; }`, `.tab-pane.active { display: block; }` (budget.css 패턴 동일). 탭 버튼 클릭 시 탭 콘텐츠가 정상 표시됨. CSS_VERSION 3.0.20.
 > 환율 기능 추가: `api/budget/exchange_rate.php` (환율 저장/조회), `api/trips/rate.php` (환율 가져오기) 신규. 지출·수입 조회 시 환율 통합. 정산 탭에서 KRW/USD 혼용 지출을 통합 환율로 단일 통화 정산. `budget.js`에 환율 환산 로직 추가. `settings.js` 신규 (설정 페이지 환율 입력 UI). `settings.css` 신규. CSS_VERSION 3.0.35.
+> **통합 정산에서 payment_method별 환율 적용 수정** (2026-03-04): `api/settlement.php`에서 `balance_by_currency_and_method` 추가. 정산 시 카드(조정 환율) vs 현금(TTS 환율)을 구분하여 환산. `budget.js` `renderUnified()` 함수에서 `toKrw()`에 paymentMethod 파라미터 전달하도록 수정. CSS_VERSION 3.0.36.
 
 ---
 
