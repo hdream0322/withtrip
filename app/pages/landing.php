@@ -13,6 +13,13 @@ $headExtra = '<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gs
 $isLoggedIn = isOwnerLoggedIn();
 $errorMsg = $_GET['error'] ?? '';
 
+// 생성된 일정 수 (DB)
+try {
+    $tripCount = (int) getDB()->query('SELECT COUNT(*) FROM schedule_items')->fetchColumn();
+} catch (\Throwable $e) {
+    $tripCount = 0;
+}
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -161,7 +168,6 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
                     <li>날짜별 일정 카드 구성</li>
                     <li>카테고리별 색상 구분</li>
                     <li>Google Maps 연동</li>
-                    <li>드래그로 순서 변경</li>
                 </ul>
             </div>
         </div>
@@ -331,7 +337,7 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
                 <h3>빠뜨리는 것 없이<br>꼼꼼하게 챙기기</h3>
                 <ul class="feature-checks">
                     <li>카테고리별 그룹 관리</li>
-                    <li>담당자 배정 · 뱃지</li>
+                    <li>담당자 배정 · 배지</li>
                     <li>개인별 완료 체크</li>
                     <li>전체 진행률 표시</li>
                 </ul>
@@ -349,16 +355,16 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
                 <span class="stat-label">지원 통화</span>
             </div>
             <div class="stat-item gsap-stat">
-                <span class="stat-num" data-target="6">0</span><span class="stat-suffix">자리</span>
-                <span class="stat-label">PIN 보안</span>
+                <span class="stat-num" data-target="<?= $tripCount ?>">0</span><span class="stat-suffix">개</span>
+                <span class="stat-label">등록된 일정</span>
             </div>
             <div class="stat-item gsap-stat">
                 <span class="stat-num" data-target="100">0</span><span class="stat-suffix">%</span>
                 <span class="stat-label">무료</span>
             </div>
             <div class="stat-item gsap-stat">
-                <span class="stat-num" data-target="0">0</span><span class="stat-suffix">개</span>
-                <span class="stat-label">앱 설치 필요</span>
+                <span class="stat-num" data-target="∞">∞</span><span class="stat-suffix"></span>
+                <span class="stat-label">멤버 초대</span>
             </div>
         </div>
     </div>

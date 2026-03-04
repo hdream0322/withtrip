@@ -119,14 +119,14 @@ document.addEventListener('DOMContentLoaded', function () {
     gsap.fromTo('.gsap-flow',
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.15,
-          scrollTrigger: { trigger: '#flowSection', start: 'top 75%', once: true } }
+          scrollTrigger: { trigger: '#flowSection', start: 'top 60%', once: true } }
     );
 
     // ── 3. 기능 쇼케이스 ──
     document.querySelectorAll('.gsap-feat').forEach(function (card, i) {
         var dir = i % 2 === 0 ? -30 : 30;
         var tl = gsap.timeline({
-            scrollTrigger: { trigger: card, start: 'top 80%', once: true }
+            scrollTrigger: { trigger: card, start: 'top 60%', once: true }
         });
         // 부모 카드 먼저 보이게 (자식은 아직 opacity:0이라 플래시 없음)
         tl.set(card, { opacity: 1 })
@@ -141,17 +141,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── 4. 숫자 카운트업 ──
     document.querySelectorAll('.gsap-stat').forEach(function (el) {
         var numEl = el.querySelector('.stat-num');
-        var target = parseInt(numEl.dataset.target, 10);
+        var rawTarget = numEl.dataset.target;
+        var target = parseInt(rawTarget, 10);
+        var isStatic = isNaN(target); // ∞ 등 숫자가 아닌 경우
 
         ScrollTrigger.create({
             trigger: el,
-            start: 'top 80%',
+            start: 'top 60%',
             once: true,
             onEnter: function () {
                 // 카드 등장
                 gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 });
 
-                // 카운트업
+                // 정적 텍스트(∞ 등)는 카운트업 생략
+                if (isStatic) {
+                    numEl.textContent = rawTarget;
+                    return;
+                }
                 if (target === 0) {
                     numEl.textContent = '0';
                     return;
@@ -174,14 +180,14 @@ document.addEventListener('DOMContentLoaded', function () {
     gsap.fromTo('.gsap-faq',
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5, stagger: 0.1,
-          scrollTrigger: { trigger: '#faqSection', start: 'top 75%', once: true } }
+          scrollTrigger: { trigger: '#faqSection', start: 'top 60%', once: true } }
     );
 
     // ── 6. CTA ──
     gsap.fromTo('.gsap-cta',
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.12,
-          scrollTrigger: { trigger: '#ctaSection', start: 'top 75%', once: true } }
+          scrollTrigger: { trigger: '#ctaSection', start: 'top 60%', once: true } }
     );
 
 });
