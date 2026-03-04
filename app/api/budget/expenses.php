@@ -20,10 +20,8 @@ if ($method === 'GET') {
 
     $stmt = $db->prepare(
         'SELECT e.*,
-                bc.name AS category_name,
                 u.display_name AS paid_by_name
          FROM expenses e
-         LEFT JOIN budget_categories bc ON bc.id = e.category_id
          LEFT JOIN users u ON u.trip_code = e.trip_code AND u.user_id = e.paid_by
          WHERE e.trip_code = ?
          ORDER BY e.expense_date DESC, e.created_at DESC'
