@@ -400,6 +400,10 @@
     color: var(--color-text-secondary);
 }
 
+.btn-icon-danger {
+    color: var(--color-danger);
+}
+
 .btn-icon-danger:hover,
 .btn-icon-danger:active {
     background: #fef2f2;

@@ -141,8 +141,8 @@ require __DIR__ . '/../includes/page_header.php';
                         <span class="todo-title"><?= e($item['title']) ?></span>
                     </label>
                     <div class="todo-actions">
-                        <button class="btn-icon" onclick="editTodoItem(<?= $item['id'] ?>)" title="수정">&#9998;</button>
-                        <button class="btn-icon btn-icon-danger" onclick="deleteTodoItem(<?= $item['id'] ?>)" title="삭제">&#10005;</button>
+                        <button class="btn-icon" onclick="editTodoItem(<?= $item['id'] ?>)" title="수정"><span class="material-icons">edit</span></button>
+                        <button class="btn-icon btn-icon-danger" onclick="deleteTodoItem(<?= $item['id'] ?>)" title="삭제"><span class="material-icons">delete_outline</span></button>
                     </div>
                 </div>
 
