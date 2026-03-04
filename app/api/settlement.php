@@ -7,9 +7,15 @@
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $tripCode = $_GET['trip_code'] ?? '';
+    $tripCode      = $_GET['trip_code'] ?? '';
+    $paymentFilter = $_GET['payment_method'] ?? 'all'; // all | card | cash
+
     if (empty($tripCode)) {
         jsonResponse(false, null, '여행 코드가 필요합니다.', 400);
+    }
+
+    if (!in_array($paymentFilter, ['all', 'card', 'cash'], true)) {
+        $paymentFilter = 'all';
     }
 
     $db = getDB();
@@ -27,13 +33,22 @@ if ($method === 'GET') {
         $memberMap[$member['user_id']] = $member['display_name'];
     }
 
-    // 전체 지출 내역 조회
-    $stmt = $db->prepare(
-        'SELECT * FROM expenses
-         WHERE trip_code = ?
-         ORDER BY expense_date DESC, created_at DESC'
-    );
-    $stmt->execute([$tripCode]);
+    // 지출 내역 조회 (결제 방법 필터 적용)
+    if ($paymentFilter === 'all') {
+        $stmt = $db->prepare(
+            'SELECT * FROM expenses
+             WHERE trip_code = ?
+             ORDER BY expense_date DESC, created_at DESC'
+        );
+        $stmt->execute([$tripCode]);
+    } else {
+        $stmt = $db->prepare(
+            'SELECT * FROM expenses
+             WHERE trip_code = ? AND (payment_method = ? OR payment_method IS NULL AND ? = \'card\')
+             ORDER BY expense_date DESC, created_at DESC'
+        );
+        $stmt->execute([$tripCode, $paymentFilter, $paymentFilter]);
+    }
     $expenses = $stmt->fetchAll();
 
     // 더치페이 분담 내역 조회

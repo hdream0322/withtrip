@@ -64,6 +64,20 @@ require_once __DIR__ . '/../includes/header.php';
     <input type="hidden" id="scheduleEditId" value="">
 
     <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <div class="category-chips" id="categoryChips">
+            <button type="button" class="cat-chip" data-cat="meal">🍽 식사</button>
+            <button type="button" class="cat-chip" data-cat="cafe">☕ 카페</button>
+            <button type="button" class="cat-chip" data-cat="sightseeing">📸 관광</button>
+            <button type="button" class="cat-chip" data-cat="transport">🚗 이동</button>
+            <button type="button" class="cat-chip" data-cat="accommodation">🏨 숙소</button>
+            <button type="button" class="cat-chip" data-cat="shopping">🛍 쇼핑</button>
+            <button type="button" class="cat-chip" data-cat="activity">🏄 액티비티</button>
+            <button type="button" class="cat-chip" data-cat="other">📌 기타</button>
+        </div>
+    </div>
+
+    <div class="form-group">
         <label class="form-label">제목 *</label>
         <input type="text" id="scheduleTitle" class="form-input" placeholder="일정 제목">
     </div>
@@ -106,18 +120,6 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="form-group">
         <label class="form-label">메모</label>
         <textarea id="scheduleMemo" class="form-input" rows="3" placeholder="상세 메모"></textarea>
-    </div>
-
-    <div class="form-group">
-        <label class="form-label">카테고리</label>
-        <div class="category-chips" id="categoryChips">
-            <button type="button" class="cat-chip" data-cat="meal">🍽 식사</button>
-            <button type="button" class="cat-chip" data-cat="transport">🚗 이동</button>
-            <button type="button" class="cat-chip" data-cat="accommodation">🏨 숙소</button>
-            <button type="button" class="cat-chip" data-cat="sightseeing">📸 관광</button>
-            <button type="button" class="cat-chip" data-cat="shopping">🛍 쇼핑</button>
-            <button type="button" class="cat-chip" data-cat="other">📌 기타</button>
-        </div>
     </div>
 
     <div class="flex gap-8 mt-16">

@@ -178,7 +178,171 @@ const Settings = {
             WP.toast(err.message, 'error');
         }
     },
+
+    /* ============================================================
+       환율 설정
+       ============================================================ */
+
+    // 통화 표시명
+    CURRENCY_LABELS: {
+        USD: '미국 달러',
+        EUR: '유로',
+        JPY: '일본 엔',
+        CNH: '중국 위안',
+        GBP: '영국 파운드',
+        AUD: '호주 달러',
+        CAD: '캐나다 달러',
+        HKD: '홍콩 달러',
+        SGD: '싱가포르 달러',
+        THB: '태국 바트',
+    },
+
+    async loadRate() {
+        try {
+            const result = await WP.api('/api/trips/rate?trip_code=' + SC.tripCode);
+            if (!result.success) return;
+
+            this.renderRateTable(
+                result.data.base_rates || result.data.rates,
+                result.data.adjustments || {},
+                result.data.updated_at
+            );
+
+            // 1시간 지났으면 자동 갱신
+            if (result.data.needs_refresh) {
+                await this.fetchAndSaveRates(true);
+            }
+        } catch (_) {
+            document.getElementById('rateTableWrap').innerHTML =
+                '<p class="text-sm text-muted">환율 정보를 불러올 수 없습니다.</p>';
+        }
+    },
+
+    renderRateTable(baseRates, adjustments, updatedAt) {
+        const wrap  = document.getElementById('rateTableWrap');
+        const label = document.getElementById('rateSourceLabel');
+
+        if (!baseRates || Object.keys(baseRates).length === 0) {
+            wrap.innerHTML = '<p class="text-sm text-muted">저장된 환율이 없습니다. 실시간 불러오기를 눌러주세요.</p>';
+            return;
+        }
+
+        let html = '<div class="rate-adj-notice">카드 결제 시 적용되는 환율을 조정할 수 있습니다.</div>';
+        html += '<table class="rate-table"><tbody>';
+
+        for (const [cur, base] of Object.entries(baseRates)) {
+            const name = this.CURRENCY_LABELS[cur] || cur;
+            const adj  = adjustments[cur] || 0;
+            const eff  = base + adj;
+
+            const baseStr = cur === 'JPY' ? base.toFixed(2) : Math.round(base).toLocaleString('ko-KR');
+            const effStr  = cur === 'JPY' ? eff.toFixed(2)  : Math.round(eff).toLocaleString('ko-KR');
+
+            html += '<tr class="rate-row">'
+                + '<td class="rate-cur">'
+                + '<span class="rate-cur-code">' + cur + '</span>'
+                + '<span class="rate-cur-name">' + name + '</span>'
+                + '</td>'
+                + '<td class="rate-val-col">'
+                + '<div class="rate-base-line">기준 ' + baseStr + '원</div>'
+                + '<div class="rate-adj-line">'
+                + '<span class="rate-adj-label">조정</span>'
+                + '<input type="number" class="rate-adj-input" data-currency="' + cur + '" data-base="' + base + '" value="' + adj + '" step="' + (cur === 'JPY' ? '0.01' : '1') + '" placeholder="0">'
+                + '<span class="rate-adj-unit">원</span>'
+                + '</div>'
+                + '<div class="rate-eff-line" id="rateEff_' + cur + '">'
+                + '= <strong>' + effStr + '원</strong>'
+                + (adj !== 0 ? ' <span class="rate-adj-diff">' + (adj > 0 ? '+' : '') + adj + '</span>' : '')
+                + '</div>'
+                + '</td>'
+                + '</tr>';
+        }
+
+        html += '</tbody></table>';
+        html += '<button class="btn btn-primary btn-sm btn-full mt-12" onclick="Settings.saveAdjustments()">조정값 저장</button>';
+        wrap.innerHTML = html;
+
+        wrap.querySelectorAll('.rate-adj-input').forEach(input => {
+            input.addEventListener('input', () => this.previewAdjustment(input));
+        });
+
+        if (updatedAt) {
+            const d = new Date(updatedAt.replace(' ', 'T'));
+            const fmt = d.toLocaleDateString('ko-KR') + ' ' + d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            label.textContent = '마지막 갱신: ' + fmt + ' · 1시간마다 자동 갱신';
+        }
+    },
+
+    previewAdjustment(input) {
+        const cur  = input.dataset.currency;
+        const base = parseFloat(input.dataset.base) || 0;
+        const adj  = parseFloat(input.value) || 0;
+        const eff  = base + adj;
+        const effStr = cur === 'JPY' ? eff.toFixed(2) : Math.round(eff).toLocaleString('ko-KR');
+        const effEl = document.getElementById('rateEff_' + cur);
+        if (!effEl) return;
+        effEl.innerHTML = '= <strong>' + effStr + '원</strong>'
+            + (adj !== 0 ? ' <span class="rate-adj-diff">' + (adj > 0 ? '+' : '') + adj + '</span>' : '');
+    },
+
+    async saveAdjustments() {
+        const adjustments = {};
+        document.querySelectorAll('.rate-adj-input').forEach(input => {
+            adjustments[input.dataset.currency] = parseFloat(input.value) || 0;
+        });
+
+        try {
+            const result = await WP.post('/api/trips/rate', {
+                csrf_token:  SC.csrfToken,
+                trip_code:   SC.tripCode,
+                adjustments: adjustments,
+            });
+
+            if (result.success) {
+                WP.toast('조정값이 저장되었습니다.');
+            } else {
+                WP.toast(result.message, 'error');
+            }
+        } catch (err) {
+            WP.toast('저장 중 오류가 발생했습니다.', 'error');
+        }
+    },
+
+    async fetchAndSaveRates(silent = false) {
+        const btn = document.getElementById('btnFetchLiveRate');
+        if (btn) btn.disabled = true;
+        try {
+            const liveResult = await WP.api('/api/budget/exchange_rate');
+            if (!liveResult.success) {
+                if (liveResult.data?.debug) console.error('[환율 오류]', liveResult.data.debug);
+                if (!silent) WP.toast('환율 정보를 불러올 수 없습니다.', 'error');
+                return;
+            }
+
+            const saveResult = await WP.post('/api/trips/rate', {
+                csrf_token: SC.csrfToken,
+                trip_code:  SC.tripCode,
+                rates:      liveResult.data.rates,
+            });
+
+            if (saveResult.success) {
+                // 기존 조정값 유지하며 재렌더링
+                await this.loadRate();
+                if (!silent) WP.toast('환율이 갱신되었습니다.');
+            } else {
+                if (!silent) WP.toast(saveResult.message, 'error');
+            }
+        } catch (err) {
+            if (!silent) WP.toast('환율 정보를 불러올 수 없습니다.', 'error');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    Settings.loadRate();
+});
 
 // ESC 키로 모달 닫기
 document.addEventListener('keydown', function (e) {

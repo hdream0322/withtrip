@@ -67,15 +67,16 @@ if ($method === 'POST') {
         jsonResponse(false, null, '잘못된 요청입니다.', 403);
     }
 
-    $tripCode    = $input['trip_code'] ?? '';
-    $categoryId  = !empty($input['category_id']) ? (int) $input['category_id'] : null;
-    $paidBy      = trim($input['paid_by'] ?? '');
-    $amount      = (int) ($input['amount'] ?? 0);
-    $currency    = $input['currency'] ?? 'KRW';
-    $description = trim($input['description'] ?? '');
-    $expenseDate = $input['expense_date'] ?? null;
-    $isDutch     = (int) ($input['is_dutch'] ?? 0);
-    $splits      = $input['splits'] ?? [];
+    $tripCode      = $input['trip_code'] ?? '';
+    $categoryId    = !empty($input['category_id']) ? (int) $input['category_id'] : null;
+    $paidBy        = trim($input['paid_by'] ?? '');
+    $amount        = (int) ($input['amount'] ?? 0);
+    $currency      = $input['currency'] ?? 'KRW';
+    $description   = trim($input['description'] ?? '');
+    $expenseDate   = $input['expense_date'] ?? null;
+    $isDutch       = (int) ($input['is_dutch'] ?? 0);
+    $paymentMethod = in_array($input['payment_method'] ?? '', ['cash', 'card'], true) ? $input['payment_method'] : 'card';
+    $splits        = $input['splits'] ?? [];
 
     // 유효성 검증
     if (empty($paidBy)) {
@@ -86,7 +87,7 @@ if ($method === 'POST') {
         jsonResponse(false, null, '금액을 입력해주세요.', 400);
     }
 
-    if (!in_array($currency, ['KRW', 'USD'], true)) {
+    if (!in_array($currency, ['KRW','USD','EUR','JPY','CNH','GBP','AUD','CAD','HKD','SGD','THB'], true)) {
         jsonResponse(false, null, '지원하지 않는 통화입니다.', 400);
     }
 
@@ -98,10 +99,10 @@ if ($method === 'POST') {
     try {
         // 지출 저장
         $stmt = $db->prepare(
-            'INSERT INTO expenses (trip_code, category_id, paid_by, amount, currency, description, expense_date, is_dutch)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO expenses (trip_code, category_id, paid_by, amount, currency, description, expense_date, is_dutch, payment_method)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $stmt->execute([$tripCode, $categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch]);
+        $stmt->execute([$tripCode, $categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch, $paymentMethod]);
         $expenseId = (int) $db->lastInsertId();
 
         // 더치페이 분담 내역 저장
@@ -143,16 +144,17 @@ if ($method === 'PUT') {
         jsonResponse(false, null, '잘못된 요청입니다.', 403);
     }
 
-    $id          = (int) ($input['id'] ?? 0);
-    $tripCode    = $input['trip_code'] ?? '';
-    $categoryId  = !empty($input['category_id']) ? (int) $input['category_id'] : null;
-    $paidBy      = trim($input['paid_by'] ?? '');
-    $amount      = (int) ($input['amount'] ?? 0);
-    $currency    = $input['currency'] ?? 'KRW';
-    $description = trim($input['description'] ?? '');
-    $expenseDate = $input['expense_date'] ?? null;
-    $isDutch     = (int) ($input['is_dutch'] ?? 0);
-    $splits      = $input['splits'] ?? [];
+    $id            = (int) ($input['id'] ?? 0);
+    $tripCode      = $input['trip_code'] ?? '';
+    $categoryId    = !empty($input['category_id']) ? (int) $input['category_id'] : null;
+    $paidBy        = trim($input['paid_by'] ?? '');
+    $amount        = (int) ($input['amount'] ?? 0);
+    $currency      = $input['currency'] ?? 'KRW';
+    $description   = trim($input['description'] ?? '');
+    $expenseDate   = $input['expense_date'] ?? null;
+    $isDutch       = (int) ($input['is_dutch'] ?? 0);
+    $paymentMethod = in_array($input['payment_method'] ?? '', ['cash', 'card'], true) ? $input['payment_method'] : 'card';
+    $splits        = $input['splits'] ?? [];
 
     if (empty($paidBy)) {
         jsonResponse(false, null, '결제자를 선택해주세요.', 400);
@@ -162,7 +164,7 @@ if ($method === 'PUT') {
         jsonResponse(false, null, '금액을 입력해주세요.', 400);
     }
 
-    if (!in_array($currency, ['KRW', 'USD'], true)) {
+    if (!in_array($currency, ['KRW','USD','EUR','JPY','CNH','GBP','AUD','CAD','HKD','SGD','THB'], true)) {
         jsonResponse(false, null, '지원하지 않는 통화입니다.', 400);
     }
 
@@ -175,10 +177,10 @@ if ($method === 'PUT') {
         $stmt = $db->prepare(
             'UPDATE expenses
              SET category_id = ?, paid_by = ?, amount = ?, currency = ?,
-                 description = ?, expense_date = ?, is_dutch = ?
+                 description = ?, expense_date = ?, is_dutch = ?, payment_method = ?
              WHERE id = ? AND trip_code = ?'
         );
-        $stmt->execute([$categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch, $id, $tripCode]);
+        $stmt->execute([$categoryId, $paidBy, $amount, $currency, $description ?: null, $expenseDate, $isDutch, $paymentMethod, $id, $tripCode]);
 
         // 기존 분담 내역 삭제 후 재입력
         $stmt = $db->prepare('DELETE FROM dutch_splits WHERE expense_id = ? AND trip_code = ?');

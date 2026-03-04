@@ -96,6 +96,21 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
+    <!-- 환율 설정 -->
+    <div class="card settings-section">
+        <div class="flex-between mb-4">
+            <h3 class="settings-section-title" style="margin-bottom:0;">환율 설정</h3>
+            <button class="btn btn-secondary btn-sm" id="btnFetchLiveRate" onclick="Settings.fetchAndSaveRates()">
+                <span class="material-icons" style="font-size:15px;vertical-align:middle;">sync</span>
+                실시간 불러오기
+            </button>
+        </div>
+        <p class="text-xs text-muted mb-12" id="rateSourceLabel">KRW 환산에 사용됩니다. 1시간마다 자동 갱신됩니다.</p>
+        <div id="rateTableWrap">
+            <div class="text-center text-muted text-sm"><div class="spinner"></div></div>
+        </div>
+    </div>
+
     <!-- 보안 -->
     <div class="card settings-section">
         <h3 class="settings-section-title">보안</h3>

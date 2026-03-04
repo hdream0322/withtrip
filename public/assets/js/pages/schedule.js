@@ -13,12 +13,14 @@ let selectedCategory = null;
 
 // 카테고리 설정
 const CATEGORIES = {
-    meal:          { label: '식사',  color: '#f97316', emoji: '🍽' },
-    transport:     { label: '이동',  color: '#3b82f6', emoji: '🚗' },
-    accommodation: { label: '숙소',  color: '#8b5cf6', emoji: '🏨' },
-    sightseeing:   { label: '관광',  color: '#10b981', emoji: '📸' },
-    shopping:      { label: '쇼핑',  color: '#ec4899', emoji: '🛍' },
-    other:         { label: '기타',  color: '#6b7280', emoji: '📌' },
+    meal:          { label: '식사',    color: '#F97316', emoji: '🍽' },
+    cafe:          { label: '카페',    color: '#A16207', emoji: '☕' },
+    sightseeing:   { label: '관광',    color: '#2563EB', emoji: '📸' },
+    transport:     { label: '이동',    color: '#6B7280', emoji: '🚗' },
+    accommodation: { label: '숙소',    color: '#7C3AED', emoji: '🏨' },
+    shopping:      { label: '쇼핑',    color: '#16A34A', emoji: '🛍' },
+    activity:      { label: '액티비티', color: '#DC2626', emoji: '🏄' },
+    other:         { label: '기타',    color: '#9CA3AF', emoji: '📌' },
 };
 
 // ========================

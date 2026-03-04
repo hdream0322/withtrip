@@ -40,6 +40,14 @@ require_once __DIR__ . '/../includes/header.php';
 
     <!-- 탭 1: 지출 내역 -->
     <div class="tab-pane active" id="tabExpenses">
+        <!-- 외화 지출 있을 때만 표시: 환율 설정 링크 -->
+        <div id="expenseRateSection" class="hidden">
+            <div class="rate-info-bar">
+                <span class="material-icons" style="font-size: 16px; color: var(--color-text-muted);">currency_exchange</span>
+                <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="rate-info-link">환율 설정 →</a>
+            </div>
+        </div>
+
         <!-- 지출 목록 -->
         <div id="expenseList">
             <div class="text-center text-muted text-sm">
@@ -62,19 +70,25 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
 
         <div id="settlementContent" class="hidden">
-            <!-- 통화 혼용 시 환율 입력 -->
+            <!-- 결제 방법 필터 -->
+            <div class="settlement-filter-row">
+                <select id="settlementMethodFilter" class="form-select form-select-sm" onchange="Settlement.applyFilter()">
+                    <option value="all">💳💵 전체 정산</option>
+                    <option value="card">💳 카드만 정산</option>
+                    <option value="cash">💵 현금만 정산</option>
+                </select>
+            </div>
+
+            <!-- 통화 혼용 시: 정산 방식 드롭다운 + 환율 설정 링크 -->
             <div id="exchangeRateSection" class="hidden">
-                <div class="card">
-                    <h3 class="card-title">환율 설정</h3>
-                    <p class="text-sm text-muted mb-8">여러 통화가 사용되었습니다. 환율을 입력하면 KRW로 통합 정산합니다.</p>
-                    <div class="form-group">
-                        <label class="form-label">1 USD = KRW</label>
-                        <input type="number" id="settlementExchangeRate" class="form-input" placeholder="예: 1350" min="1" step="1">
-                    </div>
-                    <div class="flex" style="gap: 8px;">
-                        <button class="btn btn-primary btn-sm" onclick="Settlement.applyExchangeRate()">통합 정산</button>
-                        <button class="btn btn-secondary btn-sm" onclick="Settlement.resetExchangeRate()">통화별 분리</button>
-                    </div>
+                <div class="settlement-mode-row">
+                    <select id="settlementModeSelect" class="form-select form-select-sm" onchange="Settlement.onModeChange()">
+                        <option value="separate">통화별 분리</option>
+                        <option value="unified">통합 정산 (KRW 환산)</option>
+                    </select>
+                    <a href="/<?= e($tripCode) ?>/<?= e($userId) ?>/settings" class="rate-info-link rate-settings-link">
+                        <span class="material-icons" style="font-size:15px;vertical-align:middle;">currency_exchange</span> 환율 설정
+                    </a>
                 </div>
             </div>
 
@@ -137,6 +151,15 @@ require_once __DIR__ . '/../includes/header.php';
             <select id="expenseCurrency" class="form-select">
                 <option value="KRW">KRW</option>
                 <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="JPY">JPY</option>
+                <option value="CNH">CNH</option>
+                <option value="GBP">GBP</option>
+                <option value="AUD">AUD</option>
+                <option value="CAD">CAD</option>
+                <option value="HKD">HKD</option>
+                <option value="SGD">SGD</option>
+                <option value="THB">THB</option>
             </select>
         </div>
     </div>
@@ -152,8 +175,16 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="form-group">
+        <label class="form-label">결제 방법</label>
+        <select id="expensePaymentMethod" class="form-select">
+            <option value="card">💳 카드</option>
+            <option value="cash">💵 현금</option>
+        </select>
+    </div>
+
+    <div class="form-group">
         <label class="form-check">
-            <input type="checkbox" id="expenseDutch" checked>
+            <input type="checkbox" id="expenseDutch">
             <span>더치페이 (분담)</span>
         </label>
     </div>
@@ -229,6 +260,15 @@ require_once __DIR__ . '/../includes/header.php';
             <select id="incomeCurrency" class="form-select">
                 <option value="KRW">KRW</option>
                 <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="JPY">JPY</option>
+                <option value="CNH">CNH</option>
+                <option value="GBP">GBP</option>
+                <option value="AUD">AUD</option>
+                <option value="CAD">CAD</option>
+                <option value="HKD">HKD</option>
+                <option value="SGD">SGD</option>
+                <option value="THB">THB</option>
             </select>
         </div>
     </div>

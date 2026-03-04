@@ -10,6 +10,16 @@ const BC = window.BUDGET_CONFIG;
 let expenses = [];
 let incomes = [];
 let settlementLoaded = false;
+let globalRates     = {}; // 조정값 포함 실효 환율 (카드용)
+let globalBaseRates = {}; // 조정값 없는 TTS 환율 (현금용)
+
+// 외화 → KRW 환산 (paymentMethod: 'card'=조정 반영, 'cash'=TTS 그대로)
+function toKrw(amount, currency, paymentMethod) {
+    if (currency === 'KRW') return amount;
+    const rates = (paymentMethod === 'cash') ? globalBaseRates : globalRates;
+    const rate = rates[currency] || globalRates[currency];
+    return rate ? Math.round(amount * rate) : null;
+}
 
 // ========================
 // 초기화
@@ -17,6 +27,7 @@ let settlementLoaded = false;
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initExpenseModal();
+    loadSavedRate();
     loadExpenses();
     loadIncomes();
     handleHashTab();
@@ -96,6 +107,44 @@ function formatAmount(amount, currency) {
     return Number(amount).toLocaleString('ko-KR') + '원';
 }
 
+async function loadSavedRate() {
+    try {
+        const result = await WP.api('/api/trips/rate?trip_code=' + BC.tripCode);
+        if (result.success) {
+            globalRates     = result.data.rates      || {};
+            globalBaseRates = result.data.base_rates || globalRates;
+            applyRateLabel();
+            renderExpenses();
+            if (Settlement.data) Settlement.render();
+
+            // 1시간 지났으면 백그라운드 자동 갱신
+            if (result.data.needs_refresh) {
+                autoRefreshRates();
+            }
+        }
+    } catch (_) {}
+}
+
+async function autoRefreshRates() {
+    try {
+        const liveResult = await WP.api('/api/budget/exchange_rate');
+        if (!liveResult.success) return;
+
+        await WP.post('/api/trips/rate', {
+            csrf_token: BC.csrfToken,
+            trip_code:  BC.tripCode,
+            rates:      liveResult.data.rates,
+        });
+
+        // 저장 후 조정값이 반영된 실효 환율로 재로드
+        await loadSavedRate();
+    } catch (_) {}
+}
+
+function applyRateLabel() {
+    // rate-info-bar 간소화 후 라벨 없음 - 함수 유지 (호환성)
+}
+
 // ========================
 // 지출 CRUD
 // ========================
@@ -115,6 +164,16 @@ async function loadExpenses() {
 
 function renderExpenses() {
     const container = document.getElementById('expenseList');
+
+    // 외화 지출/수입 여부 확인 → 환율 섹션 표시
+    const hasForeign = expenses.some(e => e.currency !== 'KRW') || incomes.some(i => i.currency !== 'KRW');
+    const rateSection = document.getElementById('expenseRateSection');
+    if (hasForeign) {
+        rateSection.classList.remove('hidden');
+        applyRateLabel();
+    } else {
+        rateSection.classList.add('hidden');
+    }
 
     // 수입 + 지출 합쳐서 날짜순 표시
     const allItems = [];
@@ -156,11 +215,15 @@ function renderExpenseCard(exp) {
     const dateStr = exp.expense_date || '';
     const isDutch = exp.is_dutch === 1;
 
+    const krw = exp.currency !== 'KRW' ? toKrw(exp.amount, exp.currency, exp.payment_method) : null;
+    const amountHtml = formatAmount(exp.amount, exp.currency)
+        + (krw !== null ? ' <span class="amount-krw-hint">≈ ' + krw.toLocaleString('ko-KR') + '원</span>' : '');
+
     let html =
         '<div class="card expense-card" data-expense-id="' + exp.id + '">' +
         '<div class="expense-header">' +
         '<span class="expense-desc">' + escHtml(desc) + '</span>' +
-        '<span class="expense-amount">' + formatAmount(exp.amount, exp.currency) + '</span>' +
+        '<span class="expense-amount">' + amountHtml + '</span>' +
         '</div>' +
         '<div class="expense-meta">';
 
@@ -170,7 +233,11 @@ function renderExpenseCard(exp) {
         html += '<span class="expense-meta-item">' + escHtml(dateStr) + '</span>';
     }
 
+    const paymentMethod = exp.payment_method || 'card';
     html +=
+        '<span class="expense-badge payment-badge-' + paymentMethod + '">' +
+        (paymentMethod === 'cash' ? '현금' : '카드') +
+        '</span>' +
         '<span class="expense-badge ' + (isDutch ? 'badge-dutch' : 'badge-solo') + '">' +
         (isDutch ? '분담' : '개인') +
         '</span>' +
@@ -257,6 +324,16 @@ function initExpenseModal() {
     });
 }
 
+function setPaymentMethod(value) {
+    const sel = document.getElementById('expensePaymentMethod');
+    if (sel) sel.value = value || 'card';
+}
+
+function getPaymentMethod() {
+    const sel = document.getElementById('expensePaymentMethod');
+    return sel ? sel.value : 'card';
+}
+
 function openExpenseModal(exp) {
     const title = document.getElementById('expenseModalTitle');
     const today = new Date().toISOString().slice(0, 10);
@@ -271,6 +348,7 @@ function openExpenseModal(exp) {
         document.getElementById('expenseDate').value = exp.expense_date || '';
         document.getElementById('expenseDutch').checked = exp.is_dutch === 1;
         document.getElementById('dutchSection').style.display = exp.is_dutch === 1 ? 'block' : 'none';
+        setPaymentMethod(exp.payment_method || 'card');
 
         if (exp.is_dutch === 1 && exp.splits && exp.splits.length > 0) {
             document.querySelectorAll('.dutch-check').forEach(cb => { cb.checked = false; });
@@ -295,8 +373,9 @@ function openExpenseModal(exp) {
         document.getElementById('expenseCurrency').value = 'KRW';
         document.getElementById('expenseDescription').value = '';
         document.getElementById('expenseDate').value = today;
-        document.getElementById('expenseDutch').checked = true;
-        document.getElementById('dutchSection').style.display = 'block';
+        document.getElementById('expenseDutch').checked = false;
+        document.getElementById('dutchSection').style.display = 'none';
+        setPaymentMethod('card');
         resetDutchSection();
     }
 
@@ -412,6 +491,7 @@ async function saveExpense() {
         description: description,
         expense_date: expenseDate || null,
         is_dutch: isDutch,
+        payment_method: getPaymentMethod(),
         splits: splits,
     };
 
@@ -581,7 +661,7 @@ async function deleteIncome(id) {
 
 const Settlement = {
     data: null,
-    exchangeRate: null,
+    useUnified: false,
     completedTransfers: {},
 
     async init() {
@@ -589,10 +669,26 @@ const Settlement = {
         await this.loadData();
     },
 
+    applyFilter() {
+        this.useUnified = false;
+        this.loadData();
+    },
+
+    getPaymentFilter() {
+        const sel = document.getElementById('settlementMethodFilter');
+        return sel ? sel.value : 'all';
+    },
+
     async loadData() {
+        document.getElementById('settlementLoading').classList.remove('hidden');
+        document.getElementById('settlementContent').classList.add('hidden');
+        document.getElementById('settlementEmpty').classList.add('hidden');
+
+        const filter = this.getPaymentFilter();
         try {
             const result = await WP.api(
-                '/api/settlement?trip_code=' + encodeURIComponent(BC.tripCode)
+                '/api/settlement?trip_code=' + encodeURIComponent(BC.tripCode) +
+                '&payment_method=' + encodeURIComponent(filter)
             );
 
             if (!result.success) {
@@ -614,6 +710,11 @@ const Settlement = {
 
             if (this.data.has_multiple) {
                 document.getElementById('exchangeRateSection').classList.remove('hidden');
+                // 저장된 환율 있으면 자동 통합 정산
+                if (Object.keys(globalRates).length > 0) {
+                    this.useUnified = true;
+                }
+                this.updateSettlementMode();
             }
 
             this.render();
@@ -626,7 +727,7 @@ const Settlement = {
     render() {
         if (!this.data) return;
 
-        if (this.exchangeRate && this.data.has_multiple) {
+        if (this.useUnified && this.data.has_multiple) {
             this.renderUnified();
         } else {
             this.renderByCurrency();
@@ -669,7 +770,6 @@ const Settlement = {
 
     renderUnified() {
         const { members, settlements, currencies, member_names } = this.data;
-        const rate = this.exchangeRate;
 
         const unifiedBalances = {};
         for (const member of members) {
@@ -681,9 +781,11 @@ const Settlement = {
                 const bal = member.by_currency[currency];
                 if (!bal) continue;
 
-                const multiplier = currency === 'USD' ? rate : 1;
-                totalPaid += bal.paid * multiplier;
-                totalOwed += bal.owed * multiplier;
+                const krwPaid = toKrw(bal.paid, currency);
+                const krwOwed = toKrw(bal.owed, currency);
+                if (krwPaid === null || krwOwed === null) continue; // 환율 없는 통화 스킵
+                totalPaid += krwPaid;
+                totalOwed += krwOwed;
             }
 
             unifiedBalances[uid] = {
@@ -695,7 +797,7 @@ const Settlement = {
             };
         }
 
-        let summaryHtml = '<div class="unified-notice">환율 1 USD = ' + WP.formatMoney(rate, 'KRW').replace('원', '') + '원 기준 통합 정산</div>';
+        let summaryHtml = '';
         for (const member of members) {
             const uid = member.user_id;
             const bal = unifiedBalances[uid];
@@ -712,7 +814,7 @@ const Settlement = {
 
         const transfers = this.calculateMinTransfers(netBalances);
 
-        let transferHtml = '<div class="unified-notice">KRW 통합 정산 결과</div>';
+        let transferHtml = '';
         if (transfers.length === 0) {
             transferHtml += '<div class="no-transfers">정산할 내역이 없습니다.</div>';
         } else {
@@ -787,25 +889,25 @@ const Settlement = {
         return html;
     },
 
-    applyExchangeRate() {
-        const input = document.getElementById('settlementExchangeRate');
-        const rate = parseInt(input.value, 10);
-
-        if (!rate || rate <= 0) {
-            WP.toast('올바른 환율을 입력해주세요.', 'error');
-            return;
+    onModeChange() {
+        const sel = document.getElementById('settlementModeSelect');
+        if (!sel) return;
+        if (sel.value === 'unified') {
+            if (Object.keys(globalRates).length === 0) {
+                WP.toast('설정에서 환율을 먼저 저장해주세요.', 'error');
+                sel.value = 'separate';
+                return;
+            }
+            this.useUnified = true;
+        } else {
+            this.useUnified = false;
         }
-
-        this.exchangeRate = rate;
         this.render();
-        WP.toast('환율이 적용되었습니다.');
     },
 
-    resetExchangeRate() {
-        this.exchangeRate = null;
-        document.getElementById('settlementExchangeRate').value = '';
-        this.render();
-        WP.toast('통화별 분리 정산으로 변경되었습니다.');
+    updateSettlementMode() {
+        const sel = document.getElementById('settlementModeSelect');
+        if (sel) sel.value = this.useUnified ? 'unified' : 'separate';
     },
 
     toggleComplete(key) {

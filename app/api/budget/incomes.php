@@ -52,6 +52,10 @@ if ($method === 'POST') {
         $type = 'other';
     }
 
+    if (!in_array($currency, ['KRW','USD','EUR','JPY','CNH','GBP','AUD','CAD','HKD','SGD','THB'], true)) {
+        $currency = 'KRW';
+    }
+
     $stmt = $db->prepare(
         'INSERT INTO incomes (trip_code, user_id, amount, currency, type, description, income_date)
          VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -83,6 +87,10 @@ if ($method === 'PUT') {
 
     if (!in_array($type, ['budget', 'refund', 'other'])) {
         $type = 'other';
+    }
+
+    if (!in_array($currency, ['KRW','USD','EUR','JPY','CNH','GBP','AUD','CAD','HKD','SGD','THB'], true)) {
+        $currency = 'KRW';
     }
 
     $stmt = $db->prepare(

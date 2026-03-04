@@ -26,6 +26,49 @@
     font-size: 0.9rem;
 }
 
+/* 환율 정보 바 */
+.rate-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    background: rgba(var(--color-primary-rgb, 0, 150, 136), 0.06);
+    border-radius: 8px;
+    border: 1px solid rgba(var(--color-primary-rgb, 0, 150, 136), 0.15);
+}
+
+.rate-info-link {
+    font-size: 0.82rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* 정산 방식 선택 행 */
+.settlement-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.settlement-mode-row .form-select-sm {
+    flex: 1;
+}
+
+.rate-settings-link {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
 /* 지출 목록 */
 .expense-card {
     padding: 14px 16px;
@@ -51,6 +94,14 @@
     color: var(--color-primary-dark);
     flex-shrink: 0;
     margin-left: 8px;
+    text-align: right;
+}
+
+.amount-krw-hint {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
 }
 
 .expense-meta {
@@ -223,6 +274,28 @@
 .form-group-shrink {
     width: 100px;
     flex-shrink: 0;
+}
+
+/* 정산 필터 행 */
+.settlement-filter-row {
+    margin-bottom: 12px;
+}
+
+.form-select-sm {
+    padding: 8px 10px;
+    font-size: 0.88rem;
+    height: auto;
+}
+
+/* 결제 방법 뱃지 */
+.payment-badge-card {
+    background: #e0f2f1;
+    color: #00897b;
+}
+
+.payment-badge-cash {
+    background: #fff3e0;
+    color: #e65100;
 }
 
 /* 더치페이 영역 */

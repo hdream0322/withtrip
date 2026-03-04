@@ -1,5 +1,118 @@
 /* 설정 페이지 스타일 */
 
+/* 환율 테이블 */
+.rate-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rate-table td {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--color-border, #f0f0f0);
+    font-size: 0.88rem;
+}
+
+.rate-table tr:last-child td {
+    border-bottom: none;
+}
+
+.rate-adj-notice {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-bottom: 10px;
+}
+
+.rate-row td {
+    vertical-align: top;
+}
+
+.rate-cur {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    width: 36%;
+    padding-top: 10px;
+}
+
+.rate-cur-code {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--color-text-primary, #1a1a1a);
+}
+
+.rate-cur-name {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #888);
+}
+
+.rate-val-col {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    padding: 8px 0;
+}
+
+.rate-base-line {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+}
+
+.rate-adj-line {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.rate-adj-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.rate-adj-input {
+    width: 72px;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+    text-align: right;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.rate-adj-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.rate-adj-unit {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+}
+
+.rate-eff-line {
+    font-size: 0.88rem;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.rate-adj-diff {
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb, 0, 150, 136), 0.1);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* 이전 .rate-val (하위 호환) */
+.rate-val {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary, #555);
+}
+
 .settings-section {
     padding: 16px;
 }
