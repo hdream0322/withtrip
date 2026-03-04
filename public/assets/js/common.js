@@ -214,6 +214,12 @@ function _showModal(overlayId, sheetId) {
         overlay.classList.add('visible');
         sheet.classList.add('visible');
     });
+
+    // 드래그로 닫기 기능 (한 번만 추가)
+    if (!sheet.dataset.dragHandlerAttached) {
+        _attachModalDragHandler(sheet, overlayId, sheetId);
+        sheet.dataset.dragHandlerAttached = 'true';
+    }
 }
 
 function _hideModal(overlayId, sheetId) {
@@ -222,8 +228,65 @@ function _hideModal(overlayId, sheetId) {
     if (!overlay || !sheet) return;
     overlay.classList.remove('visible');
     sheet.classList.remove('visible');
+    sheet.style.transform = '';
+    sheet.style.transition = '';
     setTimeout(function () {
         overlay.classList.add('hidden');
         sheet.classList.add('hidden');
     }, 250);
+}
+
+function _attachModalDragHandler(sheet, overlayId, sheetId) {
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    const CLOSE_THRESHOLD = 80; // 80px 이상 드래그하면 닫기
+
+    function handleStart(e) {
+        if (e.type === 'mousedown' && e.button !== 0) return; // 좌클릭만
+        const clientY = e.type.indexOf('touch') === 0 ? e.touches[0].clientY : e.clientY;
+        startY = clientY;
+        currentY = 0;
+        isDragging = true;
+        sheet.style.transition = 'none';
+    }
+
+    function handleMove(e) {
+        if (!isDragging || startY === 0) return;
+        e.preventDefault();
+        const clientY = e.type.indexOf('touch') === 0 ? e.touches[0].clientY : e.clientY;
+        currentY = clientY - startY;
+
+        // 아래로 드래그할 때만 이동
+        if (currentY > 0) {
+            var percent = Math.min(currentY / 300, 1);
+            sheet.style.opacity = Math.max(1 - percent * 0.3, 0.7);
+            sheet.style.transform = 'translateX(-50%) translateY(' + currentY + 'px)';
+        }
+    }
+
+    function handleEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        sheet.style.transition = '';
+        sheet.style.opacity = '';
+
+        if (currentY > CLOSE_THRESHOLD) {
+            _hideModal(overlayId, sheetId);
+        } else {
+            sheet.style.transform = 'translateX(-50%) translateY(0)';
+        }
+
+        startY = 0;
+        currentY = 0;
+    }
+
+    sheet.addEventListener('touchstart', handleStart, false);
+    sheet.addEventListener('touchmove', handleMove, false);
+    sheet.addEventListener('touchend', handleEnd, false);
+
+    // PC 마우스 지원
+    sheet.addEventListener('mousedown', handleStart, false);
+    document.addEventListener('mousemove', handleMove, false);
+    document.addEventListener('mouseup', handleEnd, false);
 }

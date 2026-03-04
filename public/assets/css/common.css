@@ -636,10 +636,11 @@ body {
     border-radius: 20px 20px 0 0;
     padding: 12px 20px 32px;
     z-index: 201;
-    transition: transform 0.25s ease;
+    transition: transform 0.25s ease, opacity 0.1s ease;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
     max-height: 90vh;
     overflow-y: auto;
+    cursor: grab;
 }
 
 .modal-sheet.visible {
@@ -652,6 +653,7 @@ body {
     background: var(--color-border);
     border-radius: 2px;
     margin: 0 auto 16px;
+    cursor: grab;
 }
 
 /* 페이지 공통 FAB (플로팅 액션 버튼) */
