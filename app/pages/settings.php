@@ -189,6 +189,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="modal-sheet-handle"></div>
     <h3 class="card-title">PIN 변경</h3>
     <form onsubmit="Settings.changePIN(); return false;" autocomplete="off">
+        <input type="hidden" id="pinUsername" value="<?= e($userId) ?>" autocomplete="username">
         <div class="form-group">
             <label class="form-label">현재 PIN (6자리)</label>
             <input type="password" id="currentPin" class="form-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password">
