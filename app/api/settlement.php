@@ -9,6 +9,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $tripCode      = $_GET['trip_code'] ?? '';
     $paymentFilter = $_GET['payment_method'] ?? 'all'; // all | card | cash
+    $groupByDate   = ($_GET['group_by'] ?? '') === 'date';
 
     if (empty($tripCode)) {
         jsonResponse(false, null, '여행 코드가 필요합니다.', 400);
@@ -189,6 +190,108 @@ if ($method === 'GET') {
         $memberSummary[] = $summary;
     }
 
+    // 날짜별 그룹 정산
+    $groupedByDate = null;
+    if ($groupByDate) {
+        $expensesByDate = [];
+        foreach ($expenses as $exp) {
+            $dateKey = (isset($exp['expense_date']) && $exp['expense_date'] !== '' && $exp['expense_date'] !== null)
+                ? $exp['expense_date']
+                : 'null';
+            $expensesByDate[$dateKey][] = $exp;
+        }
+
+        // 날짜 오름차순, 'null'은 맨 마지막
+        uksort($expensesByDate, function ($a, $b) {
+            if ($a === 'null') return 1;
+            if ($b === 'null') return -1;
+            return strcmp($a, $b);
+        });
+
+        $groupedByDate = [];
+        foreach ($expensesByDate as $dateKey => $dateExpenses) {
+            $dateByCurrencyAndMethod = [];
+
+            foreach ($dateExpenses as $exp) {
+                $currency      = $exp['currency'];
+                $paidBy        = $exp['paid_by'];
+                $amount        = (int) $exp['amount'];
+                $isDutch       = (int) $exp['is_dutch'];
+                $paymentMethod = $exp['payment_method'] ?? 'card';
+                $key           = $currency . ':' . $paymentMethod;
+
+                if (!isset($dateByCurrencyAndMethod[$key])) {
+                    $dateByCurrencyAndMethod[$key] = [];
+                }
+
+                $effectivePaidBy = $paidBy;
+                if ($paymentMethod === 'cash' && isset($cashExchangers[$currency])) {
+                    $effectivePaidBy = $cashExchangers[$currency];
+                }
+
+                if (!isset($dateByCurrencyAndMethod[$key][$effectivePaidBy])) {
+                    $dateByCurrencyAndMethod[$key][$effectivePaidBy] = ['paid' => 0, 'owed' => 0];
+                }
+                $dateByCurrencyAndMethod[$key][$effectivePaidBy]['paid'] += $amount;
+
+                if ($isDutch && isset($splitsByExpense[$exp['id']])) {
+                    foreach ($splitsByExpense[$exp['id']] as $split) {
+                        $splitUser = $split['user_id'];
+                        if (!isset($dateByCurrencyAndMethod[$key][$splitUser])) {
+                            $dateByCurrencyAndMethod[$key][$splitUser] = ['paid' => 0, 'owed' => 0];
+                        }
+                        $dateByCurrencyAndMethod[$key][$splitUser]['owed'] += (int) $split['amount'];
+                    }
+                } else {
+                    if (!isset($dateByCurrencyAndMethod[$key][$paidBy])) {
+                        $dateByCurrencyAndMethod[$key][$paidBy] = ['paid' => 0, 'owed' => 0];
+                    }
+                    $dateByCurrencyAndMethod[$key][$paidBy]['owed'] += $amount;
+                }
+            }
+
+            // 통화별로 합산
+            $dateByCurrency = [];
+            $dateCurrencies = [];
+            foreach ($dateByCurrencyAndMethod as $key => $userBalances) {
+                [$currency, ] = explode(':', $key);
+                if (!in_array($currency, $dateCurrencies, true)) {
+                    $dateCurrencies[] = $currency;
+                }
+                foreach ($userBalances as $uid => $bal) {
+                    if (!isset($dateByCurrency[$currency][$uid])) {
+                        $dateByCurrency[$currency][$uid] = ['paid' => 0, 'owed' => 0];
+                    }
+                    $dateByCurrency[$currency][$uid]['paid'] += $bal['paid'];
+                    $dateByCurrency[$currency][$uid]['owed'] += $bal['owed'];
+                }
+            }
+
+            // 날짜별 최소 이체 계산
+            $dateSettlements = [];
+            foreach ($dateByCurrency as $currency => $userBalances) {
+                $netBalances = [];
+                foreach ($userBalances as $uid => $bal) {
+                    $net = $bal['paid'] - $bal['owed'];
+                    if ($net !== 0) $netBalances[$uid] = $net;
+                }
+                $transfers = calculateMinTransfers($netBalances);
+                $dateSettlements[$currency] = [
+                    'balances'  => $userBalances,
+                    'transfers' => $transfers,
+                ];
+            }
+
+            $groupedByDate[$dateKey] = [
+                'label'                          => $dateKey === 'null' ? '날짜 미정' : $dateKey,
+                'expense_count'                  => count($dateExpenses),
+                'currencies'                     => $dateCurrencies,
+                'settlements'                    => $dateSettlements,
+                'balance_by_currency_and_method' => $dateByCurrencyAndMethod,
+            ];
+        }
+    }
+
     jsonResponse(true, [
         'members'       => $memberSummary,
         'settlements'   => $settlementsByCurrency,
@@ -197,6 +300,7 @@ if ($method === 'GET') {
         'member_names'  => $memberMap,
         'balance_by_currency_and_method' => $balanceByCurrencyAndMethod,
         'cash_exchangers' => $cashExchangers,
+        'grouped_by_date' => $groupedByDate,
     ]);
 }
 

@@ -568,6 +568,7 @@ $dotenv->load();
 >> **현금 환전 환율 + 환전자 기능 추가** (2026-03-04): `trip_exchange_rates` 테이블에 `cash_rate`, `cash_exchanger_id` 컬럼 추가. 현금 지출 시 현금 환전 환율 적용 및 환전한 사람에게 paid 귀속. 설정 페이지에서 통화별 현금 환전 환율과 환전자(멤버) 선택 가능. 정산 시 카드/현금 환율 구분 적용. 멤버 선택 드롭다운, 환전 정보 안내 추가. CSS_VERSION 3.1.0.
 >> **정산 필터 드롭다운 위치 및 화면 표시 개선** (2026-03-04): 필터 드롭다운을 `settlementContent` 바깥으로 분리하여 필터 결과가 비어도 드롭다운 유지. 로딩 스피너를 필터 드롭다운 아래로 이동. 외화(non-KRW) 존재 여부로 통합 정산 UI 활성화 (기존: 2개 이상 통화 필요 → 변경: 1개 이상 외화 충분). 필터 변경 시에도 자동 통합 정산 활성화. 환율 로드 후 정산 데이터 재평가. CSS_VERSION 3.1.2.
 > **FAB 여백 추가 + 시간 입력 기능** (2026-03-04): 지출 내역 탭 하단에 `padding-bottom: 140px` 추가하여 FAB 버튼으로 인한 항목 가림 현상 해결. 지출/수입 모달에 시간 입력 필드(`<input type="time">`) 추가. 모달 열 때 자동으로 현재 시간 입력 (수정 시는 저장된 시간 표시). `expenses` 테이블에 `expense_time TIME` 컬럼, `incomes` 테이블에 `income_time TIME` 컬럼 추가. API: `api/budget/expenses.php`, `api/budget/incomes.php`에서 시간 저장/조회. `budget.js`에서 시간 표시 로직 추가 (날짜 옆에 시간 표시). CSS_VERSION 3.1.4.
+> **정산 체크박스 버그 수정 + 날짜별 정산 기능** (2026-03-04): localStorage 키에 필터(all/card/cash)+모드(unified/separate/date-날짜) 포함하여 필터/모드 변경 시 체크 공유 버그 수정. `makeCheckKey()` 헬퍼 함수 추가, 구버전 키 자동 마이그레이션. `settlement.php` API에 `?group_by=date` 파라미터 추가 → `grouped_by_date` 필드 응답. 정산 탭에 "전체 정산/날짜별 보기" 토글 버튼 추가. `renderByDate()`, `_calcUnifiedBalances()`, `setViewMode()` 함수 신규. 날짜별 뷰에서도 통합 정산(KRW 환산) 지원, "날짜 미정" 그룹 맨 마지막 표시. CSS_VERSION 3.1.8.
 
 ---
 

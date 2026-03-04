@@ -3,7 +3,7 @@
  * 공통 헤더
  * CSS_VERSION: CSS/JS 캐시 버스팅 버전
  */
-const CSS_VERSION = '3.1.7';
+const CSS_VERSION = '3.1.8';
 
 // 현재 페이지 정보 (네비게이션 활성 탭 판별용)
 $currentPage = $currentPage ?? 'home';

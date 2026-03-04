@@ -696,6 +696,7 @@ async function deleteIncome(id) {
 const Settlement = {
     data: null,
     useUnified: false,
+    viewMode: 'total',  // 'total' | 'date'
     completedTransfers: {},
 
     async init() {
@@ -713,6 +714,15 @@ const Settlement = {
         return sel ? sel.value : 'all';
     },
 
+    // 필터+모드+날짜 정보를 포함한 localStorage 키 생성
+    makeCheckKey(from, to, currency, dateKey) {
+        const filter = this.getPaymentFilter();
+        const mode = this.viewMode === 'date'
+            ? ('date-' + (dateKey || 'null'))
+            : (this.useUnified ? 'unified' : 'separate');
+        return filter + '-' + mode + '-' + from + '-' + to + '-' + currency;
+    },
+
     async loadData() {
         document.getElementById('settlementLoading').classList.remove('hidden');
         document.getElementById('settlementContent').classList.add('hidden');
@@ -722,7 +732,8 @@ const Settlement = {
         try {
             const result = await WP.api(
                 '/api/settlement?trip_code=' + encodeURIComponent(BC.tripCode) +
-                '&payment_method=' + encodeURIComponent(filter)
+                '&payment_method=' + encodeURIComponent(filter) +
+                '&group_by=date'
             );
 
             if (!result.success) {
@@ -770,12 +781,23 @@ const Settlement = {
     render() {
         if (!this.data) return;
 
-        const hasForeign = this.data._hasForeign || this.data.currencies.some(c => c !== 'KRW');
-        if (this.useUnified && hasForeign) {
-            this.renderUnified();
+        if (this.viewMode === 'date') {
+            this.renderByDate();
         } else {
-            this.renderByCurrency();
+            const hasForeign = this.data._hasForeign || this.data.currencies.some(c => c !== 'KRW');
+            if (this.useUnified && hasForeign) {
+                this.renderUnified();
+            } else {
+                this.renderByCurrency();
+            }
         }
+    },
+
+    setViewMode(mode) {
+        this.viewMode = mode;
+        document.getElementById('btnViewTotal').classList.toggle('active', mode === 'total');
+        document.getElementById('btnViewDate').classList.toggle('active', mode === 'date');
+        this.render();
     },
 
     renderByCurrency() {
@@ -800,7 +822,8 @@ const Settlement = {
                 transferHtml += '<div class="no-transfers">정산할 내역이 없습니다.</div>';
             } else {
                 for (const t of settlement.transfers) {
-                    transferHtml += this.renderTransferItem(t, currency, member_names);
+                    const checkKey = this.makeCheckKey(t.from, t.to, currency);
+                    transferHtml += this.renderTransferItem(t, currency, member_names, checkKey);
                 }
             }
         }
@@ -813,38 +836,11 @@ const Settlement = {
     },
 
     renderUnified() {
-        const { members, settlements, currencies, member_names } = this.data;
+        const { members, member_names } = this.data;
         const balanceByMethod = this.data.balance_by_currency_and_method || {};
         const cashExchangers = this.data.cash_exchangers || globalCashExchangers;
 
-        const unifiedBalances = {};
-        for (const member of members) {
-            const uid = member.user_id;
-            let totalPaid = 0;
-            let totalOwed = 0;
-
-            // payment_method별로 분리하여 환산
-            for (const key in balanceByMethod) {
-                const [currency, paymentMethod] = key.split(':');
-                const userBal = balanceByMethod[key][uid];
-                if (!userBal) continue;
-
-                // payment_method에 따라 다른 환율 사용
-                const krwPaid = toKrw(userBal.paid, currency, paymentMethod);
-                const krwOwed = toKrw(userBal.owed, currency, paymentMethod);
-                if (krwPaid === null || krwOwed === null) continue; // 환율 없는 통화 스킵
-                totalPaid += krwPaid;
-                totalOwed += krwOwed;
-            }
-
-            unifiedBalances[uid] = {
-                paid: Math.round(totalPaid),
-                owed: Math.round(totalOwed),
-                net: Math.round(totalPaid - totalOwed),
-                display_name: member.display_name,
-                is_owner: member.is_owner,
-            };
-        }
+        const unifiedBalances = this._calcUnifiedBalances(members, balanceByMethod);
 
         // 환전 정보 안내
         let noticeHtml = '';
@@ -863,8 +859,7 @@ const Settlement = {
 
         let summaryHtml = noticeHtml;
         for (const member of members) {
-            const uid = member.user_id;
-            const bal = unifiedBalances[uid];
+            const bal = unifiedBalances[member.user_id];
             summaryHtml += this.renderUnifiedMemberSummary(member, bal);
         }
         document.getElementById('memberSummaryList').innerHTML = summaryHtml;
@@ -883,11 +878,145 @@ const Settlement = {
             transferHtml += '<div class="no-transfers">정산할 내역이 없습니다.</div>';
         } else {
             for (const t of transfers) {
-                transferHtml += this.renderTransferItem(t, 'KRW', member_names);
+                const checkKey = this.makeCheckKey(t.from, t.to, 'KRW');
+                transferHtml += this.renderTransferItem(t, 'KRW', member_names, checkKey);
             }
         }
 
         document.getElementById('transferList').innerHTML = transferHtml;
+    },
+
+    // 날짜별 뷰 렌더링
+    renderByDate() {
+        const { members, member_names, grouped_by_date } = this.data;
+        const hasForeign = this.data._hasForeign || this.data.currencies.some(c => c !== 'KRW');
+
+        // 멤버 요약 (전체 기준 유지)
+        let summaryHtml = '';
+        if (this.useUnified && hasForeign) {
+            const balanceByMethod = this.data.balance_by_currency_and_method || {};
+            const unifiedBalances = this._calcUnifiedBalances(members, balanceByMethod);
+            for (const member of members) {
+                summaryHtml += this.renderUnifiedMemberSummary(member, unifiedBalances[member.user_id]);
+            }
+        } else {
+            for (const member of members) {
+                summaryHtml += this.renderMemberSummary(member, this.data.currencies);
+            }
+        }
+        document.getElementById('memberSummaryList').innerHTML = summaryHtml;
+
+        if (!grouped_by_date || Object.keys(grouped_by_date).length === 0) {
+            document.getElementById('transferList').innerHTML =
+                '<div class="no-transfers">정산할 내역이 없습니다.</div>';
+            return;
+        }
+
+        let transferHtml = '';
+        for (const dateKey in grouped_by_date) {
+            const group = grouped_by_date[dateKey];
+            const groupHasForeign = group.currencies && group.currencies.some(c => c !== 'KRW');
+            const useUnifiedGroup = this.useUnified && groupHasForeign && Object.keys(globalRates).length > 0;
+
+            let groupTransfers = '';
+
+            if (useUnifiedGroup) {
+                // 날짜 그룹 내 통합 정산
+                const groupBalanceByMethod = group.balance_by_currency_and_method || {};
+                const groupUnified = {};
+                for (const member of members) {
+                    const uid = member.user_id;
+                    let totalPaid = 0, totalOwed = 0;
+                    for (const key in groupBalanceByMethod) {
+                        const [currency, paymentMethod] = key.split(':');
+                        const userBal = groupBalanceByMethod[key][uid];
+                        if (!userBal) continue;
+                        const krwPaid = toKrw(userBal.paid, currency, paymentMethod);
+                        const krwOwed = toKrw(userBal.owed, currency, paymentMethod);
+                        if (krwPaid === null || krwOwed === null) continue;
+                        totalPaid += krwPaid;
+                        totalOwed += krwOwed;
+                    }
+                    groupUnified[uid] = Math.round(totalPaid - totalOwed);
+                }
+                const netBalances = {};
+                for (const uid in groupUnified) {
+                    if (groupUnified[uid] !== 0) netBalances[uid] = groupUnified[uid];
+                }
+                const transfers = this.calculateMinTransfers(netBalances);
+                if (transfers.length === 0) {
+                    groupTransfers = '<div class="date-group-clean">이 날 정산 없음</div>';
+                } else {
+                    for (const t of transfers) {
+                        const checkKey = this.makeCheckKey(t.from, t.to, 'KRW', dateKey);
+                        groupTransfers += this.renderTransferItem(t, 'KRW', member_names, checkKey);
+                    }
+                }
+            } else {
+                // 통화별 분리
+                let hasAny = false;
+                for (const currency of (group.currencies || [])) {
+                    const settlement = group.settlements[currency];
+                    if (!settlement) continue;
+                    if ((group.currencies || []).length > 1) {
+                        groupTransfers += '<div class="currency-header">' + this.currencyLabel(currency) + '</div>';
+                    }
+                    if (settlement.transfers.length === 0) {
+                        groupTransfers += '<div class="date-group-clean">이 날 정산 없음</div>';
+                    } else {
+                        hasAny = true;
+                        for (const t of settlement.transfers) {
+                            const checkKey = this.makeCheckKey(t.from, t.to, currency, dateKey);
+                            groupTransfers += this.renderTransferItem(t, currency, member_names, checkKey);
+                        }
+                    }
+                }
+                if (!hasAny && !groupTransfers) {
+                    groupTransfers = '<div class="date-group-clean">이 날 정산 없음</div>';
+                }
+            }
+
+            transferHtml +=
+                '<div class="date-group">' +
+                '<div class="date-group-header">' +
+                '<span class="date-group-label">' + escHtml(group.label) + '</span>' +
+                '<span class="date-group-count">' + group.expense_count + '건</span>' +
+                '</div>' +
+                groupTransfers +
+                '</div>';
+        }
+
+        document.getElementById('transferList').innerHTML = transferHtml || '<div class="no-transfers">정산할 내역이 없습니다.</div>';
+    },
+
+    // 통합 잔액 계산 헬퍼
+    _calcUnifiedBalances(members, balanceByMethod) {
+        const unifiedBalances = {};
+        for (const member of members) {
+            const uid = member.user_id;
+            let totalPaid = 0;
+            let totalOwed = 0;
+
+            for (const key in balanceByMethod) {
+                const [currency, paymentMethod] = key.split(':');
+                const userBal = balanceByMethod[key][uid];
+                if (!userBal) continue;
+                const krwPaid = toKrw(userBal.paid, currency, paymentMethod);
+                const krwOwed = toKrw(userBal.owed, currency, paymentMethod);
+                if (krwPaid === null || krwOwed === null) continue;
+                totalPaid += krwPaid;
+                totalOwed += krwOwed;
+            }
+
+            unifiedBalances[uid] = {
+                paid: Math.round(totalPaid),
+                owed: Math.round(totalOwed),
+                net: Math.round(totalPaid - totalOwed),
+                display_name: member.display_name,
+                is_owner: member.is_owner,
+            };
+        }
+        return unifiedBalances;
     },
 
     renderMemberSummary(member, currencies) {
@@ -930,8 +1059,9 @@ const Settlement = {
         return html;
     },
 
-    renderTransferItem(transfer, currency, memberNames) {
-        const key = transfer.from + '-' + transfer.to + '-' + currency;
+    // checkKey를 인자로 받아 필터+모드를 반영한 키 사용
+    renderTransferItem(transfer, currency, memberNames, checkKey) {
+        const key = checkKey || this.makeCheckKey(transfer.from, transfer.to, currency);
         const isCompleted = !!this.completedTransfers[key];
         const completedClass = isCompleted ? ' completed' : '';
         const checkedAttr = isCompleted ? ' checked' : '';
@@ -939,7 +1069,7 @@ const Settlement = {
         const fromName = memberNames[transfer.from] || transfer.from;
         const toName = memberNames[transfer.to] || transfer.to;
 
-        let html = '<div class="transfer-item' + completedClass + '" data-key="' + key + '">';
+        let html = '<div class="transfer-item' + completedClass + '" data-key="' + escHtml(key) + '">';
         html += '<div class="transfer-info"><div class="transfer-from-to">';
         html += '<strong>' + escHtml(fromName) + '</strong>';
         html += '<span class="transfer-arrow">&rarr;</span>';
@@ -947,7 +1077,7 @@ const Settlement = {
         html += '</div></div>';
         html += '<div class="transfer-amount">' + WP.formatMoney(transfer.amount, currency) + '</div>';
         html += '<div class="transfer-check">';
-        html += '<input type="checkbox" title="정산 완료" onchange="Settlement.toggleComplete(\'' + key + '\')"' + checkedAttr + '>';
+        html += '<input type="checkbox" title="정산 완료" onchange="Settlement.toggleComplete(\'' + escHtml(key) + '\')"' + checkedAttr + '>';
         html += '</div></div>';
 
         return html;
@@ -994,7 +1124,22 @@ const Settlement = {
     loadCompletedTransfers() {
         try {
             const saved = localStorage.getItem('settlement_' + BC.tripCode);
-            if (saved) this.completedTransfers = JSON.parse(saved);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const migrated = {};
+                let needsSave = false;
+                for (const key in parsed) {
+                    // 구버전 키: all-/card-/cash- 로 시작하지 않으면 마이그레이션
+                    if (!/^(all|card|cash)-/.test(key)) {
+                        migrated['all-separate-' + key] = parsed[key];
+                        needsSave = true;
+                    } else {
+                        migrated[key] = parsed[key];
+                    }
+                }
+                this.completedTransfers = migrated;
+                if (needsSave) this.saveCompletedTransfers();
+            }
         } catch {
             this.completedTransfers = {};
         }

@@ -67,6 +67,11 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="cash">💵 현금만 정산</option>
                 </select>
             </div>
+            <!-- 뷰 토글: 전체 정산 / 날짜별 보기 -->
+            <div class="settlement-view-row">
+                <button class="view-toggle-btn active" id="btnViewTotal" onclick="Settlement.setViewMode('total')">전체 정산</button>
+                <button class="view-toggle-btn" id="btnViewDate" onclick="Settlement.setViewMode('date')">날짜별 보기</button>
+            </div>
         </div>
 
         <div id="settlementLoading" class="text-center mt-24">

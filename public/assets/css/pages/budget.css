@@ -614,3 +614,75 @@
     margin-right: 6px;
     vertical-align: middle;
 }
+
+/* 정산 뷰 토글 (전체 / 날짜별) */
+.settlement-view-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.view-toggle-btn {
+    flex: 1;
+    padding: 7px 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.view-toggle-btn.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* 날짜별 그룹 */
+.date-group {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-light);
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.date-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(var(--color-primary-rgb, 0, 150, 136), 0.07);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.date-group-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+}
+
+.date-group-count {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.date-group .transfer-item {
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.date-group-clean {
+    text-align: center;
+    padding: 12px;
+    color: var(--color-success);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
