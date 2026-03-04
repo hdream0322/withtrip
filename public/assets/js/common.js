@@ -258,6 +258,12 @@ function _attachModalDragHandler(sheet, overlayId, sheetId) {
 
         // 아래로 드래그할 때만 이동 (위로 스크롤할 때는 스크롤 허용)
         if (currentY > 15) {
+            // 모달이 끝까지 스크롤되지 않았으면 드래그하지 않음
+            const isScrolledToBottom = sheet.scrollHeight - sheet.scrollTop <= sheet.clientHeight + 5;
+            if (sheet.scrollTop > 0 && !isScrolledToBottom) {
+                return; // 아직 스크롤할 콘텐츠가 있으면 드래그 무시
+            }
+
             e.preventDefault();
             var percent = Math.min(currentY / 300, 1);
             sheet.style.opacity = Math.max(1 - percent * 0.3, 0.7);
