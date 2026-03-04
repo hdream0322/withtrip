@@ -4,29 +4,53 @@
 
 // 모달 열기/닫기
 function openAddModal() {
-    document.getElementById('addOverlay').classList.remove('hidden');
-    document.getElementById('addModal').classList.remove('hidden');
+    const overlay = document.getElementById('addOverlay');
+    const modal = document.getElementById('addModal');
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.add('visible');
+        modal.classList.add('visible');
+    });
     document.getElementById('addTitle').focus();
 }
 
 function closeAddModal() {
-    document.getElementById('addOverlay').classList.add('hidden');
-    document.getElementById('addModal').classList.add('hidden');
-    document.getElementById('addTitle').value = '';
-    document.getElementById('addDetail').value = '';
-    document.getElementById('addDueDate').value = '';
-    clearAssignees('addAssigneeGroup');
+    const overlay = document.getElementById('addOverlay');
+    const modal = document.getElementById('addModal');
+    overlay.classList.remove('visible');
+    modal.classList.remove('visible');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        modal.classList.add('hidden');
+        document.getElementById('addTitle').value = '';
+        document.getElementById('addDetail').value = '';
+        document.getElementById('addDueDate').value = '';
+        clearAssignees('addAssigneeGroup');
+    }, 250);
 }
 
 function openEditModal() {
-    document.getElementById('editOverlay').classList.remove('hidden');
-    document.getElementById('editModal').classList.remove('hidden');
+    const overlay = document.getElementById('editOverlay');
+    const modal = document.getElementById('editModal');
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.add('visible');
+        modal.classList.add('visible');
+    });
     document.getElementById('editTitle').focus();
 }
 
 function closeEditModal() {
-    document.getElementById('editOverlay').classList.add('hidden');
-    document.getElementById('editModal').classList.add('hidden');
+    const overlay = document.getElementById('editOverlay');
+    const modal = document.getElementById('editModal');
+    overlay.classList.remove('visible');
+    modal.classList.remove('visible');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        modal.classList.add('hidden');
+    }, 250);
 }
 
 // 담당자 토글

@@ -560,6 +560,7 @@ $dotenv->load();
 > 지출 탭 UI 통일: 지출·체크·할일 페이지 탭 스타일 동일하게 통합(`page-tabs`/`page-tab-btn` 공유 CSS in common.css). 지출 내역 ↔ 정산 탭 전환. 하단 네비 "지출" 버튼: 페이지 내 탭 토글(redirect 대신 JS toggle). `footer.php`에서 budget 페이지일 때만 `navBudget` id 설정, `budget.js`에서 intercept해 `switchTab()` 호출. CSS_VERSION 3.0.1.
 > 삭제 확인 모달: 모든 삭제 버튼(지출/수입/체크/할일/일정/메모/멤버/여행)에서 브라우저 기본 `confirm()` 대신 추가/수정 모달과 동일한 sheet 모달 사용. `WP.confirm()` Promise 기반 개선, ESC/오버레이 클릭 닫기 지원. 메시지 개행(\n) CSS `white-space: pre-wrap` 지원. CSS_VERSION 3.0.6.
 > 준비물/할일 페이지 완전 재작성: 모달 구조 단순화 (오버레이 클릭으로 닫기, ESC 키 지원). `checklist.php`/`todo.php` 각각 독립적인 페이지, 추가/수정/삭제 모달 포함. `checklist.js`/`todo.js` 각각 순수 JavaScript로 작성 (modal 열기/닫기, 담당자 관리, CRUD). CONFIG 객체로 tripCode/userId/csrfToken 관리. CSS_VERSION 3.0.17.
+> 모달 표시 문제 해결: `requestAnimationFrame`을 사용하여 `hidden` 클래스 제거 후 `visible` 클래스를 제대로 적용. 모달 닫을 때는 `visible` 제거 후 250ms `setTimeout`으로 `hidden` 추가하여 CSS 애니메이션 완료 후 DOM 업데이트. `checklist.js`/`todo.js` 모두 적용. CSS_VERSION 3.0.18.
 
 ---
 
