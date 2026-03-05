@@ -513,7 +513,8 @@ require __DIR__ . '/../includes/page_header.php';
     const CONFIG = {
         tripCode: '<?= e($tripCode) ?>',
         userId: '<?= e($userId) ?>',
-        csrfToken: '<?= e($csrfToken) ?>'
+        csrfToken: '<?= e($csrfToken) ?>',
+        memberMap: <?= json_encode($memberMap, JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
 

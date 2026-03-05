@@ -2,11 +2,12 @@
  * 체크리스트 페이지 JS (준비물 + 할일 통합)
  */
 
-let currentTab = 'checklist'; // 현재 활성 탭
+let currentTab = location.hash === '#todo' ? 'todo' : (sessionStorage.getItem('checklistTab') || 'checklist');
 
 // ===== 탭 전환 =====
 function switchTab(tabName) {
     currentTab = tabName;
+    sessionStorage.setItem('checklistTab', tabName);
 
     // 탭 버튼 활성화
     document.querySelectorAll('.page-tab-btn').forEach(btn => {
@@ -35,6 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab(btn.dataset.tab);
         });
     });
+
+    // 저장된 탭 복원
+    if (currentTab !== 'checklist') {
+        switchTab(currentTab);
+    }
 
     // 네비게이션 체크 버튼 클릭 (탭 전환)
     const navChecklist = document.getElementById('navChecklist');
@@ -166,9 +172,9 @@ async function addItem() {
         });
 
         if (data.success) {
-            WP.toast('추가되었습니다.');
             closeAddModal();
-            location.reload();
+            appendChecklistItem(data.data);
+            WP.toast('추가되었습니다.');
         } else {
             WP.toast(data.message, 'error');
         }
@@ -261,9 +267,9 @@ async function updateItem() {
         });
 
         if (data.success) {
-            WP.toast('수정되었습니다.');
             closeEditModal();
-            location.reload();
+            updateChecklistItemDOM(parseInt(id), item, category || '기타', assignedTo);
+            WP.toast('수정되었습니다.');
         } else {
             WP.toast(data.message, 'error');
         }
@@ -394,9 +400,9 @@ async function addTodo() {
         });
 
         if (data.success) {
-            WP.toast('추가되었습니다.');
             closeAddModal();
-            location.reload();
+            appendTodoItem(data.data);
+            WP.toast('추가되었습니다.');
         } else {
             WP.toast(data.message, 'error');
         }
@@ -491,9 +497,9 @@ async function updateTodo() {
         });
 
         if (data.success) {
-            WP.toast('수정되었습니다.');
             closeEditModal();
-            location.reload();
+            updateTodoItemDOM(parseInt(id), title, detail, assignedTo, dueDate);
+            WP.toast('수정되었습니다.');
         } else {
             WP.toast(data.message, 'error');
         }
@@ -530,6 +536,232 @@ async function deleteTodo(id) {
 function updateTodoCount() {
     // 현재 탭이 할일일 때만 업데이트
     // 준비물 탭의 완료율 표시는 updateProgress() 사용
+}
+
+// ===== DOM 빌더 =====
+function escAttr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildAssigneeBadges(assignedTo, itemId) {
+    if (!assignedTo) return '';
+    const uids = assignedTo.split(',').map(s => s.trim()).filter(Boolean);
+    if (!uids.length) return '';
+    const badges = uids.map(uid => {
+        const name = CONFIG.memberMap[uid] || uid;
+        return `<span class="badge badge-assignee" data-uid="${escAttr(uid)}">${WP.escapeHtml(name)}</span>`;
+    }).join('');
+    return `<div class="assignee-status" data-item-id="${itemId}">${badges}</div>`;
+}
+
+function buildDDayText(dueDateStr) {
+    if (!dueDateStr) return { text: '', overdue: false };
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(dueDateStr + 'T00:00:00');
+    const diff = Math.round((due - today) / 86400000);
+    if (diff > 0) return { text: 'D-' + diff, overdue: false };
+    if (diff === 0) return { text: 'D-Day', overdue: true };
+    return { text: 'D+' + Math.abs(diff), overdue: true };
+}
+
+function appendTodoItem(item) {
+    const container = document.getElementById('todoContainer');
+    // 빈 상태 메시지 제거
+    const emptyCard = container.querySelector('.text-center');
+    if (emptyCard && emptyCard.querySelector('.text-muted')) {
+        const isEmpty = !container.querySelector('.todo-item');
+        if (isEmpty) emptyCard.remove();
+    }
+
+    const dday = buildDDayText(item.due_date);
+    const assigneesHtml = buildAssigneeBadges(item.assigned_to, item.id);
+    const dueDateHtml = item.due_date
+        ? `<span class="todo-due">${WP.escapeHtml(item.due_date)}${dday.text ? ` <span class="dday-tag">${WP.escapeHtml(dday.text)}</span>` : ''}</span>`
+        : '';
+
+    const detailHtml = item.detail
+        ? `<p class="todo-detail">${WP.escapeHtml(item.detail).replace(/\n/g, '<br>')}</p>`
+        : '';
+
+    const html = `
+        <div class="card todo-item" data-id="${item.id}">
+            <div class="todo-item-header">
+                <label class="todo-check">
+                    <input type="checkbox" onchange="toggleTodo(${item.id}, this.checked)">
+                    <span class="todo-title">${WP.escapeHtml(item.title)}</span>
+                </label>
+                <div class="todo-actions">
+                    <button class="btn-icon" onclick="editTodo(${item.id}, '${escAttr(item.title)}', '${escAttr(item.detail || '')}', '${escAttr(item.assigned_to || '')}', '${escAttr(item.due_date || '')}')" title="수정"><span class="material-icons">edit</span></button>
+                    <button class="btn-icon danger" onclick="deleteTodo(${item.id})" title="삭제"><span class="material-icons">delete_outline</span></button>
+                </div>
+            </div>
+            ${detailHtml}
+            <div class="todo-meta">
+                ${assigneesHtml}
+                ${dueDateHtml}
+            </div>
+        </div>`;
+
+    // "완료된 항목" 구분선 앞 또는 맨 끝에 삽입
+    const divider = container.querySelector('.todo-divider');
+    if (divider) {
+        divider.insertAdjacentHTML('beforebegin', html);
+    } else {
+        container.insertAdjacentHTML('beforeend', html);
+    }
+    updateTodoCount();
+}
+
+function updateTodoItemDOM(id, title, detail, assignedTo, dueDate) {
+    const el = document.querySelector(`.todo-item[data-id="${id}"]`);
+    if (!el) return;
+
+    el.querySelector('.todo-title').textContent = title;
+
+    let detailEl = el.querySelector('.todo-detail');
+    if (detail) {
+        const detailHtml = WP.escapeHtml(detail).replace(/\n/g, '<br>');
+        if (detailEl) {
+            detailEl.innerHTML = detailHtml;
+        } else {
+            const header = el.querySelector('.todo-item-header');
+            header.insertAdjacentHTML('afterend', `<p class="todo-detail">${detailHtml}</p>`);
+        }
+    } else if (detailEl) {
+        detailEl.remove();
+    }
+
+    // 담당자 업데이트
+    const meta = el.querySelector('.todo-meta');
+    const oldAssignee = meta.querySelector('.assignee-status');
+    if (oldAssignee) oldAssignee.remove();
+    if (assignedTo) {
+        meta.insertAdjacentHTML('afterbegin', buildAssigneeBadges(assignedTo, id));
+    }
+
+    // 마감일 업데이트
+    const oldDue = meta.querySelector('.todo-due');
+    if (oldDue) oldDue.remove();
+    if (dueDate) {
+        const dday = buildDDayText(dueDate);
+        const isDone = el.classList.contains('done');
+        const overdueClass = (dday.overdue && !isDone) ? ' overdue' : '';
+        meta.insertAdjacentHTML('beforeend',
+            `<span class="todo-due${overdueClass}">${WP.escapeHtml(dueDate)}${dday.text ? ` <span class="dday-tag">${WP.escapeHtml(dday.text)}</span>` : ''}</span>`);
+    }
+
+    // 수정 버튼의 onclick 업데이트
+    const editBtn = el.querySelector('.btn-icon[title="수정"]');
+    if (editBtn) {
+        editBtn.setAttribute('onclick', `editTodo(${id}, '${escAttr(title)}', '${escAttr(detail)}', '${escAttr(assignedTo)}', '${escAttr(dueDate)}')`);
+    }
+}
+
+function appendChecklistItem(item) {
+    const container = document.getElementById('checklistContainer');
+    const cat = item.category || '기타';
+
+    // 빈 상태 메시지 제거
+    const emptyCard = container.querySelector('.text-center');
+    if (emptyCard && !container.querySelector('.checklist-category')) {
+        emptyCard.remove();
+    }
+
+    // 해당 카테고리 찾기 또는 생성
+    let catEl = container.querySelector(`.checklist-category[data-category="${CSS.escape(cat)}"]`);
+    if (!catEl) {
+        const catHtml = `
+            <div class="card checklist-category" data-category="${escAttr(cat)}">
+                <div class="flex-between mb-8">
+                    <h3 class="card-title" style="margin-bottom:0;">${WP.escapeHtml(cat)}</h3>
+                    <span class="text-sm text-muted category-count" data-category="${escAttr(cat)}">0/0</span>
+                </div>
+                <div class="checklist-items"></div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', catHtml);
+        catEl = container.querySelector(`.checklist-category[data-category="${CSS.escape(cat)}"]`);
+    }
+
+    const assignedUsers = item.assigned_to ? item.assigned_to.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const assignedStr = assignedUsers.join(' ');
+    const assigneesHtml = buildAssigneeBadges(item.assigned_to, item.id);
+
+    const itemHtml = `
+        <div class="checklist-item"
+             data-id="${item.id}"
+             data-item-text="${escAttr(item.item.toLowerCase())}"
+             data-assigned="${escAttr(assignedStr)}"
+             data-done="0">
+            <label class="checklist-check">
+                <input type="checkbox" onchange="toggleItem(${item.id}, this.checked)">
+                <span class="checklist-item-text">${WP.escapeHtml(item.item)}</span>
+            </label>
+            <div class="checklist-item-meta">
+                ${assigneesHtml ? `${assigneesHtml}` : ''}
+                <button class="btn-icon" onclick="editItem(${item.id}, '${escAttr(item.item)}', '${escAttr(cat)}', '${escAttr(item.assigned_to || '')}')" title="수정"><span class="material-icons">edit</span></button>
+                <button class="btn-icon danger" onclick="deleteItem(${item.id})" title="삭제"><span class="material-icons">delete_outline</span></button>
+            </div>
+        </div>`;
+
+    catEl.querySelector('.checklist-items').insertAdjacentHTML('beforeend', itemHtml);
+    updateProgress();
+}
+
+function updateChecklistItemDOM(id, itemName, category, assignedTo) {
+    const el = document.querySelector(`.checklist-item[data-id="${id}"]`);
+    if (!el) return;
+
+    const currentCatEl = el.closest('.checklist-category');
+    const currentCat = currentCatEl?.getAttribute('data-category') || '';
+
+    // 텍스트 업데이트
+    el.querySelector('.checklist-item-text').textContent = itemName;
+    el.setAttribute('data-item-text', itemName.toLowerCase());
+
+    // 담당자 업데이트
+    const assignedUsers = assignedTo ? assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [];
+    el.setAttribute('data-assigned', assignedUsers.join(' '));
+    const meta = el.querySelector('.checklist-item-meta');
+    const oldAssignee = meta.querySelector('.assignee-status');
+    if (oldAssignee) oldAssignee.remove();
+    if (assignedTo) {
+        meta.insertAdjacentHTML('afterbegin', buildAssigneeBadges(assignedTo, id));
+    }
+
+    // 수정 버튼의 onclick 업데이트
+    const editBtn = meta.querySelector('.btn-icon[title="수정"]');
+    if (editBtn) {
+        editBtn.setAttribute('onclick', `editItem(${id}, '${escAttr(itemName)}', '${escAttr(category)}', '${escAttr(assignedTo)}')`);
+    }
+
+    // 카테고리 변경 시 이동
+    if (currentCat !== category) {
+        el.remove();
+        // 원래 카테고리가 비었으면 제거
+        if (currentCatEl && currentCatEl.querySelectorAll('.checklist-item').length === 0) {
+            currentCatEl.remove();
+        }
+        // 새 카테고리에 추가 (appendChecklistItem 로직 재활용)
+        const fakeItem = { id, item: itemName, category: category === '기타' ? null : category, assigned_to: assignedTo };
+        // 카테고리 찾기/생성 후 삽입
+        const container = document.getElementById('checklistContainer');
+        let newCatEl = container.querySelector(`.checklist-category[data-category="${CSS.escape(category)}"]`);
+        if (!newCatEl) {
+            const catHtml = `
+                <div class="card checklist-category" data-category="${escAttr(category)}">
+                    <div class="flex-between mb-8">
+                        <h3 class="card-title" style="margin-bottom:0;">${WP.escapeHtml(category)}</h3>
+                        <span class="text-sm text-muted category-count" data-category="${escAttr(category)}">0/0</span>
+                    </div>
+                    <div class="checklist-items"></div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', catHtml);
+            newCatEl = container.querySelector(`.checklist-category[data-category="${CSS.escape(category)}"]`);
+        }
+        newCatEl.querySelector('.checklist-items').appendChild(el);
+    }
+
+    updateProgress();
 }
 
 // 모달 닫기 - 오버레이 클릭

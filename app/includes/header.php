@@ -3,7 +3,7 @@
  * 공통 헤더
  * CSS_VERSION: CSS/JS 캐시 버스팅 버전
  */
-const CSS_VERSION = '4.3.0';
+const CSS_VERSION = '4.3.2';
 
 // 현재 페이지 정보 (네비게이션 활성 탭 판별용)
 $currentPage = $currentPage ?? 'home';
@@ -20,7 +20,7 @@ $headExtra   = $headExtra ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0891b2">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/favicon/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
