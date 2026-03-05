@@ -4,9 +4,9 @@
 
 - **도메인:** `withplan.deurim.com` | **서버:** Synology + PHP 8.4 + Apache 2.4 + MariaDB
 - **Document Root:** `/withplan/public/` (`.env`, `config/`, `vendor/` 웹 노출 방지)
-- **CSS_VERSION:** `4.2.3` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
+- **CSS_VERSION:** `4.3.0` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
   - 패치(마지막 자리): 미세 수정 | 마이너(중간): 주요 변경 | 메이저(첫 자리): 전면 개편
-  - 최근 업데이트: 설정 페이지 전면 개선 (4.2.0) + QR 기능 추가 (4.2.1~4.2.3)
+  - 최근 업데이트: PWA 웹앱 설치 기능 (4.3.0)
 
 ---
 
@@ -77,6 +77,13 @@
 - CSRF 토큰: 모든 POST/PUT/DELETE에 삽입, 세션 토큰과 비교 검증
 - XSS: 출력 시 `htmlspecialchars()` / JS에서 `WP.escapeHtml()` | SQL Injection: PDO prepared statements
 
+### PWA (Progressive Web App)
+- `public/manifest.json`: 기본 manifest (start_url: `/`)
+- `public/sw.js`: 서비스 워커 (네트워크 우선, 캐시 폴백)
+- `header.php`: 여행 페이지에서는 JS로 동적 manifest 생성 (start_url → `/{trip_code}/{user_id}/`)
+- 아이콘: `public/assets/icons/` (192/512 일반+maskable) | `public/favicon/` (ico, 16x16, 32x32)
+- 설치 감지: `beforeinstallprompt` (Android) / iOS Safari 가이드 / standalone 모드 감지
+
 ### 공통 헬퍼 함수
 - `WP.escapeHtml(str)` - HTML 이스케이프 (JS용, textContent 기반)
 - `formatDateRangeKorean(start, end)` - 여행 기간 포맷 (D-day/여행일차/완료 표시)
@@ -86,14 +93,15 @@
 ## 페이지 구현 현황
 
 ### ✅ 설정 페이지 (`/{trip_code}/{user_id}/settings`)
-**v4.2.3 완성**
-- 섹션 순서: 내 정보 → 보안 → 멤버 → 여행정보 → 환율 → 로그아웃 → 앱정보
+**v4.3.0 완성**
+- 섹션 순서: 내 정보 → 보안 → 멤버 → 여행정보 → 환율 → 웹앱설치 → 로그아웃 → 앱정보
 - **내 정보**: 표시 이름 인라인 편집 (Sheet 모달), ID 표시
 - **보안**: PIN 변경, 멤버 PIN 초기화 (오너 전용)
 - **멤버**: 아바타 + 이름 + 뱃지, 링크 공유 (Web Share / 클립보드), QR 코드 표시, 삭제 (오너 전용), 일괄 공유 (오너 전용)
 - **여행정보**: 제목/설명/목적지/기간 (한국어 포맷 D-day/여행일차), 여행 코드 + QR, 수정 (오너 전용)
 - **환율**: 통화 선택 칩 + 조정값 + 현금환전률 (settings-rates.js로 분리)
 - **로그아웃**: 세션 종료 버튼
+- **웹앱 설치**: PWA 설치 버튼 (Chrome/Edge), iOS Safari 가이드, 설치 완료 표시
 - **앱정보**: 버전 표시
 
 ### ✅ 랜딩 페이지 (`/`)

@@ -347,6 +347,55 @@ const Settings = {
     },
 
     /* ============================================================
+       웹앱 설치 (PWA)
+       ============================================================ */
+
+    _deferredPrompt: null,
+
+    initInstall() {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+
+        if (isStandalone) {
+            document.getElementById('installDone').style.display = '';
+            return;
+        }
+
+        // iOS Safari 감지
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const isSafari = /safari/i.test(navigator.userAgent) && !/chrome|crios|fxios/i.test(navigator.userAgent);
+
+        if (isIos && isSafari) {
+            document.getElementById('installGuideIos').style.display = '';
+            return;
+        }
+
+        // Chrome/Edge 등 beforeinstallprompt 지원 브라우저
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            Settings._deferredPrompt = e;
+            document.getElementById('installSection').style.display = '';
+        });
+
+        // 설치 완료 감지
+        window.addEventListener('appinstalled', () => {
+            Settings._deferredPrompt = null;
+            document.getElementById('installSection').style.display = 'none';
+            document.getElementById('installDone').style.display = '';
+        });
+    },
+
+    async installApp() {
+        if (!this._deferredPrompt) return;
+
+        this._deferredPrompt.prompt();
+        const { outcome } = await this._deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            this._deferredPrompt = null;
+        }
+    },
+
+    /* ============================================================
        로그아웃
        ============================================================ */
 
@@ -354,6 +403,9 @@ const Settings = {
         location.href = '/auth/logout';
     },
 };
+
+// PWA 설치 초기화
+Settings.initInstall();
 
 // ESC 키로 모달 닫기
 document.addEventListener('keydown', function (e) {

@@ -171,14 +171,48 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 6. 로그아웃 -->
+    <!-- 6. 웹앱 설치 -->
+    <div class="card settings-section" id="installSection" style="display:none;">
+        <h3 class="settings-section-title">웹앱으로 설치</h3>
+        <p class="text-xs text-muted mb-12">홈 화면에 추가하면 앱처럼 빠르게 접근할 수 있습니다.</p>
+        <button class="btn btn-primary btn-full settings-install-btn" id="btnInstallApp" onclick="Settings.installApp()">
+            <span class="material-icons">install_mobile</span> 홈 화면에 추가
+        </button>
+    </div>
+
+    <!-- iOS 설치 안내 (Safari) -->
+    <div class="card settings-section" id="installGuideIos" style="display:none;">
+        <h3 class="settings-section-title">웹앱으로 설치</h3>
+        <p class="text-xs text-muted mb-8">홈 화면에 추가하면 앱처럼 빠르게 접근할 수 있습니다.</p>
+        <div class="install-guide-steps">
+            <div class="install-guide-step">
+                <span class="install-step-num">1</span>
+                <span>하단 공유 버튼 <span class="material-icons" style="font-size:16px;vertical-align:middle;color:var(--color-primary);">ios_share</span> 을 탭하세요</span>
+            </div>
+            <div class="install-guide-step">
+                <span class="install-step-num">2</span>
+                <span><strong>홈 화면에 추가</strong>를 선택하세요</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미 설치됨 -->
+    <div class="card settings-section" id="installDone" style="display:none;">
+        <h3 class="settings-section-title">웹앱으로 설치</h3>
+        <div class="install-done-msg">
+            <span class="material-icons install-done-icon">check_circle</span>
+            <span>이미 앱으로 설치되어 있습니다</span>
+        </div>
+    </div>
+
+    <!-- 7. 로그아웃 -->
     <div class="card settings-section">
         <button class="btn btn-secondary btn-full settings-logout-btn" onclick="Settings.logout()">
             <span class="material-icons">logout</span> 로그아웃
         </button>
     </div>
 
-    <!-- 7. 앱 정보 -->
+    <!-- 8. 앱 정보 -->
     <div class="settings-app-info">
         WithPlan v<?= CSS_VERSION ?>
     </div>
