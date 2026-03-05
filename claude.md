@@ -4,8 +4,9 @@
 
 - **도메인:** `withplan.deurim.com` | **서버:** Synology + PHP 8.4 + Apache 2.4 + MariaDB
 - **Document Root:** `/withplan/public/` (`.env`, `config/`, `vendor/` 웹 노출 방지)
-- **CSS_VERSION:** `4.1.1` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
+- **CSS_VERSION:** `4.2.3` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
   - 패치(마지막 자리): 미세 수정 | 마이너(중간): 주요 변경 | 메이저(첫 자리): 전면 개편
+  - 최근 업데이트: 설정 페이지 전면 개선 (4.2.0) + QR 기능 추가 (4.2.1~4.2.3)
 
 ---
 
@@ -56,9 +57,9 @@
 - 공통: `common.css` / `common.js` | 함수 50줄↑ 분리 | 파일 200줄↑ 분리 필수
 
 ### 공통 헤더/푸터
-- `app/includes/header.php`: `$pageCss`, `$bodyClass`, `$headExtra` 변수로 커스텀
+- `app/includes/header.php`: `$pageCss`, `$bodyClass`, `$headExtra`, `$pageJsExtra` 변수로 커스텀
 - `app/includes/page_header.php`: 멤버 페이지 공통 헤더 partial (more_vert 드롭다운)
-- `app/includes/footer.php`: 하단 네비 홈/일정/지출/체크/메모
+- `app/includes/footer.php`: 하단 네비 홈/일정/지출/체크/메모 + `$pageJsExtra` 배열 지원 (다중 JS 로드)
 
 ### 모달
 - Sheet 모달 (`translateY(100%)→0` 슬라이드업). `hidden`/`visible` 클래스 기반
@@ -73,8 +74,33 @@
 
 ### API
 - 응답: `{"success": bool, "data": ..., "message": "..."}` JSON 통일
-- CSRF 토큰: 모든 POST에 삽입, 세션 토큰과 비교 검증
-- XSS: 출력 시 `htmlspecialchars()` | SQL Injection: PDO prepared statements
+- CSRF 토큰: 모든 POST/PUT/DELETE에 삽입, 세션 토큰과 비교 검증
+- XSS: 출력 시 `htmlspecialchars()` / JS에서 `WP.escapeHtml()` | SQL Injection: PDO prepared statements
+
+### 공통 헬퍼 함수
+- `WP.escapeHtml(str)` - HTML 이스케이프 (JS용, textContent 기반)
+- `formatDateRangeKorean(start, end)` - 여행 기간 포맷 (D-day/여행일차/완료 표시)
+
+---
+
+## 페이지 구현 현황
+
+### ✅ 설정 페이지 (`/{trip_code}/{user_id}/settings`)
+**v4.2.3 완성**
+- 섹션 순서: 내 정보 → 보안 → 멤버 → 여행정보 → 환율 → 로그아웃 → 앱정보
+- **내 정보**: 표시 이름 인라인 편집 (Sheet 모달), ID 표시
+- **보안**: PIN 변경, 멤버 PIN 초기화 (오너 전용)
+- **멤버**: 아바타 + 이름 + 뱃지, 링크 공유 (Web Share / 클립보드), QR 코드 표시, 삭제 (오너 전용), 일괄 공유 (오너 전용)
+- **여행정보**: 제목/설명/목적지/기간 (한국어 포맷 D-day/여행일차), 여행 코드 + QR, 수정 (오너 전용)
+- **환율**: 통화 선택 칩 + 조정값 + 현금환전률 (settings-rates.js로 분리)
+- **로그아웃**: 세션 종료 버튼
+- **앱정보**: 버전 표시
+
+### ✅ 랜딩 페이지 (`/`)
+**QR 스캔 기능 추가 (v4.2.2~v4.2.3)**
+- 플로팅 바: 여행 코드 입력 + QR 스캔 버튼 (항상 표시)
+- CTA 섹션: 여행 코드 입력 + QR 스캔 버튼
+- QR 모달: html5-qrcode로 전체화면 카메라 스캔, trip_code 추출 자동 리다이렉트
 
 ---
 
@@ -102,4 +128,5 @@
 - **에러 메시지 한국어:** `"Failed to fetch"` 등 기술 메시지 직접 노출 금지
 - **환경 분기:** `APP_ENV=production`에서 스택 트레이스 노출 절대 금지
 - **민감 정보:** `.env`에서만 로드. PHP 하드코딩 금지
-- **보안 헤더:** `.htaccess`에 `X-Frame-Options DENY` 등 5개 헤더 설정
+- **보안 헤더:** `.htaccess`에 `X-Frame-Options DENY`, `camera=(self)` 등 헤더 설정
+  - `camera=(self)`: 같은 도메인에서 카메라 접근 허용 (QR 스캔 기능용)
