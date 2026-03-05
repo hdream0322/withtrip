@@ -2,6 +2,58 @@
  * WithPlan Landing Page v4.0
  * GSAP ScrollTrigger 기반 애니메이션 + FAQ + 여행 코드 폼
  */
+// ── QR 코드 스캔 ──
+var _qrScanner = null;
+
+function openQrScanner() {
+    var modal = document.getElementById('qrScanModal');
+    modal.classList.remove('hidden');
+
+    if (typeof Html5Qrcode === 'undefined') {
+        document.querySelector('.qr-scan-hint').textContent = 'QR 스캔 라이브러리를 불러올 수 없습니다.';
+        return;
+    }
+
+    _qrScanner = new Html5Qrcode('qrScanReader');
+    _qrScanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        function (decodedText) {
+            handleQrResult(decodedText);
+        }
+    ).catch(function (err) {
+        document.querySelector('.qr-scan-hint').textContent = '카메라에 접근할 수 없습니다.';
+    });
+}
+
+function closeQrScanner() {
+    var modal = document.getElementById('qrScanModal');
+    modal.classList.add('hidden');
+    if (_qrScanner) {
+        _qrScanner.stop().catch(function () {});
+        _qrScanner = null;
+    }
+    document.getElementById('qrScanReader').innerHTML = '';
+    document.querySelector('.qr-scan-hint').textContent = '카메라를 QR 코드에 비춰주세요';
+}
+
+function handleQrResult(text) {
+    // URL에서 trip_code 추출: /{8자리hex} 또는 /{8자리hex}/{user_id}
+    var match = text.match(/\/([a-f0-9]{8})(?:\/|$)/i);
+    if (match) {
+        closeQrScanner();
+        window.location.href = '/' + match[1].toLowerCase();
+        return;
+    }
+    // 순수 8자리 hex 코드
+    if (/^[a-f0-9]{8}$/i.test(text.trim())) {
+        closeQrScanner();
+        window.location.href = '/' + text.trim().toLowerCase();
+        return;
+    }
+    document.querySelector('.qr-scan-hint').textContent = '유효한 여행 QR 코드가 아닙니다. 다시 시도해주세요.';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── 여행 코드 입장 (플로팅바 + CTA 공유) ──
@@ -68,18 +120,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── GSAP 애니메이션 ──
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
-        // GSAP 미로드 — 폴백: 플로팅 바만 스크롤로 표시
-        var floatBar = document.getElementById('floatingBar');
-        if (floatBar) {
-            window.addEventListener('scroll', function () {
-                var heroH = document.getElementById('heroSection').offsetHeight;
-                if (window.scrollY > heroH * 0.7) {
-                    floatBar.classList.add('visible');
-                } else {
-                    floatBar.classList.remove('visible');
-                }
-            }, { passive: true });
-        }
         return;
     }
 
@@ -102,18 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
     heroTl
         .fromTo('.btn-hero', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.2')
         .fromTo('.hero-scroll-hint', { opacity: 0 }, { opacity: 1, duration: 0.8 }, '-=0.2');
-
-    // ── 플로팅 바: Hero 지나면 등장 ──
-    ScrollTrigger.create({
-        trigger: '#heroSection',
-        start: 'bottom 80%',
-        onLeave: function () {
-            document.getElementById('floatingBar').classList.add('visible');
-        },
-        onEnterBack: function () {
-            document.getElementById('floatingBar').classList.remove('visible');
-        }
-    });
 
     // ── 2. 사용 흐름 ──
     gsap.fromTo('.gsap-flow',

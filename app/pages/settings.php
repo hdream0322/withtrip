@@ -7,8 +7,11 @@ $currentPage = 'settings';
 $showNav = true;
 $pageCss = 'settings';
 $pageJs = 'settings';
+$pageJsExtra = ['settings-rates'];
 $pageTitle = '설정';
 $tripTitle = $trip['title'];
+
+$headExtra = '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>';
 
 $db = getDB();
 $csrfToken = generateCsrfToken();
@@ -19,49 +22,63 @@ $members = getTripMembers($db, $tripCode);
 // 현재 사용자가 오너인지
 $isOwner = (bool) $user['is_owner'];
 
+// 오너가 아닌 멤버 목록 (PIN 초기화용)
+$nonOwnerMembers = array_filter($members, fn($m) => !$m['is_owner']);
+
+// 날짜 포맷
+$dateRangeFormatted = formatDateRangeKorean($trip['start_date'] ?? null, $trip['end_date'] ?? null);
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <?php $pageHeaderTitle = '설정'; $pageHeaderMenu = false; require __DIR__ . '/../includes/page_header.php'; ?>
 
 <div class="page-content">
-    <!-- 여행 정보 -->
+    <!-- 1. 내 정보 -->
     <div class="card settings-section">
-        <h3 class="settings-section-title">여행 정보</h3>
+        <h3 class="settings-section-title">내 정보</h3>
         <div class="settings-item">
-            <span class="settings-item-label">제목</span>
-            <span class="settings-item-value"><?= e($trip['title']) ?></span>
+            <span class="settings-item-label">표시 이름</span>
+            <span class="settings-item-value settings-item-editable" onclick="Settings.openDisplayNameModal()">
+                <span id="myDisplayName"><?= e($user['display_name']) ?></span>
+                <span class="material-icons settings-edit-icon">edit</span>
+            </span>
         </div>
-        <?php if ($trip['description']): ?>
         <div class="settings-item">
-            <span class="settings-item-label">설명</span>
-            <span class="settings-item-value"><?= e($trip['description']) ?></span>
+            <span class="settings-item-label">ID</span>
+            <span class="settings-item-value">@<?= e($userId) ?></span>
         </div>
-        <?php endif; ?>
-        <?php if ($trip['destination']): ?>
-        <div class="settings-item">
-            <span class="settings-item-label">목적지</span>
-            <span class="settings-item-value"><?= e($trip['destination']) ?></span>
+    </div>
+
+    <!-- 2. 보안 -->
+    <div class="card settings-section">
+        <h3 class="settings-section-title">보안</h3>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="Settings.openPinChangeModal()">PIN 변경</button>
+        <?php if ($isOwner && count($nonOwnerMembers) > 0): ?>
+        <div class="pin-reset-section">
+            <p class="pin-reset-title">멤버 PIN 초기화</p>
+            <?php foreach ($nonOwnerMembers as $member): ?>
+            <div class="pin-reset-item">
+                <span class="pin-reset-name"><?= e($member['display_name']) ?> <span class="pin-reset-id">@<?= e($member['user_id']) ?></span></span>
+                <button class="btn btn-secondary btn-xs" onclick="Settings.resetMemberPin('<?= e($member['user_id']) ?>', '<?= e(addslashes($member['display_name'])) ?>')">초기화</button>
+            </div>
+            <?php endforeach; ?>
         </div>
-        <?php endif; ?>
-        <?php if ($trip['start_date'] && $trip['end_date']): ?>
-        <div class="settings-item">
-            <span class="settings-item-label">기간</span>
-            <span class="settings-item-value"><?= e($trip['start_date']) ?> ~ <?= e($trip['end_date']) ?></span>
-        </div>
-        <?php endif; ?>
-        <?php if ($isOwner): ?>
-        <button class="btn btn-secondary btn-sm btn-full mt-8" onclick="Settings.openTripEditModal()">여행 정보 수정</button>
         <?php endif; ?>
     </div>
 
-    <!-- 멤버 -->
+    <!-- 3. 멤버 -->
     <div class="card settings-section">
         <div class="flex-between mb-8">
             <h3 class="settings-section-title" style="margin-bottom:0;">멤버 (<?= count($members) ?>명)</h3>
-            <?php if ($isOwner): ?>
-            <button class="btn btn-sm btn-primary" onclick="Settings.openAddMemberModal()">+ 추가</button>
-            <?php endif; ?>
+            <div class="settings-member-actions">
+                <?php if ($isOwner): ?>
+                <button class="btn btn-sm btn-secondary" onclick="Settings.shareAllMemberLinks()" title="일괄 링크 공유">
+                    <span class="material-icons" style="font-size:15px;vertical-align:middle;">share</span>
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="Settings.openAddMemberModal()">+ 추가</button>
+                <?php endif; ?>
+            </div>
         </div>
         <div class="members-list">
             <?php foreach ($members as $member): ?>
@@ -82,8 +99,11 @@ require_once __DIR__ . '/../includes/header.php';
                         <div class="member-user-id">@<?= e($member['user_id']) ?></div>
                     </div>
                     <div class="member-actions">
-                        <button class="btn-icon" onclick="Settings.copyMemberUrl('<?= e($member['user_id']) ?>')" title="URL 복사">
-                            <span class="material-icons" style="font-size:18px;">link</span>
+                        <button class="btn-icon" onclick="Settings.showQr('<?= e($member['user_id']) ?>', '<?= e(addslashes($member['display_name'])) ?>')" title="QR 코드">
+                            <span class="material-icons" style="font-size:18px;">qr_code_2</span>
+                        </button>
+                        <button class="btn-icon" onclick="Settings.shareMemberUrl('<?= e($member['user_id']) ?>', '<?= e(addslashes($member['display_name'])) ?>')" title="링크 공유">
+                            <span class="material-icons" style="font-size:18px;">share</span>
                         </button>
                         <?php if ($isOwner && !$member['is_owner']): ?>
                         <button class="btn-icon danger" onclick="Settings.deleteMember('<?= e($member['user_id']) ?>', '<?= e(addslashes($member['display_name'])) ?>')" title="삭제">
@@ -96,7 +116,47 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 환율 설정 -->
+    <!-- 4. 여행 정보 -->
+    <div class="card settings-section">
+        <h3 class="settings-section-title">여행 정보</h3>
+        <div class="settings-item">
+            <span class="settings-item-label">제목</span>
+            <span class="settings-item-value"><?= e($trip['title']) ?></span>
+        </div>
+        <?php if ($trip['description']): ?>
+        <div class="settings-item">
+            <span class="settings-item-label">설명</span>
+            <span class="settings-item-value"><?= e($trip['description']) ?></span>
+        </div>
+        <?php endif; ?>
+        <?php if ($trip['destination']): ?>
+        <div class="settings-item">
+            <span class="settings-item-label">목적지</span>
+            <span class="settings-item-value"><?= e($trip['destination']) ?></span>
+        </div>
+        <?php endif; ?>
+        <div class="settings-item">
+            <span class="settings-item-label">기간</span>
+            <span class="settings-item-value"><?= e($dateRangeFormatted) ?></span>
+        </div>
+        <div class="settings-item">
+            <span class="settings-item-label">여행 코드</span>
+            <span class="settings-item-value">
+                <span class="trip-code"><?= e($tripCode) ?></span>
+                <button class="btn-icon-inline" onclick="Settings.showTripQr()" title="QR 코드">
+                    <span class="material-icons" style="font-size:16px;">qr_code_2</span>
+                </button>
+                <button class="btn-icon-inline" onclick="Settings.copyTripCode()" title="코드 복사">
+                    <span class="material-icons" style="font-size:16px;">content_copy</span>
+                </button>
+            </span>
+        </div>
+        <?php if ($isOwner): ?>
+        <button class="btn btn-secondary btn-sm btn-full mt-8" onclick="Settings.openTripEditModal()">여행 정보 수정</button>
+        <?php endif; ?>
+    </div>
+
+    <!-- 5. 환율 설정 -->
     <div class="card settings-section">
         <div class="flex-between mb-4">
             <h3 class="settings-section-title" style="margin-bottom:0;">환율 설정</h3>
@@ -111,23 +171,46 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 보안 -->
+    <!-- 6. 로그아웃 -->
     <div class="card settings-section">
-        <h3 class="settings-section-title">보안</h3>
-        <button class="btn btn-secondary btn-sm btn-full" onclick="Settings.openPinChangeModal()">PIN 변경</button>
+        <button class="btn btn-secondary btn-full settings-logout-btn" onclick="Settings.logout()">
+            <span class="material-icons">logout</span> 로그아웃
+        </button>
     </div>
 
-    <!-- 내 정보 -->
-    <div class="card settings-section">
-        <h3 class="settings-section-title">내 정보</h3>
-        <div class="settings-item">
-            <span class="settings-item-label">표시 이름</span>
-            <span class="settings-item-value"><?= e($user['display_name']) ?></span>
-        </div>
-        <div class="settings-item">
-            <span class="settings-item-label">ID</span>
-            <span class="settings-item-value">@<?= e($userId) ?></span>
-        </div>
+    <!-- 7. 앱 정보 -->
+    <div class="settings-app-info">
+        WithPlan v<?= CSS_VERSION ?>
+    </div>
+</div>
+
+<!-- QR 코드 모달 -->
+<div id="qrOverlay" class="modal-overlay hidden" onclick="Settings.closeQrModal()"></div>
+<div id="qrSheet" class="modal-sheet hidden">
+    <div class="modal-sheet-handle"></div>
+    <h3 class="card-title" id="qrTitle"></h3>
+    <div class="qr-container">
+        <div id="qrCanvas"></div>
+        <p class="qr-url" id="qrUrl"></p>
+    </div>
+    <div class="flex gap-8">
+        <button class="btn btn-secondary" onclick="Settings.closeQrModal()" style="flex:1;">닫기</button>
+        <button class="btn btn-primary" onclick="Settings.copyQrUrl()" style="flex:1;">URL 복사</button>
+    </div>
+</div>
+
+<!-- 표시 이름 편집 모달 -->
+<div id="displayNameOverlay" class="modal-overlay hidden" onclick="Settings.closeDisplayNameModal()"></div>
+<div id="displayNameSheet" class="modal-sheet hidden">
+    <div class="modal-sheet-handle"></div>
+    <h3 class="card-title">표시 이름 변경</h3>
+    <div class="form-group">
+        <label class="form-label">표시 이름</label>
+        <input type="text" id="editDisplayName" class="form-input" maxlength="50">
+    </div>
+    <div class="flex gap-8">
+        <button class="btn btn-secondary" onclick="Settings.closeDisplayNameModal()" style="flex:1;">취소</button>
+        <button class="btn btn-primary" onclick="Settings.saveDisplayName()" style="flex:1;">저장</button>
     </div>
 </div>
 
@@ -211,11 +294,13 @@ require_once __DIR__ . '/../includes/header.php';
 
 <script>
     window.SETTINGS_CONFIG = {
-        tripCode:  '<?= e($tripCode) ?>',
-        userId:    '<?= e($userId) ?>',
-        csrfToken: '<?= e($csrfToken) ?>',
-        isOwner:   <?= $isOwner ? 'true' : 'false' ?>,
-        members:   <?= json_encode(array_map(function($m) { return ['user_id' => $m['user_id'], 'display_name' => $m['display_name']]; }, $members), JSON_UNESCAPED_UNICODE) ?>
+        tripCode:    '<?= e($tripCode) ?>',
+        userId:      '<?= e($userId) ?>',
+        csrfToken:   '<?= e($csrfToken) ?>',
+        isOwner:     <?= $isOwner ? 'true' : 'false' ?>,
+        displayName: '<?= e(addslashes($user['display_name'])) ?>',
+        tripTitle:   '<?= e(addslashes($trip['title'])) ?>',
+        members:     <?= json_encode(array_map(function($m) { return ['user_id' => $m['user_id'], 'display_name' => $m['display_name']]; }, $members), JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
 

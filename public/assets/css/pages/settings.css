@@ -353,3 +353,144 @@
 .member-actions .btn-icon.danger:active {
     background: #fef2f2;
 }
+
+/* 표시 이름 편집 가능 스타일 */
+.settings-item-editable {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.settings-edit-icon {
+    font-size: 16px !important;
+    color: var(--color-text-muted);
+}
+
+/* 멤버 헤더 액션 버튼 */
+.settings-member-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* PIN 초기화 목록 */
+.pin-reset-section {
+    border-top: 1px solid var(--color-border-light);
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.pin-reset-title {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.pin-reset-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.pin-reset-item:last-child {
+    border-bottom: none;
+}
+
+.pin-reset-name {
+    font-size: 0.85rem;
+    color: var(--color-text);
+}
+
+.pin-reset-id {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* 여행 코드 */
+.trip-code {
+    font-family: monospace;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+}
+
+.btn-icon-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0;
+    vertical-align: middle;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s;
+}
+
+.btn-icon-inline:hover,
+.btn-icon-inline:active {
+    color: var(--color-primary);
+}
+
+/* 로그아웃 버튼 */
+.settings-logout-btn {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+.settings-logout-btn .material-icons {
+    vertical-align: middle;
+    margin-right: 4px;
+    font-size: 18px;
+}
+
+.settings-logout-btn:hover,
+.settings-logout-btn:active {
+    background: #fef2f2;
+}
+
+/* 앱 정보 */
+.settings-app-info {
+    text-align: center;
+    padding: 16px 0 8px;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+}
+
+/* btn-xs 사이즈 */
+.btn-xs {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+}
+
+/* QR 코드 모달 */
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0 20px;
+}
+
+#qrCanvas {
+    border: 8px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: var(--radius);
+    overflow: hidden;
+    line-height: 0;
+}
+
+.qr-url {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    word-break: break-all;
+    text-align: center;
+    max-width: 260px;
+}

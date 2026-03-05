@@ -50,6 +50,36 @@ function getTripUser(PDO $db, string $tripCode, string $userId): ?array
 }
 
 /**
+ * 여행 기간을 한국어 포맷으로 변환
+ * 예: "1월 1일 (수) ~ 1월 7일 (화) · D-3" / "여행 2일차" / "여행 완료"
+ */
+function formatDateRangeKorean(?string $startDate, ?string $endDate): string
+{
+    if (empty($startDate) || empty($endDate)) {
+        return '미정';
+    }
+
+    $weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+    $start = new DateTime($startDate);
+    $end = new DateTime($endDate);
+    $today = new DateTime('today');
+
+    $startStr = (int)$start->format('n') . '월 ' . (int)$start->format('j') . '일 (' . $weekdays[(int)$start->format('w')] . ')';
+    $endStr = (int)$end->format('n') . '월 ' . (int)$end->format('j') . '일 (' . $weekdays[(int)$end->format('w')] . ')';
+    $range = $startStr . ' ~ ' . $endStr;
+
+    if ($today < $start) {
+        $diff = (int)$today->diff($start)->days;
+        return $range . ' · D-' . $diff;
+    } elseif ($today > $end) {
+        return $range . ' · 여행 완료';
+    } else {
+        $dayNum = (int)$today->diff($start)->days + 1;
+        return $range . ' · 여행 ' . $dayNum . '일차';
+    }
+}
+
+/**
  * 여행의 전체 멤버 목록 조회
  */
 function getTripMembers(PDO $db, string $tripCode): array

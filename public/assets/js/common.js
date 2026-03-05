@@ -97,6 +97,15 @@ const WP = {
     },
 
     /**
+     * HTML 이스케이프
+     */
+    escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    },
+
+    /**
      * 클립보드 복사
      */
     async copyToClipboard(text) {

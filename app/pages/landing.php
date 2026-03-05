@@ -8,7 +8,8 @@ $pageCss = 'landing';
 $pageJs = 'landing';
 $bodyClass = 'is-landing';
 $headExtra = '<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>'
-           . '<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>';
+           . '<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>'
+           . '<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>';
 
 $isLoggedIn = isOwnerLoggedIn();
 $errorMsg = $_GET['error'] ?? '';
@@ -440,6 +441,9 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
             <input type="text" class="cta-code-input" id="ctaCodeInput"
                    placeholder="여행 코드 8자리" maxlength="8"
                    autocomplete="off" autocorrect="off" spellcheck="false">
+            <button type="button" class="cta-qr-btn" onclick="openQrScanner()" title="QR 코드 스캔">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
             <button type="submit" class="cta-code-btn">입장</button>
         </form>
         <span id="ctaCodeError" class="cta-code-error hidden"></span>
@@ -472,9 +476,24 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
         <input type="text" class="float-code-input" id="floatCodeInput"
                placeholder="여행 코드 입력" maxlength="8"
                autocomplete="off" autocorrect="off" spellcheck="false">
+        <button type="button" class="float-qr-btn" onclick="openQrScanner()" title="QR 스캔">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
         <button type="submit" class="float-code-btn">입장</button>
         <span id="floatCodeError" class="float-code-error hidden"></span>
     </form>
+</div>
+
+<!-- QR 스캔 모달 -->
+<div id="qrScanModal" class="qr-scan-modal hidden">
+    <div class="qr-scan-header">
+        <span class="qr-scan-title">QR 코드 스캔</span>
+        <button class="qr-scan-close" onclick="closeQrScanner()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div id="qrScanReader"></div>
+    <p class="qr-scan-hint">카메라를 QR 코드에 비춰주세요</p>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

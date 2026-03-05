@@ -63,5 +63,10 @@ $showNav = $showNav ?? false;
 <?php if (!empty($pageJs)): ?>
 <script src="/assets/js/pages/<?= $pageJs ?>.js?v=<?= CSS_VERSION ?>"></script>
 <?php endif; ?>
+<?php if (!empty($pageJsExtra) && is_array($pageJsExtra)): ?>
+<?php foreach ($pageJsExtra as $jsFile): ?>
+<script src="/assets/js/pages/<?= $jsFile ?>.js?v=<?= CSS_VERSION ?>"></script>
+<?php endforeach; ?>
+<?php endif; ?>
 </body>
 </html>

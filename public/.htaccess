@@ -6,7 +6,7 @@
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(self)"
 </IfModule>
 
 # URL Rewrite
