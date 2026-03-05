@@ -32,12 +32,19 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
 <!-- ========== 1. Hero ========== -->
 <section class="landing-hero" id="heroSection">
     <div class="hero-particles" aria-hidden="true">
-        <span class="particle">✈️</span>
-        <span class="particle">🌴</span>
-        <span class="particle">🧳</span>
-        <span class="particle">🗺️</span>
-        <span class="particle">🌊</span>
-        <span class="particle">🏝️</span>
+        <span class="particle p1">✈️</span>
+        <span class="particle p2">🌴</span>
+        <span class="particle p3">🧳</span>
+        <span class="particle p4">🗺️</span>
+        <span class="particle p5">🌊</span>
+        <span class="particle p6">🏝️</span>
+        <span class="particle p7">🍹</span>
+        <span class="particle p8">⛵</span>
+        <span class="particle p9">🏔️</span>
+        <span class="particle p10">🌸</span>
+        <span class="particle p11">🎒</span>
+        <span class="particle p12">🌅</span>
+        <span class="particle p13">🌺</span>
     </div>
 
     <div class="section-inner hero-content">
@@ -46,7 +53,7 @@ $googleSvgSm = '<svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC
             <span class="hero-title-line gsap-hero">함께 만드는</span>
             <span class="hero-title-line hero-title-grad gsap-hero">WithPlan</span>
         </h1>
-        <p class="hero-desc gsap-hero">일정부터 정산까지, 여행의 모든 준비를<br>한 곳에서 함께</p>
+        <p class="hero-desc gsap-hero">설치 없이, 링크 하나로 시작하세요.<br>계획·기록·정산을 모두가 함께.</p>
 
         <?php if ($errorMsg): ?>
         <div class="hero-error gsap-hero">
