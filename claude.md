@@ -4,7 +4,7 @@
 
 - **도메인:** `withplan.deurim.com` | **서버:** Synology + PHP 8.4 + Apache 2.4 + MariaDB
 - **Document Root:** `/withplan/public/` (`.env`, `config/`, `vendor/` 웹 노출 방지)
-- **CSS_VERSION:** `4.1.0` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
+- **CSS_VERSION:** `4.1.1` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
   - 패치(마지막 자리): 미세 수정 | 마이너(중간): 주요 변경 | 메이저(첫 자리): 전면 개편
 
 ---
