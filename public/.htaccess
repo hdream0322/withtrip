@@ -37,6 +37,6 @@
 <FilesMatch "\.php$">
     Require all denied
 </FilesMatch>
-<FilesMatch "^(index|new)\.php$">
+<FilesMatch "^(index|new|manifest)\.php$">
     Require all granted
 </FilesMatch>
