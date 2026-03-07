@@ -126,14 +126,24 @@ if ($method === 'POST') {
 
         $db->commit();
 
-        try {
-            $payer = getTripUser($db, $tripCode, $paidBy);
-            $payerName = $payer ? $payer['display_name'] : $paidBy;
-            $amountFormatted = number_format($amount) . ($currency === 'KRW' ? '원' : ' ' . $currency);
-            sendPushNotification($db, $tripCode, null, $paidBy, '새 지출',
-                $payerName . '님이 ' . $amountFormatted . ' 지출 추가',
-                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
-        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        // 더치페이인 경우에만 분담 참여자에게 알림 (일반 지출은 알림 없음)
+        if ($isDutch) {
+            try {
+                $payer = getTripUser($db, $tripCode, $paidBy);
+                $payerName = $payer ? $payer['display_name'] : $paidBy;
+                $amountFormatted = number_format($amount) . ($currency === 'KRW' ? '원' : ' ' . $currency);
+                $splitUserIds = [];
+                foreach ($splits as $s) {
+                    $uid = trim($s['user_id'] ?? '');
+                    if ($uid && (int)($s['amount'] ?? 0) > 0) $splitUserIds[] = $uid;
+                }
+                if (!empty($splitUserIds)) {
+                    queuePushNotification($db, $tripCode, $splitUserIds, $paidBy, '새 지출',
+                        $payerName . '님이 ' . $amountFormatted . ' 지출 추가',
+                        '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+                }
+            } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        }
 
         jsonResponse(true, ['id' => $expenseId], '지출이 추가되었습니다.');
 
@@ -219,13 +229,23 @@ if ($method === 'PUT') {
 
         $db->commit();
 
-        try {
-            $payer = getTripUser($db, $tripCode, $paidBy);
-            $payerName = $payer ? $payer['display_name'] : $paidBy;
-            sendPushNotification($db, $tripCode, null, $paidBy, '지출 수정',
-                $payerName . '님이 지출을 수정했습니다',
-                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
-        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        // 더치페이인 경우에만 분담 참여자에게 알림 (일반 지출은 알림 없음)
+        if ($isDutch) {
+            try {
+                $payer = getTripUser($db, $tripCode, $paidBy);
+                $payerName = $payer ? $payer['display_name'] : $paidBy;
+                $splitUserIds = [];
+                foreach ($splits as $s) {
+                    $uid = trim($s['user_id'] ?? '');
+                    if ($uid && (int)($s['amount'] ?? 0) > 0) $splitUserIds[] = $uid;
+                }
+                if (!empty($splitUserIds)) {
+                    queuePushNotification($db, $tripCode, $splitUserIds, $paidBy, '지출 수정',
+                        $payerName . '님이 지출을 수정했습니다',
+                        '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+                }
+            } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        }
 
         jsonResponse(true, null, '지출이 수정되었습니다.');
 
@@ -249,6 +269,18 @@ if ($method === 'DELETE') {
     $id       = (int) ($_GET['id'] ?? 0);
     $tripCode = $_GET['trip_code'] ?? '';
 
+    // 삭제 전 더치페이 여부 및 분담자 조회 (알림 타겟팅용)
+    $stmtExp = $db->prepare('SELECT is_dutch FROM expenses WHERE id = ? AND trip_code = ?');
+    $stmtExp->execute([$id, $tripCode]);
+    $delExpense = $stmtExp->fetch();
+
+    $delSplitUserIds = [];
+    if ($delExpense && (int)$delExpense['is_dutch']) {
+        $stmtSp = $db->prepare('SELECT user_id FROM dutch_splits WHERE expense_id = ? AND trip_code = ?');
+        $stmtSp->execute([$id, $tripCode]);
+        $delSplitUserIds = $stmtSp->fetchAll(PDO::FETCH_COLUMN);
+    }
+
     $db->beginTransaction();
 
     try {
@@ -262,14 +294,17 @@ if ($method === 'DELETE') {
 
         $db->commit();
 
-        try {
-            $userId = $_GET['user_id'] ?? '';
-            $delUser = getTripUser($db, $tripCode, $userId);
-            $delUserName = $delUser ? $delUser['display_name'] : $userId;
-            sendPushNotification($db, $tripCode, null, $userId, '지출 삭제',
-                $delUserName . '님이 지출을 삭제했습니다',
-                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
-        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        // 더치페이인 경우에만 분담 참여자에게 알림 (일반 지출은 알림 없음)
+        if (!empty($delSplitUserIds)) {
+            try {
+                $userId = $_GET['user_id'] ?? '';
+                $delUser = getTripUser($db, $tripCode, $userId);
+                $delUserName = $delUser ? $delUser['display_name'] : $userId;
+                queuePushNotification($db, $tripCode, $delSplitUserIds, $userId, '지출 삭제',
+                    $delUserName . '님이 지출을 삭제했습니다',
+                    '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+            } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+        }
 
         jsonResponse(true, null, '지출이 삭제되었습니다.');
 

@@ -61,6 +61,12 @@ function jsonResponse(bool $success, $data = null, string $message = '', int $st
         'data'    => $data,
         'message' => $message,
     ], JSON_UNESCAPED_UNICODE);
+
+    // 응답을 클라이언트에 먼저 전달하고 PHP는 계속 실행 (push 등 후처리용)
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+
     exit;
 }
 
