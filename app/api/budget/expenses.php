@@ -125,6 +125,16 @@ if ($method === 'POST') {
         }
 
         $db->commit();
+
+        try {
+            $payer = getTripUser($db, $tripCode, $paidBy);
+            $payerName = $payer ? $payer['display_name'] : $paidBy;
+            $amountFormatted = number_format($amount) . ($currency === 'KRW' ? '원' : ' ' . $currency);
+            sendPushNotification($db, $tripCode, null, $paidBy, '새 지출',
+                $payerName . '님이 ' . $amountFormatted . ' 지출 추가',
+                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
         jsonResponse(true, ['id' => $expenseId], '지출이 추가되었습니다.');
 
     } catch (Throwable $e) {
@@ -208,6 +218,15 @@ if ($method === 'PUT') {
         }
 
         $db->commit();
+
+        try {
+            $payer = getTripUser($db, $tripCode, $paidBy);
+            $payerName = $payer ? $payer['display_name'] : $paidBy;
+            sendPushNotification($db, $tripCode, null, $paidBy, '지출 수정',
+                $payerName . '님이 지출을 수정했습니다',
+                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
         jsonResponse(true, null, '지출이 수정되었습니다.');
 
     } catch (Throwable $e) {
@@ -242,6 +261,16 @@ if ($method === 'DELETE') {
         $stmt->execute([$id, $tripCode]);
 
         $db->commit();
+
+        try {
+            $userId = $_GET['user_id'] ?? '';
+            $delUser = getTripUser($db, $tripCode, $userId);
+            $delUserName = $delUser ? $delUser['display_name'] : $userId;
+            sendPushNotification($db, $tripCode, null, $userId, '지출 삭제',
+                $delUserName . '님이 지출을 삭제했습니다',
+                '/' . $tripCode . '/{USER_ID}/budget', 'budget');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
         jsonResponse(true, null, '지출이 삭제되었습니다.');
 
     } catch (Throwable $e) {

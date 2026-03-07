@@ -558,7 +558,7 @@ async function deleteExpense(id) {
     try {
         const data = await WP.delete(
             '/api/budget/expenses?csrf_token=' + BC.csrfToken +
-            '&id=' + id + '&trip_code=' + BC.tripCode
+            '&id=' + id + '&trip_code=' + BC.tripCode + '&user_id=' + BC.userId
         );
 
         if (data.success) {
@@ -675,7 +675,7 @@ async function deleteIncome(id) {
     try {
         const data = await WP.delete(
             '/api/budget/incomes?csrf_token=' + BC.csrfToken +
-            '&id=' + id + '&trip_code=' + BC.tripCode
+            '&id=' + id + '&trip_code=' + BC.tripCode + '&user_id=' + BC.userId
         );
 
         if (data.success) {

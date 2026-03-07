@@ -4,9 +4,9 @@
 
 - **도메인:** `withplan.deurim.com` | **서버:** Synology + PHP 8.4 + Apache 2.4 + MariaDB
 - **Document Root:** `/withplan/public/` (`.env`, `config/`, `vendor/` 웹 노출 방지)
-- **CSS_VERSION:** `4.3.2` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
+- **CSS_VERSION:** `4.4.1` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
   - 패치(마지막 자리): 미세 수정 | 마이너(중간): 주요 변경 | 메이저(첫 자리): 전면 개편
-  - 최근 업데이트: 체크리스트/할일 AJAX 즉시 반영 (4.3.2)
+  - 최근 업데이트: Push 알림 트리거 확장 + 메시지 개선 (4.4.1)
 
 ---
 
@@ -44,6 +44,7 @@
 `todos`(assigned_to: comma-sep) / `todo_completions`(개인별 완료)
 `shared_notes` / `contact_submissions` / `pin_attempts`
 `trip_exchange_rates`(rate TTS, rate_adjustment 카드조정, cash_rate 현금환전, cash_exchanger_id)
+`push_subscriptions`(endpoint, p256dh, auth) / `push_settings`(category, enabled)
 
 > DB 직접 조작 금지. 스키마 변경 → `database/init.sql` 수정 후 사용자에게 phpMyAdmin 실행 요청.
 
@@ -79,10 +80,23 @@
 
 ### PWA (Progressive Web App)
 - `public/manifest.json`: 기본 manifest (start_url: `/`)
+- `public/manifest.php`: 동적 manifest 생성 (`?trip=&user=&name=` 파라미터로 start_url/scope 커스텀)
 - `public/sw.js`: 서비스 워커 (네트워크 우선, 캐시 폴백)
-- `header.php`: 여행 페이지에서는 JS로 동적 manifest 생성 (start_url → `/{trip_code}/{user_id}/`)
+- `header.php`: 여행 페이지에서는 `/manifest.php?trip=...&user=...` 링크로 start_url 커스텀 (서버사이드)
 - 아이콘: `public/assets/icons/` (192/512 일반+maskable) | `public/favicon/` (ico, 16x16, 32x32)
 - 설치 감지: `beforeinstallprompt` (Android) / iOS Safari 가이드 / standalone 모드 감지
+
+### Web Push 알림
+- `minishlink/web-push` v9 (VAPID 기반)
+- `.env`: `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
+- `scripts/generate_vapid_keys.php`: VAPID 키 생성 CLI 스크립트
+- `app/helpers/push.php`: `sendPushNotification()` 헬퍼 (만료 구독 자동 삭제)
+- `public/assets/js/push.js`: `WPPush` 객체 (subscribe/unsubscribe/isSubscribed)
+- `public/sw.js`: push + notificationclick 이벤트 핸들러
+- API: `/api/push/vapid` (GET), `/api/push/subscribe` (POST/DELETE), `/api/push/settings` (GET/PUT)
+- 카테고리: schedule, budget, checklist, todo, note, member
+- 설정 페이지 "알림" 섹션: 마스터 토글 + 카테고리별 토글
+- 홈 배너: 미구독 시 1회 표시 (localStorage dismiss)
 
 ### 공통 헬퍼 함수
 - `WP.escapeHtml(str)` - HTML 이스케이프 (JS용, textContent 기반)
@@ -93,13 +107,14 @@
 ## 페이지 구현 현황
 
 ### ✅ 설정 페이지 (`/{trip_code}/{user_id}/settings`)
-**v4.3.0 완성**
-- 섹션 순서: 내 정보 → 보안 → 멤버 → 여행정보 → 환율 → 웹앱설치 → 로그아웃 → 앱정보
+**v4.4.0**
+- 섹션 순서: 내 정보 → 보안 → 알림 → 멤버 → 여행정보 → 환율 → 웹앱설치 → 로그아웃 → 앱정보
 - **내 정보**: 표시 이름 인라인 편집 (Sheet 모달), ID 표시
 - **보안**: PIN 변경, 멤버 PIN 초기화 (오너 전용)
 - **멤버**: 아바타 + 이름 + 뱃지, 링크 공유 (Web Share / 클립보드), QR 코드 표시, 삭제 (오너 전용), 일괄 공유 (오너 전용)
 - **여행정보**: 제목/설명/목적지/기간 (한국어 포맷 D-day/여행일차), 여행 코드 + QR, 수정 (오너 전용)
 - **환율**: 통화 선택 칩 + 조정값 + 현금환전률 (settings-rates.js로 분리)
+- **알림**: 푸시 마스터 토글 + 카테고리별 토글 (schedule/budget/checklist/todo/note/member)
 - **로그아웃**: 세션 종료 버튼
 - **웹앱 설치**: PWA 설치 버튼 (Chrome/Edge), iOS Safari 가이드, 설치 완료 표시
 - **앱정보**: 버전 표시

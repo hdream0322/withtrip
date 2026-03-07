@@ -218,7 +218,7 @@ async function deleteTodo(id) {
     if (!await WP.confirm('이 할 일을 삭제하시겠습니까?')) return;
 
     try {
-        const data = await WP.delete(`/api/todo?csrf_token=${CONFIG.csrfToken}&id=${id}&trip_code=${CONFIG.tripCode}`);
+        const data = await WP.delete(`/api/todo?csrf_token=${CONFIG.csrfToken}&id=${id}&trip_code=${CONFIG.tripCode}&user_id=${CONFIG.userId}`);
 
         if (data.success) {
             WP.toast('삭제되었습니다.');

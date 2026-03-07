@@ -87,6 +87,14 @@ if ($method === 'POST') {
     $stmt->execute([$noteId]);
     $note = $stmt->fetch();
 
+    try {
+        $authorUser = getTripUser($db, $tripCode, $authorId);
+        $authorName = $authorUser ? $authorUser['display_name'] : $authorId;
+        sendPushNotification($db, $tripCode, null, $authorId, '새 메모',
+            $authorName . '님이 메모를 작성했습니다',
+            '/' . $tripCode . '/{USER_ID}/notes', 'note');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
     jsonResponse(true, $note, '메모가 작성되었습니다.');
 }
 
@@ -141,6 +149,14 @@ if ($method === 'PUT') {
     $stmt->execute([$noteId]);
     $updatedNote = $stmt->fetch();
 
+    try {
+        $authorName = $updatedNote['author_name'] ?? $authorId;
+        $noteTitle = $title ?: mb_substr($content, 0, 20);
+        sendPushNotification($db, $tripCode, null, $authorId, '메모 수정',
+            $authorName . '님이 메모를 수정했습니다',
+            '/' . $tripCode . '/{USER_ID}/notes', 'note');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
     jsonResponse(true, $updatedNote, '메모가 수정되었습니다.');
 }
 
@@ -174,6 +190,14 @@ if ($method === 'DELETE') {
 
     $stmt = $db->prepare('DELETE FROM shared_notes WHERE id = ?');
     $stmt->execute([$noteId]);
+
+    try {
+        $authorUser = getTripUser($db, $tripCode, $authorId);
+        $authorName = $authorUser ? $authorUser['display_name'] : $authorId;
+        sendPushNotification($db, $tripCode, null, $authorId, '메모 삭제',
+            $authorName . '님이 메모를 삭제했습니다',
+            '/' . $tripCode . '/{USER_ID}/notes', 'note');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
 
     jsonResponse(true, null, '메모가 삭제되었습니다.');
 }
