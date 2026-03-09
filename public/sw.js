@@ -27,6 +27,48 @@ self.addEventListener('activate', event => {
     );
 });
 
+// 푸시 알림 수신
+self.addEventListener('push', event => {
+    if (!event.data) return;
+
+    let payload;
+    try {
+        payload = event.data.json();
+    } catch (e) {
+        payload = { title: 'WithPlan', body: event.data.text() };
+    }
+
+    const options = {
+        body: payload.body || '',
+        icon: '/assets/icons/icon-192.png',
+        badge: '/assets/icons/icon-192.png',
+        data: { url: payload.url || '/' },
+        vibrate: [100, 50, 100],
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(payload.title || 'WithPlan', options)
+    );
+});
+
+// 알림 클릭
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    const url = event.notification.data?.url || '/';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+            for (const client of windowClients) {
+                if (client.url.includes(url) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            return clients.openWindow(url);
+        })
+    );
+});
+
 // 네트워크 우선, 실패 시 캐시 폴백
 self.addEventListener('fetch', event => {
     // API 요청은 캐시하지 않음

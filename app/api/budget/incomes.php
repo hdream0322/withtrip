@@ -67,7 +67,7 @@ if ($method === 'POST') {
         $incomeUser = getTripUser($db, $tripCode, $userId);
         $userName = $incomeUser ? $incomeUser['display_name'] : $userId;
         $amountFormatted = number_format($amount) . ($currency === 'KRW' ? '원' : ' ' . $currency);
-        sendPushNotification($db, $tripCode, null, $userId, '새 수입',
+        queuePushNotification($db, $tripCode, null, $userId, '새 수입',
             $userName . '님이 ' . $amountFormatted . ' 수입 추가',
             '/' . $tripCode . '/{USER_ID}/budget', 'budget');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
@@ -114,7 +114,7 @@ if ($method === 'PUT') {
         $incomeUser = getTripUser($db, $tripCode, $userId);
         $userName = $incomeUser ? $incomeUser['display_name'] : $userId;
         $amountFormatted = number_format($amount) . ($currency === 'KRW' ? '원' : ' ' . $currency);
-        sendPushNotification($db, $tripCode, null, $userId, '수입 수정',
+        queuePushNotification($db, $tripCode, null, $userId, '수입 수정',
             $userName . '님이 ' . $amountFormatted . ' 수입을 수정했습니다',
             '/' . $tripCode . '/{USER_ID}/budget', 'budget');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
@@ -141,7 +141,7 @@ if ($method === 'DELETE') {
         $userId = $_GET['user_id'] ?? '';
         $delUser = getTripUser($db, $tripCode, $userId);
         $delUserName = $delUser ? $delUser['display_name'] : $userId;
-        sendPushNotification($db, $tripCode, null, $userId, '수입 삭제',
+        queuePushNotification($db, $tripCode, null, $userId, '수입 삭제',
             $delUserName . '님이 수입을 삭제했습니다',
             '/' . $tripCode . '/{USER_ID}/budget', 'budget');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }

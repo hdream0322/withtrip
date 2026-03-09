@@ -347,6 +347,103 @@ const Settings = {
     },
 
     /* ============================================================
+       푸시 알림
+       ============================================================ */
+
+    async initPush() {
+        const section = document.getElementById('pushSection');
+        if (!section) return;
+
+        // iOS Safari (비-standalone) 감지
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (isIos && !isStandalone) {
+            document.getElementById('pushControls').style.display = 'none';
+            document.getElementById('pushIosGuide').style.display = '';
+            return;
+        }
+
+        if (!WPPush.isSupported()) {
+            document.getElementById('pushControls').style.display = 'none';
+            document.getElementById('pushUnsupported').style.display = '';
+            return;
+        }
+
+        if (WPPush.getPermission() === 'denied') {
+            document.getElementById('pushControls').style.display = 'none';
+            document.getElementById('pushDenied').style.display = '';
+            return;
+        }
+
+        const subscribed = await WPPush.isSubscribed();
+        document.getElementById('pushMasterToggle').checked = subscribed;
+
+        if (subscribed) {
+            await this._loadCategorySettings();
+        }
+    },
+
+    async togglePush(enabled) {
+        try {
+            if (enabled) {
+                const ok = await WPPush.subscribe(SC.tripCode, SC.userId, SC.csrfToken);
+                if (!ok) {
+                    document.getElementById('pushMasterToggle').checked = false;
+                    if (WPPush.getPermission() === 'denied') {
+                        document.getElementById('pushControls').style.display = 'none';
+                        document.getElementById('pushDenied').style.display = '';
+                    }
+                    return;
+                }
+                WP.toast('알림이 활성화되었습니다.');
+                await this._loadCategorySettings();
+            } else {
+                await WPPush.unsubscribe(SC.csrfToken);
+                document.getElementById('pushCategoryList').style.display = 'none';
+                WP.toast('알림이 비활성화되었습니다.');
+            }
+        } catch (err) {
+            document.getElementById('pushMasterToggle').checked = !enabled;
+            WP.toast('알림 설정 중 오류가 발생했습니다.', 'error');
+        }
+    },
+
+    async _loadCategorySettings() {
+        try {
+            const res = await fetch('/api/push/settings?trip_code=' + SC.tripCode + '&user_id=' + SC.userId);
+            const data = await res.json();
+            if (data.success) {
+                const settings = data.data.settings;
+                document.querySelectorAll('#pushCategoryList input[data-category]').forEach(input => {
+                    const cat = input.dataset.category;
+                    input.checked = settings[cat] !== undefined ? !!settings[cat] : true;
+                });
+                document.getElementById('pushCategoryList').style.display = '';
+            }
+        } catch (e) {
+            // ignore
+        }
+    },
+
+    async toggleCategory(category, enabled) {
+        try {
+            await WP.put('/api/push/settings', {
+                csrf_token: SC.csrfToken,
+                trip_code: SC.tripCode,
+                user_id: SC.userId,
+                category: category,
+                enabled: enabled ? 1 : 0,
+            });
+        } catch (err) {
+            // revert toggle
+            const input = document.querySelector('#pushCategoryList input[data-category="' + category + '"]');
+            if (input) input.checked = !enabled;
+            WP.toast('설정 저장에 실패했습니다.', 'error');
+        }
+    },
+
+    /* ============================================================
        웹앱 설치 (PWA)
        ============================================================ */
 
@@ -404,8 +501,9 @@ const Settings = {
     },
 };
 
-// PWA 설치 초기화
+// 초기화
 Settings.initInstall();
+Settings.initPush();
 
 // ESC 키로 모달 닫기
 document.addEventListener('keydown', function (e) {

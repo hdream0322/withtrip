@@ -1,5 +1,33 @@
 /* 홈 대시보드 */
 
+/* ====== 푸시 알림 배너 ====== */
+.home-push-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f0fdfa;
+    border: 1px solid var(--color-primary-light, #b2dfdb);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+}
+
+.home-push-banner-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.home-push-banner-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
 /* ====== 히어로 배너 ====== */
 .home-hero {
     border-radius: var(--radius);

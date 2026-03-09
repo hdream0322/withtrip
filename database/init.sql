@@ -196,3 +196,26 @@ CREATE TABLE IF NOT EXISTS incomes (
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_trip_code (trip_code)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 18. push_subscriptions - Web Push 구독 정보
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  trip_code   VARCHAR(8) NOT NULL,
+  user_id     VARCHAR(30) NOT NULL,
+  endpoint    VARCHAR(500) NOT NULL,
+  p256dh      VARCHAR(200) NOT NULL,
+  auth        VARCHAR(100) NOT NULL,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_endpoint (endpoint(400)),
+  INDEX idx_trip_user (trip_code, user_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 19. push_settings - 사용자별 알림 카테고리 설정
+CREATE TABLE IF NOT EXISTS push_settings (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  trip_code   VARCHAR(8) NOT NULL,
+  user_id     VARCHAR(30) NOT NULL,
+  category    VARCHAR(20) NOT NULL,
+  enabled     TINYINT(1) DEFAULT 1,
+  UNIQUE KEY uniq_setting (trip_code, user_id, category)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

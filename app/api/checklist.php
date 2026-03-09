@@ -103,15 +103,17 @@ if ($method === 'POST') {
     $stmt->execute([$newId]);
     $newItem = $stmt->fetch();
 
-    try {
-        $targetUsers = $assignedTo ? explode(',', $assignedTo) : null;
-        $reqUserId = $input['user_id'] ?? '';
-        $addUser = getTripUser($db, $tripCode, $reqUserId);
-        $addUserName = $addUser ? $addUser['display_name'] : $reqUserId;
-        sendPushNotification($db, $tripCode, $targetUsers, $reqUserId, '새 준비물',
-            $addUserName . '님이 \'' . $item . '\' 추가',
-            '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
-    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    if ($assignedTo) {
+        try {
+            $targetUsers = explode(',', $assignedTo);
+            $reqUserId = $input['user_id'] ?? '';
+            $addUser = getTripUser($db, $tripCode, $reqUserId);
+            $addUserName = $addUser ? $addUser['display_name'] : $reqUserId;
+            queuePushNotification($db, $tripCode, $targetUsers, $reqUserId, '새 준비물',
+                $addUserName . '님이 \'' . $item . '\' 추가',
+                '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    }
 
     jsonResponse(true, $newItem, '항목이 추가되었습니다.');
 }
@@ -162,19 +164,20 @@ if ($method === 'PUT') {
         $stmt->execute([$id, $tripCode]);
         $completedUsers = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        // 완료 시에만 알림 (해제 시 노이즈 방지)
+        // 완료 시에만 알림 (해제 시 노이즈 방지, 할당된 사용자에게만)
         if ($isDone) {
             try {
                 $stmt2 = $db->prepare('SELECT * FROM checklists WHERE id = ? AND trip_code = ?');
                 $stmt2->execute([$id, $tripCode]);
                 $checkItem = $stmt2->fetch();
-                $completeUser = getTripUser($db, $tripCode, $userId);
-                $completeUserName = $completeUser ? $completeUser['display_name'] : $userId;
-                $itemName = $checkItem ? $checkItem['item'] : '';
-                $targetUsers = ($checkItem && $checkItem['assigned_to']) ? explode(',', $checkItem['assigned_to']) : null;
-                sendPushNotification($db, $tripCode, $targetUsers, $userId, '준비물 체크',
-                    $completeUserName . '님이 \'' . $itemName . '\' 완료',
-                    '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
+                if ($checkItem && $checkItem['assigned_to']) {
+                    $completeUser = getTripUser($db, $tripCode, $userId);
+                    $completeUserName = $completeUser ? $completeUser['display_name'] : $userId;
+                    $targetUsers = explode(',', $checkItem['assigned_to']);
+                    queuePushNotification($db, $tripCode, $targetUsers, $userId, '준비물 체크',
+                        $completeUserName . '님이 \'' . $checkItem['item'] . '\' 완료',
+                        '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
+                }
             } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
         }
 
@@ -202,15 +205,17 @@ if ($method === 'PUT') {
         $tripCode,
     ]);
 
-    try {
-        $targetUsers = $assignedTo ? explode(',', $assignedTo) : null;
-        $reqUserId = $input['user_id'] ?? '';
-        $editUser = getTripUser($db, $tripCode, $reqUserId);
-        $editUserName = $editUser ? $editUser['display_name'] : $reqUserId;
-        sendPushNotification($db, $tripCode, $targetUsers, $reqUserId, '준비물 수정',
-            $editUserName . '님이 \'' . $item . '\' 수정',
-            '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
-    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    if ($assignedTo) {
+        try {
+            $targetUsers = explode(',', $assignedTo);
+            $reqUserId = $input['user_id'] ?? '';
+            $editUser = getTripUser($db, $tripCode, $reqUserId);
+            $editUserName = $editUser ? $editUser['display_name'] : $reqUserId;
+            queuePushNotification($db, $tripCode, $targetUsers, $reqUserId, '준비물 수정',
+                $editUserName . '님이 \'' . $item . '\' 수정',
+                '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    }
 
     jsonResponse(true, null, '항목이 수정되었습니다.');
 }
@@ -239,16 +244,17 @@ if ($method === 'DELETE') {
     $stmt = $db->prepare('DELETE FROM checklist_completions WHERE checklist_id = ? AND trip_code = ?');
     $stmt->execute([$id, $tripCode]);
 
-    try {
-        $reqUserId = $_GET['user_id'] ?? '';
-        $delUser = getTripUser($db, $tripCode, $reqUserId);
-        $delUserName = $delUser ? $delUser['display_name'] : $reqUserId;
-        $itemName = $delItem ? $delItem['item'] : '';
-        $targetUsers = ($delItem && $delItem['assigned_to']) ? explode(',', $delItem['assigned_to']) : null;
-        sendPushNotification($db, $tripCode, $targetUsers, $reqUserId, '준비물 삭제',
-            $delUserName . '님이 \'' . $itemName . '\' 삭제',
-            '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
-    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    if ($delItem && $delItem['assigned_to']) {
+        try {
+            $reqUserId = $_GET['user_id'] ?? '';
+            $delUser = getTripUser($db, $tripCode, $reqUserId);
+            $delUserName = $delUser ? $delUser['display_name'] : $reqUserId;
+            $targetUsers = explode(',', $delItem['assigned_to']);
+            queuePushNotification($db, $tripCode, $targetUsers, $reqUserId, '준비물 삭제',
+                $delUserName . '님이 \'' . $delItem['item'] . '\' 삭제',
+                '/' . $tripCode . '/{USER_ID}/checklist', 'checklist');
+        } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+    }
 
     jsonResponse(true, null, '항목이 삭제되었습니다.');
 }

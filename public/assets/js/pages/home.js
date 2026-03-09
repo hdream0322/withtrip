@@ -1,12 +1,50 @@
 /**
- * 홈 대시보드 - 오늘 일정 타임라인 현재 시간 강조
+ * 홈 대시보드
  */
+
+// 푸시 알림 배너
+const HomePush = {
+    async init() {
+        if (!WPPush.isSupported()) return;
+        if (WPPush.getPermission() !== 'default') return;
+        if (localStorage.getItem('wp_push_dismissed')) return;
+
+        const subscribed = await WPPush.isSubscribed();
+        if (subscribed) return;
+
+        const banner = document.getElementById('pushBanner');
+        if (banner) banner.style.display = '';
+    },
+
+    async enable() {
+        const config = window.HOME_CONFIG;
+        const ok = await WPPush.subscribe(config.tripCode, config.userId, config.csrfToken);
+        if (ok) {
+            WP.toast('알림이 활성화되었습니다.');
+        }
+        const banner = document.getElementById('pushBanner');
+        if (banner) banner.style.display = 'none';
+    },
+
+    dismiss() {
+        localStorage.setItem('wp_push_dismissed', '1');
+        const banner = document.getElementById('pushBanner');
+        if (banner) banner.style.display = 'none';
+    },
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const config = window.HOME_CONFIG;
-    if (!config || config.tripPhase !== 'during') return;
+    if (!config) return;
 
-    updateCurrentSchedule();
-    setInterval(updateCurrentSchedule, 60_000);
+    // 타임라인 업데이트
+    if (config.tripPhase === 'during') {
+        updateCurrentSchedule();
+        setInterval(updateCurrentSchedule, 60_000);
+    }
+
+    // 푸시 배너
+    HomePush.init();
 });
 
 function getNowMinutes() {

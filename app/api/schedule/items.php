@@ -69,6 +69,15 @@ if ($method === 'POST') {
         $sortOrder
     ]);
 
+    try {
+        $reqUserId = $input['user_id'] ?? '';
+        $reqUser = $reqUserId ? getTripUser($db, $tripCode, $reqUserId) : null;
+        $reqName = $reqUser ? $reqUser['display_name'] : '';
+        queuePushNotification($db, $tripCode, null, $reqUserId, '새 일정',
+            ($reqName ? $reqName . '님이 ' : '') . '\'' . $content . '\' 일정 추가',
+            '/' . $tripCode . '/{USER_ID}/schedule', 'schedule');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
     jsonResponse(true, ['id' => $db->lastInsertId()]);
 }
 
@@ -110,6 +119,15 @@ if ($method === 'PUT') {
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
 
+    try {
+        $reqUserId = $input['user_id'] ?? '';
+        $reqUser = $reqUserId ? getTripUser($db, $tripCode, $reqUserId) : null;
+        $reqName = $reqUser ? $reqUser['display_name'] : '';
+        queuePushNotification($db, $tripCode, null, $reqUserId, '일정 수정',
+            ($reqName ? $reqName . '님이 ' : '') . '일정을 수정했습니다',
+            '/' . $tripCode . '/{USER_ID}/schedule', 'schedule');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
     jsonResponse(true);
 }
 
@@ -123,6 +141,13 @@ if ($method === 'DELETE') {
 
     $stmt = $db->prepare('DELETE FROM schedule_items WHERE id = ? AND trip_code = ?');
     $stmt->execute([$id, $tripCode]);
+
+    try {
+        $reqUserId = $_GET['user_id'] ?? '';
+        queuePushNotification($db, $tripCode, null, $reqUserId, '일정 삭제',
+            '일정이 삭제되었습니다',
+            '/' . $tripCode . '/{USER_ID}/schedule', 'schedule');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
 
     jsonResponse(true);
 }

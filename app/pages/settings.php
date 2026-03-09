@@ -67,7 +67,74 @@ require_once __DIR__ . '/../includes/header.php';
         <?php endif; ?>
     </div>
 
-    <!-- 3. 멤버 -->
+    <!-- 3. 알림 -->
+    <div class="card settings-section" id="pushSection">
+        <h3 class="settings-section-title">알림</h3>
+        <div id="pushUnsupported" style="display:none;">
+            <p class="text-xs text-muted">이 브라우저는 푸시 알림을 지원하지 않습니다.</p>
+        </div>
+        <div id="pushDenied" style="display:none;">
+            <p class="text-xs text-muted">알림 권한이 차단되었습니다. 브라우저 설정에서 알림을 허용해주세요.</p>
+        </div>
+        <div id="pushIosGuide" style="display:none;">
+            <p class="text-xs text-muted">iOS에서는 홈 화면에 추가(웹앱 설치) 후 알림을 사용할 수 있습니다.</p>
+        </div>
+        <div id="pushControls">
+            <div class="settings-item">
+                <span class="settings-item-label">푸시 알림</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="pushMasterToggle" onchange="Settings.togglePush(this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div id="pushCategoryList" style="display:none;">
+                <div class="settings-item">
+                    <span class="settings-item-label">일정 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="schedule" onchange="Settings.toggleCategory('schedule', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-item-label">지출 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="budget" onchange="Settings.toggleCategory('budget', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-item-label">준비물 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="checklist" onchange="Settings.toggleCategory('checklist', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-item-label">할일 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="todo" onchange="Settings.toggleCategory('todo', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-item-label">메모 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="note" onchange="Settings.toggleCategory('note', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-item-label">멤버 알림</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-category="member" onchange="Settings.toggleCategory('member', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 멤버 -->
     <div class="card settings-section">
         <div class="flex-between mb-8">
             <h3 class="settings-section-title" style="margin-bottom:0;">멤버 (<?= count($members) ?>명)</h3>
@@ -116,7 +183,7 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 4. 여행 정보 -->
+    <!-- 5. 여행 정보 -->
     <div class="card settings-section">
         <h3 class="settings-section-title">여행 정보</h3>
         <div class="settings-item">
@@ -156,7 +223,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php endif; ?>
     </div>
 
-    <!-- 5. 환율 설정 -->
+    <!-- 6. 환율 설정 -->
     <div class="card settings-section">
         <div class="flex-between mb-4">
             <h3 class="settings-section-title" style="margin-bottom:0;">환율 설정</h3>
@@ -171,7 +238,7 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 6. 웹앱 설치 -->
+    <!-- 7. 웹앱 설치 -->
     <div class="card settings-section" id="installSection" style="display:none;">
         <h3 class="settings-section-title">웹앱으로 설치</h3>
         <p class="text-xs text-muted mb-12">홈 화면에 추가하면 앱처럼 빠르게 접근할 수 있습니다.</p>
@@ -205,14 +272,14 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- 7. 로그아웃 -->
+    <!-- 8. 로그아웃 -->
     <div class="card settings-section">
         <button class="btn btn-secondary btn-full settings-logout-btn" onclick="Settings.logout()">
             <span class="material-icons">logout</span> 로그아웃
         </button>
     </div>
 
-    <!-- 8. 앱 정보 -->
+    <!-- 9. 앱 정보 -->
     <div class="settings-app-info">
         WithPlan v<?= CSS_VERSION ?>
     </div>

@@ -142,6 +142,7 @@ $categoryIcons = [
 $getCatIcon = fn($cat) => $categoryIcons[$cat ?? ''] ?? '📍';
 
 // HOME_CONFIG (JS 전달용)
+$csrfToken = generateCsrfToken();
 $homeConfig = [
     'tripPhase'   => $tripPhase,
     'todayItems'  => $todayItems,
@@ -149,6 +150,9 @@ $homeConfig = [
     'budgetUrl'   => "/{$tripCode}/{$userId}/budget",
     'checklistUrl'=> "/{$tripCode}/{$userId}/checklist",
     'notesUrl'    => "/{$tripCode}/{$userId}/notes",
+    'tripCode'    => $tripCode,
+    'userId'      => $userId,
+    'csrfToken'   => $csrfToken,
 ];
 
 require_once __DIR__ . '/../includes/header.php';
@@ -166,6 +170,18 @@ require __DIR__ . '/../includes/page_header.php';
 ?>
 
 <div class="page-content">
+
+    <!-- 알림 배너 -->
+    <div id="pushBanner" class="home-push-banner" style="display:none;">
+        <div class="home-push-banner-text">
+            <span class="material-icons" style="font-size:20px;color:var(--color-primary);vertical-align:middle;">notifications</span>
+            <span>알림을 받으시겠습니까?</span>
+        </div>
+        <div class="home-push-banner-actions">
+            <button class="btn btn-sm btn-primary" onclick="HomePush.enable()">활성화</button>
+            <button class="btn btn-sm btn-secondary" onclick="HomePush.dismiss()">닫기</button>
+        </div>
+    </div>
 
     <!-- ====== 히어로 배너 ====== -->
     <div class="home-hero home-hero--<?= $tripPhase ?>">

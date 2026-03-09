@@ -4,9 +4,9 @@
 
 - **도메인:** `withplan.deurim.com` | **서버:** Synology + PHP 8.4 + Apache 2.4 + MariaDB
 - **Document Root:** `/withplan/public/` (`.env`, `config/`, `vendor/` 웹 노출 방지)
-- **CSS_VERSION:** `4.4.1` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
+- **CSS_VERSION:** `4.5.0` → `app/includes/header.php` 상수. CSS/JS 수정 시 반드시 increment
   - 패치(마지막 자리): 미세 수정 | 마이너(중간): 주요 변경 | 메이저(첫 자리): 전면 개편
-  - 최근 업데이트: Push 알림 트리거 확장 + 메시지 개선 (4.4.1)
+  - 최근 업데이트: Web Push 알림 시스템 완성 (설정 토글, 홈 배너, SW 핸들러, Push API) (4.5.0)
 
 ---
 
@@ -90,7 +90,7 @@
 - `minishlink/web-push` v9 (VAPID 기반)
 - `.env`: `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
 - `scripts/generate_vapid_keys.php`: VAPID 키 생성 CLI 스크립트
-- `app/helpers/push.php`: `sendPushNotification()` 헬퍼 (만료 구독 자동 삭제)
+- `app/helpers/push.php`: `queuePushNotification()` 헬퍼 (만료 구독 자동 삭제, 할당 사용자 대상)
 - `public/assets/js/push.js`: `WPPush` 객체 (subscribe/unsubscribe/isSubscribed)
 - `public/sw.js`: push + notificationclick 이벤트 핸들러
 - API: `/api/push/vapid` (GET), `/api/push/subscribe` (POST/DELETE), `/api/push/settings` (GET/PUT)
@@ -107,7 +107,7 @@
 ## 페이지 구현 현황
 
 ### ✅ 설정 페이지 (`/{trip_code}/{user_id}/settings`)
-**v4.4.0**
+**v4.5.0**
 - 섹션 순서: 내 정보 → 보안 → 알림 → 멤버 → 여행정보 → 환율 → 웹앱설치 → 로그아웃 → 앱정보
 - **내 정보**: 표시 이름 인라인 편집 (Sheet 모달), ID 표시
 - **보안**: PIN 변경, 멤버 PIN 초기화 (오너 전용)

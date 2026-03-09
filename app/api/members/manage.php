@@ -51,6 +51,12 @@ if ($method === 'POST') {
     $stmt = $db->prepare('INSERT INTO users (trip_code, user_id, display_name) VALUES (?, ?, ?)');
     $stmt->execute([$tripCode, $newUserId, $displayName]);
 
+    try {
+        queuePushNotification($db, $tripCode, null, $newUserId, '새 멤버',
+            $displayName . '님이 합류했습니다',
+            '/' . $tripCode . '/{USER_ID}/settings', 'member');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
+
     jsonResponse(true, null, '멤버가 추가되었습니다.');
 }
 
@@ -92,6 +98,12 @@ if ($method === 'DELETE') {
 
     $stmt = $db->prepare('DELETE FROM users WHERE trip_code = ? AND user_id = ?');
     $stmt->execute([$tripCode, $targetUserId]);
+
+    try {
+        queuePushNotification($db, $tripCode, null, $requesterUserId, '멤버 변경',
+            '멤버가 변경되었습니다',
+            '/' . $tripCode . '/{USER_ID}/settings', 'member');
+    } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
 
     jsonResponse(true, null, '멤버가 삭제되었습니다.');
 }

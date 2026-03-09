@@ -90,7 +90,7 @@ if ($method === 'POST') {
     try {
         $authorUser = getTripUser($db, $tripCode, $authorId);
         $authorName = $authorUser ? $authorUser['display_name'] : $authorId;
-        sendPushNotification($db, $tripCode, null, $authorId, '새 메모',
+        queuePushNotification($db, $tripCode, null, $authorId, '새 메모',
             $authorName . '님이 메모를 작성했습니다',
             '/' . $tripCode . '/{USER_ID}/notes', 'note');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
@@ -152,7 +152,7 @@ if ($method === 'PUT') {
     try {
         $authorName = $updatedNote['author_name'] ?? $authorId;
         $noteTitle = $title ?: mb_substr($content, 0, 20);
-        sendPushNotification($db, $tripCode, null, $authorId, '메모 수정',
+        queuePushNotification($db, $tripCode, null, $authorId, '메모 수정',
             $authorName . '님이 메모를 수정했습니다',
             '/' . $tripCode . '/{USER_ID}/notes', 'note');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
@@ -194,7 +194,7 @@ if ($method === 'DELETE') {
     try {
         $authorUser = getTripUser($db, $tripCode, $authorId);
         $authorName = $authorUser ? $authorUser['display_name'] : $authorId;
-        sendPushNotification($db, $tripCode, null, $authorId, '메모 삭제',
+        queuePushNotification($db, $tripCode, null, $authorId, '메모 삭제',
             $authorName . '님이 메모를 삭제했습니다',
             '/' . $tripCode . '/{USER_ID}/notes', 'note');
     } catch (Throwable $e) { error_log('Push error: ' . $e->getMessage()); }
