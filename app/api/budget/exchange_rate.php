@@ -62,7 +62,7 @@ function fetchAllRates(string $authKey, string $date): array
         'THB'      => ['code' => 'THB', 'divisor' => 1],
     ];
 
-    $url = 'https://www.koreaexim.go.kr/site/program/financial/exchangeJSON'
+    $url = 'https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON'
          . '?authkey=' . urlencode($authKey)
          . '&searchdate=' . urlencode($date)
          . '&data=AP01';
